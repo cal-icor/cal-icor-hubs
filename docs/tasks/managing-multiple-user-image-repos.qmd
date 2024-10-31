@@ -1,0 +1,369 @@
+---
+title: Managing multiple user image repos
+aliases:
+  - ../admins/howto/managing-multiple-user-image-repos.html
+---
+
+## Managing user image repos
+
+Since we have many multiples of user images in their own repos, managing these
+can become burdensome... Particularly if you need to make changes to many or
+all of the images.
+
+For this, we have a tool named [manage-repos](https://github.com/berkeley-dsep-infra/manage-repos).
+
+`manage-repos` uses a config file with a list of all of the git remotes for the
+image repos ([repos.txt](https://github.com/berkeley-dsep-infra/datahub/blob/staging/scripts/user-image-management/repos.txt))
+and will allow you to perform basic git operations (sync/rebase, clone, branch
+management and pushing).
+
+The script "assumes" that you have all of your user images in their own
+sub-folder (in my case, `$HOME/src/images/...`).
+
+## Installation of instructions
+
+### Via cloning and manual installation
+
+Clone [the repo](https://github.com/berkeley-dsep-infra/manage-repos), and from
+within that directory run:
+
+```
+pip install --editable .
+```
+
+The `--editable` flag is optional, and allows you to hack on the tool and have
+those changes usable without reinstalling or needing to hack your `PATH`.
+
+### Via `pip`
+
+```
+python3 -m pip install --no-cache git+https://github.com/berkeley-dsep-infra/manage-repos
+```
+
+### Installing the `gh` tool
+
+To use the `pr` and `merge` sub-commands, you will also need to install the
+Github CLI tool: https://github.com/cli/cli#installation
+
+## Usage
+
+### Overview of git operations included in `manage-repos`:
+
+`manage-repos` allows you to perform basic `git` operations on a large number
+of similar repositories:
+
+* `branch`: Create a feature branch
+* `clone`: Clone all repositories in the config file to a location on the
+           filesystem specified by the `--destination` argument.
+* `merge`: Merge the most recent pull request in the managed repositories.
+* `patch`: Apply a [git patch](https://git-scm.com/docs/git-apply) to all
+           repositories in the config file.
+* `pr`: Create pull requests in the managed repositories.
+* `push`: Push a branch from all repos to a remote. The remote defaults to
+          `origin`.
+* `stage`: Performs a `git add` and `git commit` to stage changes before
+           pushing.
+* `sync`: Sync all of the repositories, and optionally push to your fork.
+
+### Usage overview
+The following sections will describe in more detail the options and commands
+available with the script.
+
+#### Primary arguments for the script
+```
+$ manage-repos.py --help
+usage: manage-repos [-h] [-c CONFIG] [-d DESTINATION] {branch,clone,patch,push,stage,sync} ...
+
+positional arguments:
+  {branch,clone,patch,push,stage,sync}
+                        Command to execute. Additional help is available for each command.
+
+options:
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        Path to the file containing list of repositories to operate on. Defaults to repos.txt located in the current working
+                        directory.
+  -d DESTINATION, --destination DESTINATION
+                        Location on the filesystem of the directory containing the managed repositories. Defaults to the current working directory.
+  --version             show program's version number and exit
+```
+
+`--config` is required, and setting `--destination` is recommended.
+
+### Sub-commands
+
+#### `branch`
+
+```
+$ manage-repos branch --help
+usage: manage-repos branch [-h] [-b BRANCH]
+
+options:
+  -h, --help            show this help message and exit
+  -b BRANCH, --branch BRANCH
+                        Name of the new feature branch to create.
+```
+
+The feature branch to create is required, and the tool will switch to `main`
+before creating and switching to the new branch.
+
+#### `clone`
+
+```
+$ manage-repos.py clone --help
+usage: manage-repos clone [-h] [-s [SET_REMOTE]] [-g GITHUB_USER]
+
+Clone repositories in the config file and optionally set a remote for a fork.
+If a repository sub-directory does not exist, it will be created.
+
+options:
+  -h, --help            show this help message and exit
+  -s [SET_REMOTE], --set-remote [SET_REMOTE]
+                        Set the user's GitHub fork as a remote. Defaults to 'origin'.
+  -g GITHUB_USER, --github-user GITHUB_USER
+                        The GitHub username of the fork to set in the remote.
+                        Required if --set-remote is used.
+```
+
+This command will clone all repositories found in the config, and if you've
+created a fork, use the `--set-remote` and `--github-user` arguments to update
+the remotes in the cloned repositories. This will set the primary repository's
+remote to `upstream` and your fork to `origin` (unless you override this by
+passing a different remote name with the `--set-remote` argument).
+
+After cloning, `git remote -v` will be executed for each repository to allow
+you to confirm that the remotes are properly set.
+
+#### `merge`
+
+```
+$ usage: manage-repos merge [-h] [-b BODY] [-d] [-s {merge,rebase,squash}]
+
+Using the gh tool, merge the most recent pull request in the managed
+repositories. Before using this command, you must authenticate with gh to
+ensure that you have the correct permission for the required scopes.
+
+options:
+  -h, --help            show this help message and exit
+  -b BODY, --body BODY  The commit message to apply to the merge (optional).
+  -d, --delete          Delete your local feature branch after the pull request
+                        is merged (optional).
+  -s {merge,rebase,squash}, --strategy {merge,rebase,squash}
+                        The pull request merge strategy to use, defaults to
+                        'merge'.
+```
+
+Be aware that the default behavior is to merge only the newest pull request in
+the managed repositories. The reasoning behind this is that if you have created
+pull requests across many repositories, the pull request numbers will almost
+certainly be different, and adding interactive steps to merge specific pull
+requests will be cumbersome.
+
+#### `patch`
+
+```
+$ manage-repos patch --help
+usage: manage-repos patch [-h] [-p PATCH]
+
+Apply a git patch to managed repositories.
+
+options:
+  -h, --help            show this help message and exit
+  -p PATCH, --patch PATCH
+                        Path to the patch file to apply.
+```
+
+This command applies a git patch file to all of the repositories. The patch is
+created by making changes to one file, and redirecting the output of `git diff`
+to a new file, eg:
+
+```
+git diff <filename> > patchfile.txt
+```
+
+You then provide the location of the patch file with the `--patch` argument,
+and the script will attempt to apply the patch to all of the repositories.
+
+If it is unable to apply the patch, the script will continue to run and notify
+you when complete which repositories failed to accept the patch.
+
+#### `pr`
+```
+$ manage-repos pr --help
+usage: manage-repos pr [-h] [-t TITLE] [-b BODY] [-B BRANCH_DEFAULT]
+                       [-g GITHUB_USER]
+
+Using the gh tool, create a pull request after pushing.
+
+options:
+  -h, --help            show this help message and exit
+  -t TITLE, --title TITLE
+                        Title of the pull request.
+  -b BODY, --body BODY  Body of the pull request (optional).
+  -B BRANCH_DEFAULT, --branch-default BRANCH_DEFAULT
+                        Default remote branch that the pull requests will be
+                        merged to. This is optional and defaults to 'main'.
+  -g GITHUB_USER, --github-user GITHUB_USER
+                        The GitHub username used to create the pull request.
+```
+
+After you've `stage`d and `push`ed your changes, this command will then create
+a pull request using the `gh` tool.
+
+#### `push`
+
+```
+$ manage-repos push --help
+usage: manage-repos push [-h] [-b BRANCH] [-r REMOTE]
+
+Push managed repositories to a remote.
+
+options:
+  -h, --help            show this help message and exit
+  -b BRANCH, --branch BRANCH
+                        Name of the branch to push.
+  -r REMOTE, --remote REMOTE
+                        Name of the remote to push to. This is optional and
+                        defaults to 'origin'.
+```
+
+This command will attempt to push all staged commits to a remote. The
+`--branch` argument is required, and needs to be the name of the feature
+branch that will be pushed.
+
+The remote that is pushed to defaults to `origin`, but you can override this
+with the `--remote` argument.
+
+#### `stage`
+
+```
+$ manage-repos stage --help
+usage: manage-repos stage [-h] [-f FILES [FILES ...]] [-m MESSAGE]
+
+Stage changes in managed repositories. This performs a git add and commit.
+
+options:
+  -h, --help            show this help message and exit
+  -f FILES [FILES ...], --files FILES [FILES ...]
+                        Space-delimited list of files to stage in the
+                        repositories. Optional, and if left blank will default
+                        to all modified files in the directory.
+  -m MESSAGE, --message MESSAGE
+                        Commit message to use for the changes.
+```
+
+`stage` combines both `git add ...` and `git commit -m`, adding and committing
+one or more files to the staging area before you push to a remote.
+
+The commit message must be a text string enclosed in quotes.
+
+By default, `--files` is set to `.`, which will add all modified files to the
+staging area. You can also specify any number of files, separated by a space.
+
+#### `sync`
+
+```
+$ manage-image-repos.py sync --help
+usage: manage-repos sync [-h] [-b BRANCH_DEFAULT] [-u UPSTREAM] [-p]
+                         [-r REMOTE]
+
+Sync managed repositories to the latest version using 'git rebase'. Optionally
+push to a remote fork.
+
+options:
+  -h, --help            show this help message and exit
+  -b BRANCH_DEFAULT, --branch-default BRANCH_DEFAULT
+                        Default remote branch to sync to. This is optional and
+                        defaults to 'main'.
+  -u UPSTREAM, --upstream UPSTREAM
+                        Name of the parent remote to sync from. This is
+                        optional and defaults to 'upstream'.
+  -p, --push            Push the locally synced repo to a remote fork.
+  -r REMOTE, --remote REMOTE
+                        The name of the remote fork to push to. This is
+                        optional and defaults to 'origin'.
+```
+
+This command will switch your local repositories to the `main` branch, and sync
+all repositories from the config to your device from a remote. With the
+`--push` argument, it will push the local repository to another remote.
+
+By default, the script will switch to the `main` branch before syncing, and can
+be overridden with the `--branch-default` argument.
+
+The primary remote that is used to sync is `upstream`, but that can also be
+overridden with the `--upstream` argument. The remote for a fork defaults to
+`origin`, and can be overridden via the `--remote` argument.
+
+
+### Tips, tricks and usage examples
+
+#### Tips and tricks
+
+`manage-repos` is best run from the parent folder that will contain all of the
+repositories that you will be managing as the default value of `--destination`
+is the current working directory (`.`).
+
+You can also create a symlink in the parent folder that points to the config
+file elsewhere on your filesystem:
+
+```
+ln -s  <path to datahub repo>/scripts/user-image-management/repos.txt repos.txt
+```
+
+With this in mind, you can safely drop the `--config` and `--destination`
+arguments when running `manage-repos`. Eg:
+
+``` 
+manage-repos sync -p
+```
+
+Another tip is to comment out or delete entries in your config when performing
+git operations on a limited set of repositories. Be sure to `git restore` the
+file when you're done!
+
+#### Usage examples
+
+Clone all of the image repos to a common directory:
+
+```
+manage-repos --destination ~/src/images/ --config /path/to/repos.txt clone
+```
+
+Clone all repos, and set `upstream` and `origin` for your fork:
+
+```
+manage-repos -d ~/src/images/ -c /path/to/repos.txt clone --set-remote --github-user <username>
+```
+
+Sync all repos from `upstream` and push to your `origin`:
+
+```
+manage-repos -d ~/src/images/ -c /path/to/repos.txt sync --push
+```
+
+Create a feature branch in all of the repos:
+
+```
+manage-repos -d ~/src/images -c /path/to/repos.txt branch -b test-branch
+```
+
+Create a git patch and apply it to all image repos:
+
+```
+git diff envorinment.yml > /tmp/git-patch.txt
+manage-repos -d ~/src/images -c /path/to/repos.txt patch -p /tmp/git-patch.txt
+```
+
+Once you've tested everything and are ready to push and create a PR, add and
+commit all modified files in the repositories:
+
+```
+manage-repos -d ~/src/images -c /path/to/repos.txt stage -m "this is a commit"
+```
+
+After staging, push everything to a remote:
+
+```
+manage-repos -d ~/src/images -c /path/to/repos.txt push -b test-branch
+```

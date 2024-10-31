@@ -1,0 +1,233 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.155.229.138
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+  prePuller:
+    extraImages:
+      postgres:
+        name: gcr.io/ucb-datahub-2018/jupyterhub-postgres
+        tag: 0.0.1-n5296.hdee70868
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+      resources:
+        requests:
+          # FIXME: We want no guarantees here!!!
+          # This is lowest possible value
+          cpu: 0.001
+          memory: 3Gi
+        limits:
+          memory: 3Gi
+  hub:
+    config:
+    loadRoles:
+      # datahub staff
+      datahub-staff:
+        description: Enable admin for datahub staff
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - admin:groups
+          - admin:users
+          - admin:servers
+          - read:roles
+          - read:hub
+          - access:servers
+        # this role will be assigned to...
+        groups:
+          - course::1524699::group::all-admins
+      ## Data 101, Spring 2024
+      #course-staff-N:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+      #  scopes:
+      #    - admin-ui
+      #    - list:users!group=course::N
+      #    - admin:servers!group=course::N
+      #    - access:servers!group=course::N
+      #  # this role will be assigned to...
+      #  groups:
+      #    - course::N::group::Admins
+
+      # Data 101, Fall 2024, #https://jira-secure.berkeley.edu/browse/DH-364
+      course-staff-1536858:
+        # description: Enable course staff to view and access servers.
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - list:users!group=course::1536858
+          - admin:servers!group=course::1536858
+          - access:servers!group=course::1536858
+        # this role will be assigned to...
+        groups:
+          - course::1536858::enrollment_type::teacher
+          - course::1536858::enrollment_type::ta
+
+    extraConfig:
+      data101-new-db: |
+        from jupyterhub.utils import exponential_backoff
+        from kubespawner.objects import make_pvc
+        from functools import partial
+
+        def make_extra_pvc(component, name_template, storage_class, storage_capacity, spawner):
+          labels = spawner._build_common_labels({})
+          labels.update({
+              'component': component
+          })
+          annotations = spawner._build_common_annotations({})
+          storage_selector = spawner._expand_all(spawner.storage_selector)
+          return make_pvc(
+              name=spawner._expand_all(name_template),
+              storage_class=storage_class,
+              access_modes=['ReadWriteOnce'],
+              selector={},
+              storage=storage_capacity,
+              labels=labels,
+              annotations=annotations
+          )
+
+        make_db_pvc = partial(make_extra_pvc, 'db-storage', 'db-{username}', 'standard', '4G')
+        make_mongo_pvc = partial(make_extra_pvc, 'mongo-storage', 'mongo-{username}', 'standard', '2G')
+
+        pvc_makers = (make_db_pvc, make_mongo_pvc)
+        async def ensure_db_pvc(spawner):
+          """"
+          Ensure a PVC is created for this user's database volume
+          """
+          for pvc_maker in pvc_makers:
+            pvc = pvc_maker(spawner)
+            # If there's a timeout, just let it propagate
+            await exponential_backoff(
+                partial(spawner._make_create_pvc_request, pvc, spawner.k8s_api_request_timeout),
+                f'Could not create pvc {pvc.metadata.name}',
+                # Each req should be given k8s_api_request_timeout seconds.
+                timeout=spawner.k8s_api_request_retry_timeout
+            )
+        c.Spawner.pre_spawn_hook = ensure_db_pvc
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2024-05-08
+
+  singleuser:
+    extraFiles:
+      # DH-305
+      remove-exporters:
+        mountPath: /etc/jupyter/jupyter_notebook_config.py
+        stringData: |
+          c.QtPDFExporter.enabled = False
+          c.QtPNGExporter.enabled = False
+          c.WebPDFExporter.embed_images = True
+    extraContainers:
+      - name: mongo
+        image: mongo:5.0.11
+        args:
+          # We run mongodb without authentication, but only listening on localhost
+          # This matches what we do for postgres
+          - --bind_ip
+          - 127.0.0.1
+        volumeMounts:
+        - name: home
+          mountPath: /home/jovyan
+          subPath: "{username}"
+        - name: mongodb
+          mountPath: /data/db
+        securityContext:
+          runAsUser: 1000
+        resources:
+          limits:
+            # Best effort only. No more than 1 CPU
+            memory: 512Mi
+            cpu: 1.0
+          requests:
+            # If we don't set requests, k8s sets requests == limits!
+            memory: 64Mi
+            cpu: 0.01
+      - name: postgres
+        image: gcr.io/ucb-datahub-2018/jupyterhub-postgres:0.0.1-n5296.hdee70868
+        resources:
+          limits:
+            # Best effort only. No more than 1 CPU
+            memory: 512Mi
+            cpu: 1.0
+          requests:
+            # If we don't set requests, k8s sets requests == limits!
+            memory: 64Mi
+            cpu: 0.01
+        env:
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: "trust"
+        - name: POSTGRES_USER
+          value: "jovyan"
+        securityContext:
+          runAsUser: 1000
+        volumeMounts:
+        - name: home
+          mountPath: /home/jovyan
+          subPath: "{username}"
+        - name: postgres-db
+          mountPath: /var/lib/postgresql/data
+          # postgres recommends against mounting a volume directly here
+          # So we put data in a subpath
+          subPath: data
+    initContainers:
+      #  /var/lib/postgresql should be writeable by uid 1000, so students
+      #  can blow out their db directories if need to. Just setting UID on the
+      #  postgres server should have been enough - but because we did not do it
+      #  early enough, many users have data dirs owned by uid 999.
+      #  We explicitly chown them back. We should remove this eventually.
+      - name: postgres-volume-mount-hack
+        image: busybox
+        command: ["sh", "-c", "id && chown -R 1000:1000 /var/lib/postgresql && ls -lhd /var/lib/postgresql"]
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: postgres-db
+          mountPath: /var/lib/postgresql/data
+          # postgres recommends against mounting a volume directly here
+          # So we put data in a subpath
+          subPath: data
+    nodeSelector:
+      hub.jupyter.org/pool-name: data101-pool
+    defaultUrl: /lab
+    extraEnv:
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+    storage:
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+      extraVolumes:
+        - name: postgres-db
+          persistentVolumeClaim:
+            claimName: 'db-{username}'
+        - name: mongodb
+          persistentVolumeClaim:
+            claimName: 'mongo-{username}'
+      extraVolumeMounts:
+        - name: postgres-db
+          mountPath: /var/lib/postgresql/data
+          # postgres recommends against mounting a volume directly here
+          # So we put data in a subpath
+          subPath: data
+        - name: mongodb
+          mountPath: /data/db
+    memory:
+      guarantee: 2G
+      limit: 2G
+
+  custom:
+    group_profiles:
+  # DataHub Infrastructure staff
+      # https://bcourses.berkeley.edu/courses/1524699/groups#tab-80607
+      course::1524699::group::all-admins:
+        admin: true
+    admin:
+      mem_limit: 4G
+      mem_guarantee: 2G

@@ -1,0 +1,133 @@
+---
+title: Testing and Upgrading New Packages
+aliases:
+  - ../admins/howto/new-packages.html
+---
+
+It is helpful to test package additions and upgrades for yourself before
+they are installed for all users. You can make sure the change behaves
+as you think it should, and does not break anything else. Once tested,
+request that the change by installed for all users by by [creating a new
+issue in
+github](https://github.com/berkeley-dsep-infra/datahub/issues),contacting
+cirriculum support staff, or creating a new pull request. Ultimately,
+thoroughly testing changes locally and submitting a pull request will
+result in the software being rolled out to everyone much faster.
+
+Install a python package in your notebook
+==================================
+
+When testing a notebook with new version of the package, add the
+following line to a cell at the beginning of your notebook.
+
+``` bash
+!pip install --upgrade packagename==version
+```
+
+You can then execute this cell every time you run the notebook. This
+will ensure you have the version you think you have when running your
+code.
+
+To avoid complicated errors, make sure you always specify a version. You
+can find the latest version by searching on
+[pypi.org](https://pypi.org).
+
+Find current version of a python package
+===============================
+
+To find the current version of a particular installed package, you can
+run the following in a notebook.
+
+``` bash
+!pip list | grep <name-of-package>
+```
+
+This should show you the particular package you are interested in and
+its current version.
+
+Install/Update a R package in your RStudio
+==================================
+
+When the required version of package is missing in the R Studio, Try the
+following command to check whether the default installation repo
+contains the package (and the version) required.
+
+``` R
+install.packages("packagename")
+```
+
+This should install the particular package you are interested in and its
+latest version. You can find the latest version of a R package by
+searching on [CRAN](https://cran.r-project.org/).
+
+Find current version of a R package ===============================
+
+To find the current version of a particular installed package, you can
+run the following in RStudio.
+
+``` R
+packageVersion("<name-of-package>") 
+```
+
+This should show you the particular package you are interested in and
+its current version.
+
+## Submitting a pull request
+
+Familiarize yourself with [pull
+requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
+and [repo2docker](https://github.com/jupyter/repo2docker) , and create a
+fork of the the image repo.
+
+1.  Set up your git/dev environment by [following the instructions
+    here](https://github.com/berkeley-dsep-infra/hub-user-image-template/blob/main/CONTRIBUTING.md).
+
+2.  Create a new branch for this PR.
+
+3.  Find the correct `environment.yml`{.interpreted-text role="file"}
+    file for your class. This should be in the root of the image repo.
+
+4.  In `environment.yml`{.interpreted-text role="file"}, packages listed
+    under `dependencies` are installed using `conda`, while packages
+    under `pip` are installed using `pip`. Any packages that need to be
+    installed via `apt` must be added to either
+    `apt.txt` or
+    `Dockerfile`.
+
+5.  Add any packages necessary. We typically prefer using `conda` packages, and `pip` only if necessary. Please pin to a specific version (no wildards, etc).
+
+    - Note that package versions for `conda` are specified using
+      `=`, while in `pip` they are specified using `==`
+
+6.  Test the changes locally using `repo2docker`, then submit a PR to `main`.
+
+    -   To use `repo2docker`, be sure that you are inside the image
+        repo directory on your device, and then run `repo2docker .`.
+
+7.  Commit and push your changes to your fork of the image repo, and
+    create a new pull request at
+    https://github.com/berkeley-dsep-infra/`<image-name>`.
+
+8.  After the build passes, merge your PR in to `main` and the image will
+    be built again and pushed to the Artifact Registry.  If that succeeds,
+    then a commit will be crafted that will update the `PLACEHOLDER` field in
+    `hubploy.yaml` with the image's SHA and pushed to the datahub repo.
+    You can check on the progress of this workflow in your root image repo's
+    `Actions` tab.
+
+9.  After 4 is completed successfully, go to the Datahub repo and click on
+    the [New pull request](https://github.com/berkeley-dsep-infra/datahub/compare)
+    button.  Next, click on the `compare: staging` drop down, and you should see
+    a branch named something like `update-<hubname>-image-tag-<SHA>`.  Select that,
+    and create a new pull request.
+
+10.  Once the checks has passed, merge to `staging` and your new image will be
+    deployed!  You can watch the progress [here](https://github.com/berkeley-dsep-infra/datahub/actions/workflows/deploy-hubs.yaml).
+
+## Tips for Upgrading Package
+
+-   Conda can take an extremely long time to resolve version dependency
+    conflicts, if they are resolvable at all. When upgrading Python
+    versions or a core package that is used by many other packages, such
+    as [requests]{.title-ref}, clean out or upgrade old packages to
+    minimize the number of dependency conflicts.

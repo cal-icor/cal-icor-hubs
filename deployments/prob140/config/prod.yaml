@@ -1,0 +1,21 @@
+nfsPVC:
+  nfs:
+    shareName: shares/prob140/prod
+
+jupyterhub:
+  scheduling:
+    userPlaceholder:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - prob140.datahub.berkeley.edu
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - prob140.datahub.berkeley.edu
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 24Gi

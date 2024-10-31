@@ -1,0 +1,89 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.185.238.42
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+
+  hub:
+    extraConfig:
+      # Use 1x-<title> in `common.yaml` extraConfig values.
+      # We want these to come *after* the extraConfig values
+      # in `values.yaml`. Since these are ordered alphabetically,
+      # 1x-<title> used in `common.yaml` will come after
+      # 0x-<title> used in `values.yaml` - so config set here
+      # will override config set in `values.yaml`
+      11-working-dir: |
+        # Rocker based images have 'rstudio' as user $1000
+        # so let's stick to that, and use /home/${NB_USER}
+        # consistently.
+        c.KubeSpawner.working_dir = '/home/rstudio'
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2024-05-08
+    config:
+    loadRoles:
+      # datahub staff
+      datahub-staff:
+        description: Enable admin for datahub staff
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - admin:groups
+          - admin:users
+          - admin:servers
+          - read:roles
+          - read:hub
+          - access:servers
+        # this role will be assigned to...
+        groups:
+          - course::1524699::group::all-admins
+
+      # ischool admins
+      ischool-admins:
+        description: Enable departmental folks to view and access all servers.
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - list:users
+          - admin:servers
+          - access:servers
+        # this role will be assigned to...
+        groups:
+          # https://github.com/berkeley-dsep-infra/datahub/issues/2462
+          - course::1524699::group::ischool-admins
+
+  singleuser:
+    extraFiles:
+      # DH-305
+      remove-exporters:
+        mountPath: /etc/jupyter/jupyter_notebook_config.py
+        stringData: |
+          c.QtPDFExporter.enabled = False
+          c.QtPNGExporter.enabled = False
+          c.WebPDFExporter.embed_images = True
+    extraEnv:
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+    defaultUrl: /lab
+    nodeSelector:
+      hub.jupyter.org/pool-name: ischool-pool
+    storage:
+      # Rocker based images have 'rstudio' as user $1000
+      # so let's stick to that, and use /home/${NB_USER}
+      # consistently.
+      homeMountPath: /home/rstudio
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+    memory:
+      guarantee: 1G
+      limit: 2G

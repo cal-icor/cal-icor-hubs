@@ -1,0 +1,139 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.36.155.10
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+      resources:
+        requests:
+          # FIXME: We want no guarantees here!!!
+          # This is lowest possible value
+          cpu: 0.001
+          memory: 3Gi
+        limits:
+          memory: 3Gi
+
+  hub:
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2024-05-08
+    config:
+    loadRoles:
+      # datahub staff
+      datahub-staff:
+        description: Enable admin for datahub staff
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - admin:groups
+          - admin:users
+          - admin:servers
+          - read:roles
+          - read:hub
+          - access:servers
+        # this role will be assigned to...
+        groups:
+          - course::1524699::group::all-admins
+       #Data 100, Summer 2024, https://github.com/berkeley-dsep-infra/datahub/issues/5802
+      course-staff-1535115:
+      #  description: Enable course staff to view and access servers.
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - list:users!group=course::1535115
+          - admin:servers!group=course::1535115
+          - access:servers!group=course::1535115
+        # this role will be assigned to...
+        groups:
+          - course::1535115::group::Admins
+      # Econ 148, Spring 2024, DH-225
+      #course-staff-1532866:
+      #  description: Enable course staff to view and access servers.
+        # this role provides permissions to...
+      #  scopes:
+      #    - admin-ui
+      #    - list:users!group=course::1532866
+      #   - admin:servers!group=course::1532866
+      #    - access:servers!group=course::1532866
+        # this role will be assigned to...
+      #  groups:
+      #   - course::1532866::group::admin
+
+#  prePuller:
+#    extraImages:
+#      postgres:
+#        name: gcr.io/ucb-datahub-2018/jupyterhub-postgres
+#        tag: 0.0.1-n3657.h4f7f88c
+
+  singleuser:
+    extraFiles:
+      # DH-305
+      remove-exporters:
+        mountPath: /etc/jupyter/jupyter_notebook_config.py
+        stringData: |
+          c.QtPDFExporter.enabled = False
+          c.QtPNGExporter.enabled = False
+          c.WebPDFExporter.embed_images = True
+    defaultUrl: "/lab"
+    extraEnv:
+      GH_SCOPED_CREDS_CLIENT_ID: Iv1.f79b4903c7ea2847
+      GH_SCOPED_CREDS_APP_URL: https://github.com/apps/data100-berkeley-datahub-access
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+    nodeSelector:
+      hub.jupyter.org/pool-name: data100-pool
+    storage:
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+      extraVolumeMounts:
+        - name: home
+          mountPath: /home/jovyan/shared
+          subPath: _shared
+          readOnly: true
+    memory:
+      guarantee: 4G
+      limit: 4G
+    image: {}
+
+  custom:
+    group_profiles:
+      # DataHub Infrastructure staff
+      # https://bcourses.berkeley.edu/courses/1524699/groups#tab-80607
+      course::1524699::group::all-admins:
+        admin: true
+        mem_limit: 4G
+
+      # Data C100, Fall 2024, https://github.com/berkeley-dsep-infra/datahub/issues/6316
+      course::1537664::enrollment_type::teacher:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/data100-shared-readwrite
+            subPath: _shared/course/data100-shared-readwrite
+      course::1537664::enrollment_type::ta:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/data100-shared-readwrite
+            subPath: _shared/course/data100-shared-readwrite
+      course::1537664::enrollment_type::student:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/data100-shared
+            subPath: _shared/course/data100-shared
+            readOnly: true
+    admin:
+      mem_guarantee: 2G
+      extraVolumeMounts:
+        - name: home
+          mountPath: /srv/homes
+        - name: home
+          mountPath: /home/jovyan/shared-readwrite
+          subPath: _shared

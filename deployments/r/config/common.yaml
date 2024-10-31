@@ -1,0 +1,101 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.49.181.18
+
+etcGitConfig:
+  enabled: true
+  gitconfig: |
+    [credential "https://github.com"]
+      helper = !git-credential-github-app --app-key-file /etc/github/github-app-private-key.pem --app-id 94386
+      useHttpPath = true
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+  proxy:
+    service:
+      type: ClusterIP
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+    traefik:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+  hub:
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2024-05-08
+    config:
+    loadRoles:
+      # datahub staff
+      datahub-staff:
+        description: Enable admin for datahub staff
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - admin:groups
+          - admin:users
+          - admin:servers
+          - read:roles
+          - read:hub
+          - access:servers
+        # this role will be assigned to...
+        groups:
+          - course::1524699::group::all-admins
+
+  singleuser:
+    extraFiles:
+      # DH-305
+      remove-exporters:
+        mountPath: /etc/jupyter/jupyter_notebook_config.py
+        stringData: |
+          c.QtPDFExporter.enabled = False
+          c.QtPNGExporter.enabled = False
+          c.WebPDFExporter.embed_images = True
+    extraEnv:
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+    nodeSelector:
+      hub.jupyter.org/pool-name: r-pool
+    storage:
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+      extraVolumes:
+        - name: etc-gitconfig
+          secret:
+            secretName: user-etc-gitconfig
+      extraVolumeMounts:
+        - name: etc-gitconfig
+          mountPath: /etc/gitconfig
+          subPath: gitconfig
+          readOnly: true
+        - name: etc-gitconfig
+          mountPath: /etc/github/github-app-private-key.pem
+          subPath: github-app-private-key.pem
+          readOnly: true
+        # RStudio can't write session files to anywhere except ~/.rstudio -
+        # only way to change that is by setting $HOME. So instead, we just
+        # bind mount a fresh directory on top of ~/.rstudio!
+        - name: home
+          mountPath: /home/jovyan/.rstudio
+          subPath: '{username}/.r-hub-rstudio'
+    defaultUrl: "/rstudio"
+    memory:
+      guarantee: 512M
+      limit: 1G
+    image: {}
+
+  custom:
+    group_profiles:
+      # DataHub Infrastructure staff
+      # https://bcourses.berkeley.edu/courses/1524699/groups#tab-80607
+      course::1524699::group::all-admins:
+        mem_limit: 2048M
+        mem_guarantee: 2048M
+      course::1537932: # Data C131A, https://github.com/berkeley-dsep-infra/datahub/issues/6121
+        mem_limit: 2048M
+        mem_guarantee: 2048M

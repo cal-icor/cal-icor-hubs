@@ -1,0 +1,111 @@
+name: Bug Report for Performance Issues
+description: Report performance issues in Datahub
+labels: "support"
+assignees:
+- sknapp
+- felder
+- balajialg
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please refer to the common causes for the performance issues by referring to this documentation - https://ds-modules.github.io/curriculum-guide/workflow/performance_issue.html. If the above mentioned reasons are not the cause for the performance issues in the hub then or you lack clarity about the issue then  please do raise a request by filling the details below:
+  - type: dropdown
+    attributes:
+      label: Your Role
+      description: Mention your affiliation to the course
+      options:
+      - Instructor
+      - GSI/TA
+      - Student
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Affiliated Course Name
+      description: Name of the course for which you are part of the teaching team
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Hub URL
+      description: Hub that you are currently using for teaching/research
+      options:
+        - datahub.berkeley.edu
+        - r.datahub.berkeley.edu
+        - a11y.datahub.berkeley.edu
+        - astro.datahub.berkeley.edu
+        - biology.datahub.berkeley.edu
+        - cee.datahub.berkeley.edu
+        - data100.datahub.berkeley.edu
+        - data101.datahub.berkeley.edu
+        - data102.datahub.berkeley.edu
+        - data8.datahub.berkeley.edu
+        - dlab.datahub.berkeley.edu
+        - eecs.datahub.berkeley.edu
+        - ischool.datahub.berkeley.edu
+        - julia.datahub.berkeley.edu
+        - prob140.datahub.berkeley.edu
+        - publichealth.datahub.berkeley.edu
+        - stat159.datahub.berkeley.edu
+        - stat20.datahub.berkeley.edu
+        - other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: URL to the notebook file (.ipynb, .rmd etc..) with solutions
+      description: Paste the URL to the notebook file with solution. If you have clarity about which cell causes issue then please add info about that too. If the assignment is currently released to students, Email the notebook(s) to ds-infrastructure@lists.berkeley.edu or paste the URL to the private github repository and add @sknapp, @felder, @balajialg as members of the repository
+      value: |
+        - <!--Eg: URL to the notebook file -->
+  - type: textarea
+    attributes:
+      label: How to reproduce
+      description: Steps to reproduce the behavior
+      value: |
+        <!--
+        1. Go to '...'
+        2. Change '....'
+        3. Run '....'
+        4. See error
+        -->
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Number of Impacted Students
+      description: Total number of students affected by this issue
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Severity of the Issue
+      description: Critical, High Priority, Medium Priority and Low Priority
+      options:
+      - Critical
+      - High Priority
+      - Medium Priority
+      - Low Priority
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Issue timeline
+      description: Mention the date/time when this issue occurred
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Snapshots of issue
+      description: Share the snapshots for this issue. If possible, try to erase the student details from the snaspshot
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "Please share the calnet id of 2/3 affected students in the #datahubs channel in UCTech Slack (UCTech.slack.com)"
+  - type: textarea
+    attributes:
+      label: Additional comments
+      description: Anything else you want to share with us? (Deadline to fix these issues, information about students who are having these issues etc..)
+    validations:
+      required: true

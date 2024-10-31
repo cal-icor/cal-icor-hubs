@@ -1,0 +1,86 @@
+project:
+  type: website
+  resources:
+    - "CNAME"
+
+website:
+  navbar:
+    title: "DataHub"
+    search: true
+    logo: datahub.svg
+    background: light
+    tools:
+      - icon: github
+        href: https://github.com/berkeley-dsep-infra/datahub
+    left:
+      - text: "Architecture and contributing"
+        href: admins/pre-reqs.qmd
+      - text: "Admin Tasks"
+        href: tasks/documentation.qmd
+      - text: "Policy"
+        href: policy/create_policy.qmd
+  page-navigation: true
+  sidebar:
+    style: docked
+    collapse-level: 1
+    contents:
+      - href: index.qmd
+        text: Home
+      - href: hubs.qmd
+        text: JupyterHub Deployments
+      - section: "Architecture and Contribution Overview"
+        contents:
+          - admins/pre-reqs.qmd
+          - admins/structure.qmd
+          - admins/cicd-github-actions.qmd
+          - admins/cluster-config.qmd
+          - admins/credentials.qmd
+          - admins/storage.qmd
+      - section: "Common Administrator Tasks"
+        contents:
+          - tasks/documentation.qmd
+          - tasks/dns.qmd
+          - tasks/core-pool.qmd
+          - tasks/new-hub.qmd
+          - tasks/rebuild-hub-image.qmd
+          - tasks/rebuild-postgres-image.qmd
+          - tasks/managing-multiple-user-image-repos.qmd
+          - tasks/new-image.qmd
+          - tasks/transition-image.qmd
+          - tasks/new-packages.qmd
+          - tasks/course-config.qmd
+          - tasks/calendar-scaler.qmd
+          - tasks/prometheus-grafana.qmd
+          - tasks/remove-users-orm.qmd
+          - tasks/delete-hub.qmd
+          - tasks/clusterswitch.qmd
+          - tasks/github-token.qmd
+          - tasks/google-sheets.qmd
+          - tasks/cheatsheet.qmd
+      - section: "Policy"
+        contents:
+          - policy/create_policy.qmd
+          - policy/policy_create_hubs.qmd
+          - policy/policy_deploy_mainhubs.qmd
+          - policy/principles.qmd
+      - href: incidents/index.qmd
+        text: "Incident Reports"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    #title-block-banner: datahub.svg
+    navbar:
+      left:
+        - "UC Berkeley DataHub Documentation"
+      right:
+        - icon: github
+          href: https://github.com/berkeley-dsep-infra/datahub
+    footer:
+      copyright: "2024, Division of Data Sciences Technical Staff"
+      nav:
+        - title: UC Berkeley DataHub
+          url: https://cdss.berkeley.edu/datahub
+        - title: Project Jupyter
+          url: https://jupyter.org

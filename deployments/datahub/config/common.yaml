@@ -1,0 +1,285 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.49.181.18
+
+etcGitConfig:
+  enabled: true
+  gitconfig: |
+    [credential "https://github.com"]
+      helper = !git-credential-github-app --app-key-file /etc/github/github-app-private-key.pem --app-id 94384
+      useHttpPath = true
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+  hub:
+    config:
+      Authenticator:
+        auto_login_oauth2_authorize: True
+    loadRoles:
+      # datahub staff
+      datahub-staff:
+        description: Enable admin for datahub staff
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - admin:groups
+          - admin:users
+          - admin:servers
+          - read:roles
+          - read:hub
+          - access:servers
+        # this role will be assigned to...
+        groups:
+          - course::1524699::group::all-admins
+
+      # Data 6, Summer 2024, https://github.com/berkeley-dsep-infra/datahub/issues/5847
+      course-staff-1535590:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - list:users!group=course::1535590
+          - admin:servers!group=course::1535590
+          - access:servers!group=course::1535590
+      #  # this role will be assigned to...
+        groups:
+          - course::1535590::enrollment_type::teacher
+          - course::1535590::enrollment_type::ta
+
+      # COMPSS 202, Summer 2024, https://github.com/berkeley-dsep-infra/datahub/issues/5861
+      course-staff-1535811:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - list:users!group=course::1535811
+          - admin:servers!group=course::1535811
+          - access:servers!group=course::1535811
+      #  # this role will be assigned to...
+        groups:
+          - course::1535811::enrollment_type::teacher
+          - course::1535811::enrollment_type::ta
+
+      # MBA 247, Fall 2024, https://github.com/berkeley-dsep-infra/datahub/issues/5923
+      course-staff-1536576:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - list:users!group=course::1536576
+          - admin:servers!group=course::1536576
+          - access:servers!group=course::1536576
+      #  # this role will be assigned to...
+        groups:
+          - course::1536576::enrollment_type::teacher
+          - course::1536576::enrollment_type::ta          
+
+      # BIOE C131, Fall 2024, https://github.com/berkeley-dsep-infra/datahub/issues/6139
+      course-staff-1538361:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+        scopes:
+          - list:users!group=course::1538361
+          - admin:servers!group=course::1538361
+          - access:servers!group=course::1538361
+      #  # this role will be assigned to...
+        groups:
+          - course::1538361::enrollment_type::teacher
+          - course::1538361::enrollment_type::ta
+
+      # ER 131, Fall 2024, https://github.com/berkeley-dsep-infra/datahub/issues/6137
+      course-staff-1538017:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+        scopes:
+          - list:users!group=course::1538017
+          - admin:servers!group=course::1538017
+          - access:servers!group=course::1538017
+      #  # this role will be assigned to...
+        groups:
+          - course::1538017::enrollment_type::teacher
+          - course::1538017::enrollment_type::ta
+
+      # ECON 140, Fall 2024, https://github.com/berkeley-dsep-infra/datahub/issues/6153
+      course-staff-1538138:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+        scopes:
+          - list:users!group=course::1538138
+          - admin:servers!group=course::1538138
+          - access:servers!group=course::1538138
+      #  # this role will be assigned to...
+        groups:
+          - course::1538138::enrollment_type::teacher
+          - course::1538138::enrollment_type::ta
+
+      # Data 6, Fall 2024, https://github.com/berkeley-dsep-infra/datahub/issues/6158
+      course-staff-1538010:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+        scopes:
+          - list:users!group=course::1538010
+          - admin:servers!group=course::1538010
+          - access:servers!group=course::1538010
+      #  # this role will be assigned to...
+        groups:
+          - course::1538010::enrollment_type::teacher
+          - course::1538010::enrollment_type::ta
+
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2024-05-08
+    initContainers:
+      # There's another sidecar, specified in `secrets/staging.yaml` and `secrets/prod.yaml`
+      # that keeps this up to date. https://github.com/jupyterhub/kubespawner/issues/468
+      # should help us move that back here.
+      - name: templates-clone
+        image: alpine/git
+        args:
+          - clone
+          - --depth=1
+          - --single-branch
+          - --
+          - https://github.com/berkeley-dsep-infra/datahub-homepage
+          - /srv/repo
+        securityContext:
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+          - name: custom-templates
+            mountPath: /srv/repo
+    extraVolumes:
+      - name: custom-templates
+        emptyDir: {}
+    extraVolumeMounts:
+      - mountPath: /usr/local/share/jupyterhub/custom_templates
+        name: custom-templates
+        subPath: "templates"
+      - mountPath: /usr/local/share/jupyterhub/static/extra-assets
+        name: custom-templates
+        subPath: "extra-assets"
+    extraConfig:
+      04-custom-theme: |
+        c.JupyterHub.template_paths = ['/usr/local/share/jupyterhub/custom_templates/']
+
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+      resources:
+        requests:
+          # FIXME: We want no guarantees here!!!
+          # This is lowest possible value
+          cpu: 0.001
+          memory: 3Gi
+        limits:
+          memory: 3Gi
+
+  singleuser:
+    extraEnv:
+      GH_SCOPED_CREDS_CLIENT_ID: Iv23ct7Qx1mAotaIIYx9
+      GH_SCOPED_CREDS_APP_URL: https://github.com/apps/berkeley-datahub-git-access
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+    nodeSelector:
+      hub.jupyter.org/pool-name: datahub-pool
+    storage:
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+      extraVolumes:
+        - name: etc-gitconfig
+          secret:
+            secretName: user-etc-gitconfig
+      extraVolumeMounts:
+        - name: etc-gitconfig
+          mountPath: /etc/gitconfig
+          subPath: gitconfig
+          readOnly: true
+        - name: etc-gitconfig
+          mountPath: /etc/github/github-app-private-key.pem
+          subPath: github-app-private-key.pem
+          readOnly: true
+        # RStudio can't write session files to anywhere except ~/.rstudio -
+        # only way to change that is by setting $HOME. So instead, we just
+        # bind mount a fresh directory on top of ~/.rstudio!
+        - name: home
+          mountPath: /home/jovyan/.rstudio
+          subPath: '{username}/.datahub-rstudio'
+    extraFiles:
+      # DH-305
+      remove-exporters:
+        mountPath: /etc/jupyter/jupyter_notebook_config.py
+        stringData: |
+          c.QtPDFExporter.enabled = False
+          c.QtPNGExporter.enabled = False
+          c.WebPDFExporter.embed_images = True
+    memory:
+      guarantee: 512M
+      limit: 1G
+    image: {}
+
+  custom:
+    group_profiles:
+      # DataHub Infrastructure staff
+      # https://bcourses.berkeley.edu/courses/1524699/groups#tab-80607
+      course::1524699::group::all-admins:
+        mem_limit: 4096M
+        mem_guarantee: 4096M
+
+      # MBA 247, Fall 2024
+      course::1536576::enrollment_type::teacher:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/mba-247-readwrite
+            subPath: _shared/course/mba-247
+      course::1536576::enrollment_type::ta:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/mba-247-readwrite
+            subPath: _shared/course/mba-247
+      course::1536576::enrollment_type::student:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/mba-247
+            subPath: _shared/course/mba-247
+            readOnly: true
+            
+      # COMPSS 214A, Fall 2024, https://jira-secure.berkeley.edu/browse/DH-311
+      course::1538139::enrollment_type::teacher:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/compss-214a-readwrite
+            subPath: _shared/course/compss-214a
+      course::1538139::enrollment_type::ta:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/compss-214a-readwrite
+            subPath: _shared/course/compss-214a
+      course::1538139::enrollment_type::student:
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/compss-214a
+            subPath: _shared/course/compss-214a
+            readOnly: true
+
+      course::1535590: # Data 6, https://github.com/berkeley-dsep-infra/datahub/issues/5847
+        mem_limit: 2048M
+        mem_guarantee: 2048M
+
+      course::1537045: # ESPM 157, https://github.com/berkeley-dsep-infra/datahub/issues/5914
+        mem_limit: 4096M
+        mem_guarantee: 4096M
+
+      course::1539545: # Demog 213, https://github.com/berkeley-dsep-infra/datahub/issues/6094
+        mem_limit: 4096M
+        mem_guarantee: 4096M
+
+      course::1536576: # MBA 247, https://github.com/berkeley-dsep-infra/datahub/issues/6276
+        mem_limit: 2048M
+        mem_guarantee: 2048M

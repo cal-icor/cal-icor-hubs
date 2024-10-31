@@ -1,0 +1,138 @@
+# add labels for code changes
+python:
+  - '**/*.py'
+R-code:
+  - '**/*.R'
+  - '**/*.r'
+bash:
+  - '**/*.sh'
+  - '**/*.bash'
+  - '**/postBuild'
+dockerfile:
+  - '**/Dockerfile'
+
+# add labels for non-singleuser image config changes
+configuration:
+  - '**/apt.txt'
+  - '**/infra-requirements.txt'
+  - '**/requirements.in'
+  - '**/dev-requirements.txt'
+  - '**/requirements.txt'
+  - '**/runtime.txt'
+  - '**/*.json'
+  - '**/*.yml'
+  - '**/*.yaml'
+
+# catch all singleuser image config changes
+singleuser-image:
+  - 'deployments/**/image/**'
+  - 'deployments/**/images/**'
+
+# changes to hub images
+hub-images:
+  - 'images/**'
+
+# images
+images:
+  - '**/*.png'
+  - '**/*.svg'
+
+# add labels to docs
+documentation:
+  - any: ['**/*.txt',  '!**/apt.txt', '!**/infra-requirements.txt', '!**/requirements.txt', '!**/runtime.txt']
+  - 'docs/**'
+  - '**/*.md'
+  - 'LICENSE'
+
+# add build-infra label to any .github or circleci changes
+build-infra:
+  - '.circleci/**'
+  - any: ['.github/**', '!.github/ISSUE_TEMPLATE/**']
+  - '.gitignore'
+
+issue-templates:
+  - '.github/ISSUE_TEMPLATE/**'
+
+# helm chart infra
+helm-config:
+  - 'chartpress.yaml'
+  - '**/Chart.yaml'
+  - 'support/*.yaml'
+  - 'hub/*.yaml'
+  - 'node-placeholder/*.yaml'
+  - '**/.helmignore'
+
+# support systems
+support-deployment:
+  - 'support/**'
+
+# grafana panel backups
+grafana:
+  - 'vendor/grafana/**'
+
+# jupyterhub deployment
+jupyterhub-deployment:
+  - 'hub/**'
+
+# nodeplaceholder/scaler labels
+node-placeholder-deployment:
+  - 'node-placeholder/**'
+
+node-placeholder-scaler:
+  - 'images/node-placeholder-scaler/**'
+
+# add hub-specific labels for deployment changes
+'hub: a11y':
+  - 'deployments/a11y/**'
+'hub: astro':
+  - 'deployments/astro/**'
+'hub: biology':
+  - 'deployments/biology/**'
+'hub: cee':
+  - 'deployments/cee/**'
+'hub: data100':
+  - 'deployments/data100/**'
+'hub: data101':
+  - 'deployments/data101/**'
+'hub: data102':
+  - 'deployments/data102/**'
+'hub: data8':
+  - 'deployments/data8/**'
+'hub: datahub':
+  - 'deployments/datahub/**'
+'hub: dlab':
+  - 'deployments/dlab/**'
+'hub: dev':
+  - 'deployments/dev/**'
+'hub: edx':
+  - 'deployments/edx/**'
+'hub: eecs':
+  - 'deployments/eecs/**'
+'hub: highschool':
+  - 'deployments/highschool/**'
+'hub: ischool':
+  - 'deployments/ischool/**'
+'hub: julia':
+  - 'deployments/julia/**'
+'hub: logodev':
+  - 'deployments/logodev/**'
+'hub: nature':
+  - 'deployments/nature/**'
+'hub: prob140':
+  - 'deployments/prob140/**'
+'hub: publichealth':
+  - 'deployments/publichealth/**'
+'hub: r':
+  - 'deployments/r/**'
+'hub: shiny':
+  - 'deployments/shiny/**'
+'hub: stat159':
+  - 'deployments/stat159/**'
+'hub: stat20':
+  - 'deployments/stat20/**'
+'hub: ugr01':
+  - 'deployments/ugr01/**'
+'hub: workshop':
+  - 'deployments/workshop/**'
+'hub: gradebook':
+  - 'deployments/gradebook/**'

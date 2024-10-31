@@ -1,0 +1,18 @@
+nfsPVC:
+  nfs:
+    shareName: shares/dlab/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - dlab.datahub.berkeley.edu
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - dlab.datahub.berkeley.edu
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi

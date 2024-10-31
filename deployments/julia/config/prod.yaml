@@ -1,0 +1,18 @@
+nfsPVC:
+  nfs:
+    shareName: shares/julia/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - julia.datahub.berkeley.edu
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - julia.datahub.berkeley.edu
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi

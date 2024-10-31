@@ -1,0 +1,149 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.185.238.42
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2024-05-08
+
+  cull:
+    removeNamedServers: true
+
+  hub:
+    allowNamedServers: true
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2024-05-08
+    config:
+
+    extraConfig:
+      20-hubHome: |
+        # Direct users to named server list
+        c.JupyterHub.default_url = '/hub/home'
+
+    loadRoles:
+      # datahub staff
+      datahub-staff:
+        description: Enable admin for datahub staff
+        # this role provides permissions to...
+        scopes:
+          - admin-ui
+          - admin:groups
+          - admin:users
+          - admin:servers
+          - read:roles
+          - read:hub
+          - access:servers
+        # this role will be assigned to...
+        groups:
+          - course::1524699::group::all-admins
+
+      ## Course NUM, Spring 2024, #xyz
+      #course-staff-N:
+      #  description: Enable course staff to view and access servers.
+      #  # this role provides permissions to...
+      #  scopes:
+      #    - admin-ui
+      #    - list:users!group=course::N
+      #    - admin:servers!group=course::N
+      #    - access:servers!group=course::N
+      #  # this role will be assigned to...
+      #  groups:
+      #    - course::N::enrollment_type::teacher
+      #    - course::N::enrollment_type::ta
+
+  singleuser:
+    extraEnv:
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+
+      # Specify our app for gh-scoped-creds that has read/write scopes
+      GH_SCOPED_CREDS_CLIENT_ID: Iv23ct7Qx1mAotaIIYx9
+      GH_SCOPED_CREDS_APP_URL: https://github.com/apps/berkeley-datahub-git-access
+    defaultUrl: /lab
+    profileList:
+      - display_name: "Dockerfile image"
+        description: "This is the original dev image."
+        default: true
+      - display_name: "Dashboard image"
+        description: "A newer repo2docker-based image with a primary focus of building dashboards."
+        kubespawner_override:
+          image: us-central1-docker.pkg.dev/ucb-datahub-2018/user-images/dev-secondary-image:df11f4f1caa1
+      - display_name: "1524699: DataHub Infrastructure"
+        slug: "1524699"
+        description: "Regular image with per-course subpath."
+        kubespawner_override:
+          volume_mounts:
+            - name: home
+              mountPath: /home/jovyan
+              subPath: "{username}/1524699"
+    nodeSelector:
+      hub.jupyter.org/pool-name: dev-pool
+    storage:
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+    memory:
+      guarantee: 512M
+      limit: 1G
+
+  custom:
+    group_profiles:
+      # DataHub Infrastructure staff
+      # https://bcourses.berkeley.edu/courses/1524699/groups#tab-80607
+      course::1524699::group::all-admins:
+        mem_limit: 12288M
+        mem_guarantee: 12288M
+
+  #
+  #    # Example: increase memory for everyone affiliated with a course.
+  #
+  #    # Name of Class 100, Fall '22; requested in #98765
+  #    course::123456:
+  #      mem_limit: 4096M
+  #      mem_guarantee: 2048M
+  #
+  #    # Example: grant admin rights to course staff.
+  #    # Enrollment types returned by the Canvas API are `teacher`,
+  #    # `student`, `ta`, `observer`, and `designer`.
+  #    # https://canvas.instructure.com/doc/api/enrollments.html
+  #
+  #    # Some other class 200, Spring '23; requested in #98776
+  #    course::234567::enrollment_type::teacher:
+  #      admin: true
+  #      mem_limit: 2096M
+  #      mem_guarantee: 2048M
+  #    course::234567::enrollment_type::ta:
+  #      admin: true
+  #      mem_limit: 2096M
+  #      mem_guarantee: 2048M
+
+      ## Datahub Discovery Program, Summer 2024, #DH-303
+      course::1524699::group::datahub-discovery-su24-interns:
+        mem_limit: 12288M #12 GB RAM should be enough for parsing data and generating dashboards
+        mem_guarantee: 12288M
+        extraVolumeMounts:
+          - name: home
+            mountPath: /home/jovyan/discovery-su24-dataset
+            subPath: _shared/discovery-su24-dataset
+            readOnly: true
+  #
+  #    # Example: a fully specified CanvasOAuthenticator group name.
+  #    # This could be useful for temporary resource bumps where the
+  #    # instructor could add people to groups in the bCourses UI. This
+  #    # would benefit from the ability to read resource bumps from
+  #    # jupyterhub's properties. (attributes in the ORM)
+  #
+  #    # Name of Class 100, Fall '22; requested in #98770
+  #    course::123456::group::lab4-bigdata:
+  #      - mountPath: /home/rstudio/.ssh
+  #        name: home
+  #        subPath: _some_directory/_ssh
+  #        readOnly: true

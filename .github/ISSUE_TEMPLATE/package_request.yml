@@ -1,0 +1,89 @@
+name: Package Addition/Change Request.
+description: Request a package addition / change.  This will take two business days.
+labels: "package-request"
+title: Request python package X for class Y
+assignees:
+  - felder
+  - balajialg
+  - shaneknapp
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please follow the sections in the template and provide all the required information as possible. We assume that, 
+        i) You have installed the requested package in your Datahub instance, 
+        ii) Identified dependencies (if any) required by this package version, and 
+        iii) Raising those dependencies as part of this request (if any).
+  - type: input
+    attributes:
+      label: Package Name
+      description: Which package do you want to get installed?
+      value:
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Package Version
+      description: What is the version of the package?
+      value:
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Hub URL
+      description: Hub that you are currently using for teaching/research
+      options:
+        - datahub.berkeley.edu
+        - r.datahub.berkeley.edu
+        - a11y.datahub.berkeley.edu
+        - astro.datahub.berkeley.edu
+        - biology.datahub.berkeley.edu
+        - cee.datahub.berkeley.edu
+        - data100.datahub.berkeley.edu
+        - data101.datahub.berkeley.edu
+        - data102.datahub.berkeley.edu
+        - data8.datahub.berkeley.edu
+        - dlab.datahub.berkeley.edu
+        - eecs.datahub.berkeley.edu
+        - ischool.datahub.berkeley.edu
+        - julia.datahub.berkeley.edu
+        - prob140.datahub.berkeley.edu
+        - publichealth.datahub.berkeley.edu
+        - stat159.datahub.berkeley.edu
+        - stat20.datahub.berkeley.edu
+        - other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproducible test case
+      description: Please provide instructions to admins by uploading a reproducible test notebook (ipynb, rmd) or a code block (Python/R/Julia)
+        <!-- 1. Click the following notebook URL to Launch server on x.datahub.berkeley.edu URL
+             2. Run cell no. y to execute the code block using the requested package
+             3. You should get the following output to confirm that the package installation worked as expected.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Course Name
+      description: Which class will use this package?
+      value: |
+        <!--Include a link to appropriate entry in https://classes.berkeley.edu/ if available. If not, please mention class name & instructor.-->
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Semester Details
+      description: Which semester will this package be used for?
+      value: |
+        <!-- This helps us clean up unused packages after a term ends.-->
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Installation Deadline
+      description: Which Month/Date(MM/DD) are you looking at to get the package(s) installed?
+      value: |
+        <!-- Any specific date(s) (MM/DD) that we should know about to prioritize this request at our end? -->
+    validations:
+      required: true

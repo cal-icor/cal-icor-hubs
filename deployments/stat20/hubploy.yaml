@@ -1,0 +1,10 @@
+images:
+  image_name: us-central1-docker.pkg.dev/ucb-datahub-2018/user-images/stat20-user-image:130d6247d491
+
+cluster:
+  provider: gcloud
+  gcloud:
+    project: ucb-datahub-2018
+    service_key: gke-key.json
+    cluster: spring-2024
+    zone: us-central1

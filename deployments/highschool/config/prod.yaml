@@ -1,0 +1,18 @@
+nfsPVC:
+  nfs:
+    shareName: shares/highschool/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - highschool.datahub.berkeley.edu
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - highschool.datahub.berkeley.edu
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
