@@ -1,6 +1,6 @@
 charts:
   - name: hub
-    imagePrefix: gcr.io/ucb-datahub-2018/jupyterhub-
+    imagePrefix: us-central1-docker.pkg.dev/cal-icor-hubs/core/jupyterhub-
     images:
       hub:
         valuesPath: jupyterhub.hub.image
@@ -10,7 +10,7 @@ charts:
       # So we need to manually set this, after running chartpress --push
         valuesPath: {}
   - name: node-placeholder
-    imagePrefix: us-central1-docker.pkg.dev/ucb-datahub-2018/core/
+    imagePrefix: us-central1-docker.pkg.dev/cal-icor-hubs/core/
     images:
       node-placeholder-scaler:
         valuesPath: image
