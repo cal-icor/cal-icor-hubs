@@ -2,11 +2,11 @@ imports:
   - path: ../templates/node_pool_template.py
 
 resources:
-  - name: ugr01-node-pool
+  - name: cal-icor-node-pool
     type: ../templates/node_pool_template.py
     properties:
-      poolName: ugr01
-      clusterName: ugresearch-cluster
+      poolName: cal-icor
+      clusterName: cal-icor-cluster
       region: us-central1
       dateSuffix: '2024-07-07'
       initialNodeCount: 1

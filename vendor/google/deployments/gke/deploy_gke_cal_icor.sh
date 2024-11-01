@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # Define variables
-PROJECT_ID="ucb-datahub-2018" # Replace this with your actual GCP project ID
-DEPLOYMENT_NAME="ugr-gke-deployment"
-CONFIG_PATH="./configs/gke_ugresearch.yaml"
+PROJECT_ID="cal-icor-hubs" # Replace this with your actual GCP project ID
+DEPLOYMENT_NAME="ugr-cal-icor-deployment"
+CONFIG_PATH="./configs/gke_cal_icor.yaml"
 
 # Set the GCP project context
 gcloud config set project "$PROJECT_ID"

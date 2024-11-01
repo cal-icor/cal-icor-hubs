@@ -1,6 +1,6 @@
-# UGR Cluster & Hub Deployment
+# Cal-ICOR Cluster & Hub Deployment
 
-This set of templates, configuration files and scripts use the [GCP Cloud Deployment Manager](https://cloud.google.com/deployment-manager/docs) service to deploy and update the undergraduate research GKE cluster and node pools.
+This set of templates, configuration files and scripts use the [GCP Cloud Deployment Manager](https://cloud.google.com/deployment-manager/docs) service to deploy and update the Cal-ICOR GKE cluster and node pools.
 
 The documentation below starts from the highest level -- the Deployment Scripts -- and drills down into the two supporting layers beneath (Configurations, Templates).
 
@@ -26,7 +26,7 @@ gcloud deployment-manager deployments delete "$DEPLOYMENT_NAME"
 Each deployment shell script (above) "knows" its config, e.g.
 
 ```
-CONFIG_PATH="./configs/gke_ugresearch.yaml"
+CONFIG_PATH="./configs/gke_cal_icor.yaml"
 ```
 
 [The yaml file for a templated config](https://cloud.google.com/deployment-manager/docs/configuration/templates/define-template-properties) contains all of the configuration variable values, such as resource names, numbers, sizes, and other parameters; for example,
@@ -62,11 +62,11 @@ Note that this python is run "in the cloud" by the deployment manager service, n
 
 ## Adding a Node Pool
 
-To add a node pool, such as ugr02, create these two files (based on the ugr01 example):
+To add a node pool, such as cal_icor_2, create these two files (based on the ugr01 example):
 
 ```
-.//configs/node_pool_ugr02.yaml
-.//deploy_node_pool_ugr02.sh
+.//configs/node_pool_cal_icor_2.yaml
+.//deploy_node_pool_cal_icor_2.sh
 ```
 
 Edit the yaml config to have the names and properties of your new node pool, and edit the shell script's CONFIG_PATH to reference the new yaml config.
@@ -80,7 +80,7 @@ templates/node_pool_template.py
 Run the shell script to deploy:
 
 ```
-./deploy_node_pool_ugr02.sh
+./deploy_node_pool_cal_icor_2.sh
 ```
 
 ## Change a deployment

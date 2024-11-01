@@ -2,10 +2,10 @@ imports:
   - path: ../templates/gke_template.py
 
 resources:
-  - name: ugresearch-cluster
+  - name: cal-icor-cluster
     type: ../templates/gke_template.py
     properties:
-      clusterName: ugresearch-cluster
+      clusterName: cal-icor-cluster
       region: us-central1
       poolName: core
       dateSuffix: '2024-07-07'
