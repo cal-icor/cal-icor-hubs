@@ -502,10 +502,3 @@ jupyterhub:
               await asyncio.sleep(1)
 
         c.JupyterHub.spawner_class = CustomAttrSpawner
-      02-popularity-contest: |
-        # Emit metrics for which python packages are being imported
-        import os
-        pod_namespace = os.environ['POD_NAMESPACE']
-        c.KubeSpawner.environment.update({
-          'PYTHON_POPCONTEST_STATSD_PREFIX': f'python_popcon.namespace.{pod_namespace}'
-        })
