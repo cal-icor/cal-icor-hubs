@@ -14,4 +14,4 @@ resources:
       diskSizeGb: 100
       machineType: n2-standard-2
       minNodeCount: 1
-      maxNodeCount: 20
+      maxNodeCount: 5
