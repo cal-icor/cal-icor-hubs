@@ -3,8 +3,8 @@ set -euo pipefail
 
 # Define variables
 PROJECT_ID="cal-icor-hubs" # Replace this with your actual GCP project ID
-DEPLOYMENT_NAME="cal-icor-node-pool-deployment"
-CONFIG_PATH="./configs/node_pool_cal_icor.yaml"
+DEPLOYMENT_NAME="user-pool-deployment"
+CONFIG_PATH="./configs/user_pool.yaml"
 
 # Set the GCP project context
 gcloud config set project "$PROJECT_ID"

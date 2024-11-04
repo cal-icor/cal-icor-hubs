@@ -5,10 +5,10 @@ resources:
   - name: cal-icor-cluster
     type: ../templates/gke_template.py
     properties:
-      clusterName: cal-icor-cluster
+      clusterName: cal-icor-spring-2025
       region: us-central1
       poolName: core
-      dateSuffix: '2024-07-07'
+      dateSuffix: '2024-11-04'
       nodeLocation: us-central1-b
       initialNodeCount: 1
       diskSizeGb: 100

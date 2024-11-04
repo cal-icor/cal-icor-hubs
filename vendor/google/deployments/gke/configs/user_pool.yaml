@@ -1,14 +1,14 @@
 imports:
-  - path: ../templates/node_pool_template.py
+  - path: ../templates/user_pool_template.py
 
 resources:
   - name: cal-icor-node-pool
-    type: ../templates/node_pool_template.py
+    type: ../templates/user_pool_template.py
     properties:
       poolName: cal-icor
-      clusterName: cal-icor-cluster
+      clusterName: cal-icor-spring-2025
       region: us-central1
-      dateSuffix: '2024-07-07'
+      dateSuffix: '2024-11-04'
       initialNodeCount: 1
       diskSizeGb: 100
       machineType: n2-standard-2
