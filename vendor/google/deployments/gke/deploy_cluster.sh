@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Define variables
 PROJECT_ID="cal-icor-hubs" # Replace this with your actual GCP project ID
-DEPLOYMENT_NAME="cal-icor-deployment"
+DEPLOYMENT_NAME="cal-icor-cluster-deployment"
 CONFIG_PATH="./configs/cluster_config.yaml"
 
 # Set the GCP project context
