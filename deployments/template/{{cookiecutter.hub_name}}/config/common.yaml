@@ -18,9 +18,9 @@ jupyterhub:
       hub.jupyter.org/pool-name: core-pool-2024-05-08
     config:
     loadRoles:
-      # datahub staff
-      datahub-staff:
-        description: Enable admin for datahub staff
+      # cal-icor staff
+      cal-icor-staff:
+        description: Enable admin for cal-icor staff
         # this role provides permissions to...
         scopes:
           - admin-ui

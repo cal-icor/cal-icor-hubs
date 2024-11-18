@@ -42,8 +42,8 @@ ingress-nginx:
         cpu: 0.2
         memory: 384Mi
     service:
-      # this IP is the wildcard DNS record for datahub.b.e
-      loadBalancerIP: 35.184.243.160
+      # this IP is the wildcard DNS record for jupyter.cal-icor.org
+      loadBalancerIP: #TBD
     metrics:
       enabled: true
     podAnnotations:

@@ -73,7 +73,7 @@ jupyterhub:
     https:
       enabled: true
       letsencrypt:
-        contactEmail: datahub-support@berkeley.edu
+        contactEmail: cal-icor-support@berkeley.edu
   singleuser:
     cmd:
       # Explicitly define this, as it's no longer set by z2jh
@@ -178,7 +178,7 @@ jupyterhub:
         name: user
         scopes:
         # Allow all users access to 'services', which include the hubs that
-        # use the main datahub for auth
+        # use the main hub for auth
           - access:services
           - self
 
@@ -188,7 +188,7 @@ jupyterhub:
         default_per_page: 30000
         max_per_page: 30000
       JupyterHub:
-        authenticator_class: # commented out from datahub config:  canvasoauthenticator.CanvasOAuthenticator
+        authenticator_class:
         # Allow unauthenticated prometheus requests
         # Otherwise our prometheus server can't get to these
         authenticate_prometheus: false
