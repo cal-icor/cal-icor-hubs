@@ -12,8 +12,8 @@ jupyterhub:
   ingress:
     enabled: true
     hosts:
-      - {{cookiecutter.hub_name}}-staging.datahub.berkeley.edu
+      - {{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org
     tls:
       - secretName: tls-cert
         hosts:
-          - {{cookiecutter.hub_name}}-staging.datahub.berkeley.edu
+          - {{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org

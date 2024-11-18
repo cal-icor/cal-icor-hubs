@@ -6,11 +6,11 @@ jupyterhub:
   ingress:
     enabled: true
     hosts:
-      - {{cookiecutter.hub_name}}.datahub.berkeley.edu
+      - {{cookiecutter.hub_name}}.jupyter.cal-icor.org
     tls:
       - secretName: tls-cert
         hosts:
-          - {{cookiecutter.hub_name}}.datahub.berkeley.edu
+          - {{cookiecutter.hub_name}}.jupyter.cal-icor.org
   hub:
     db:
       pvc:
