@@ -1,0 +1,19 @@
+nfsPVC:
+  nfs:
+    shareName: {{cookiecutter.hub_filestore_share}}/{{cookiecutter.hub_name}}/staging
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - {{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - {{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org

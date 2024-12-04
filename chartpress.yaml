@@ -1,0 +1,16 @@
+charts:
+  - name: hub
+    imagePrefix: us-central1-docker.pkg.dev/cal-icor-hubs/core/jupyterhub-
+    images:
+      hub:
+        valuesPath: jupyterhub.hub.image
+      postgres:
+      # FIXME: This should be used *only with the common.yaml of data100hub
+      # There's no way to tell Chartpress to do that now, since it overwrites values.yaml
+      # So we need to manually set this, after running chartpress --push
+        valuesPath: {}
+  - name: node-placeholder
+    imagePrefix: us-central1-docker.pkg.dev/cal-icor-hubs/core/
+    images:
+      node-placeholder-scaler:
+        valuesPath: image

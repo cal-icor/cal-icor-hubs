@@ -1,0 +1,18 @@
+nfsPVC:
+  nfs:
+    shareName: {{cookiecutter.hub_filestore_share}}/{{cookiecutter.hub_name}}/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - {{cookiecutter.hub_name}}.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - {{cookiecutter.hub_name}}.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi

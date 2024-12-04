@@ -1,0 +1,9 @@
+{
+    "hub_name": "dns-valid-hub-name",
+    "project_name": "cal-icor-hubs",
+    "cluster_name": "spring-2025",
+    "pool_name": "name-of-the-pool",
+    "hub_filestore_share": "shares",
+    "hub_filestore_ip": "ip-address-of-fileshare-instance",
+    "hub_filestore_capacity": "desired-capacity"
+}
