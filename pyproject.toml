@@ -6,5 +6,5 @@ target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
 profile = "black"
 
 [tool.codespell]
-skip = '.git,*.pdf,*.svg,vendor/grafana/dashboards/*,deployments/*/secrets/*'
+skip = '.git,*.pdf,*.svg,deployments/*/secrets/*'
 ignore-words-list = 'demog,wasn'
