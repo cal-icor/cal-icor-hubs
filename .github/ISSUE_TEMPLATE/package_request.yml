@@ -1,0 +1,63 @@
+name: Package Addition/Change Request.
+description: Request a package addition / change.  This will take two business days.
+labels: "package-request"
+title: Request python package X for hub Y
+assignees:
+  - sean-morris
+  - shaneknapp
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please follow the sections in the template and provide all the required information as possible. We assume that, 
+        i) You have installed the requested package in your Jupyterhub instance, 
+        ii) Identified dependencies (if any) required by this package version, and 
+        iii) Raising those dependencies as part of this request (if any).
+  - type: input
+    attributes:
+      label: Package Name
+      description: Which package do you want to get installed?
+      value:
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Package Version
+      description: What is the version of the package?
+      value:
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Hub URL
+      description: Hub that you are currently using for teaching/research
+      options:
+        - base.jupyter.cal-icor.org
+        - other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproducible test case
+      description: Please provide instructions to admins by uploading a reproducible test notebook (ipynb, rmd) or a code block (Python/R/Julia)
+        <!-- 1. Click the following notebook URL to Launch server on x.jupyter.cal-icor.org URL
+             2. Run cell no. y to execute the code block using the requested package
+             3. You should get the following output to confirm that the package installation worked as expected.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Semester Details
+      description: Which semester will this package be used for?
+      value: |
+        <!-- This helps us clean up unused packages after a term ends.-->
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Installation Deadline
+      description: Which Month/Date(MM/DD) are you looking at to get the package(s) installed?
+      value: |
+        <!-- Any specific date(s) (MM/DD) that we should know about to prioritize this request at our end? -->
+    validations:
+      required: true

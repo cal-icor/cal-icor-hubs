@@ -1,0 +1,193 @@
+cert-manager:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool
+  cainjector:
+    nodeSelector:
+      hub.jupyter.org/pool-name: support-pool
+  webhook:
+    nodeSelector:
+      hub.jupyter.org/pool-name: support-pool
+  # # Our cluster-internal DNS seems to cache aggressively in
+  # # some cases. The cache is also more likely to be warm,
+  # # causing issues when cert-manager tries to verify
+  # # that the ACME http-01 challenge will succeed. Since
+  # # Let's encrypt itself isn't going to use our cluster-local
+  # # DNS, this causes false negatives - cert-manager thinks the
+  # # challenge will fail, but in reality it will most likely not.
+  # podDnsPolicy: None
+  # podDnsConfig:
+  #   nameservers:
+  #     - 1.1.1.1
+  #     - 8.8.8.8
+ingress-nginx:
+  controller:
+    config:
+      # Let's preserve ability to have HTTP pages served under *.jupyter.cal-icor.org
+      # when necessary. Ideally would not be, but I want to preserve that option.
+      hsts-include-subdomains: "false"
+      # Increasing these per https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/#websockets
+      # Possibly related to temporary kernel connectivity issues from websocket failures
+      proxy-read-timeout: "7200"
+      proxy-send-timeout: "7200"
+    # Best effort guess on resource needs
+    # We overprovision a little - issues here cause a full cluster outage
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2024-05-08
+    replicaCount: 3
+    resources:
+      limits:
+        cpu: 2
+        memory: 2Gi
+      requests:
+        cpu: 0.2
+        memory: 384Mi
+    service:
+      # this IP is the wildcard DNS record for jupyter.cal-icor.org
+      loadBalancerIP: #TBD
+    metrics:
+      enabled: true
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "10254"
+    podLabels:
+      hub.jupyter.org/network-access-proxy-http: 'true'
+
+prometheus:
+  # We were using network tags to restrict NFS access to just nodes from hub-cluster
+  # However, it turns out packets coming from *pods* are *not* tagged with that, just from the nodes!
+  # I'm guessing this is an intersection of how GKE works? I'm not sure.
+  # Either way, I allowed TCP to port 9100 from 10.0.0.0/8 and it works fine.
+  extraScrapeConfigs: |
+    - job_name: prometheus-nfsd-server
+      static_configs:
+        - targets:
+          - nfsserver-01:9100
+  networkPolicy:
+    enabled: true
+  alertmanager:
+    enabled: false
+  nodeExporter:
+    tolerations:
+      - effect: NoSchedule
+        # Deploy onto user nodes
+        key: hub.jupyter.org_dedicated
+        value: user
+    updateStrategy:
+      type: RollingUpdate
+  pushgateway:
+    enabled: false
+  rbac:
+    create: true
+  # make sure we collect metrics on pods by app/component at least
+  kube-state-metrics:
+    nodeSelector:
+      hub.jupyter.org/pool-name: support-pool
+    metricLabelsAllowlist:
+      - pods=[app,component,hub.jupyter.org/username,app.kubernetes.io/component]
+      - nodes=[*]
+  server:
+    nodeSelector:
+      hub.jupyter.org/pool-name: prometheus-pool
+    resources:
+      # Without this, prometheus can easily starve users
+      requests:
+        cpu: 6
+        memory: 24Gi
+      limits:
+        cpu: 7
+        memory: 48Gi
+    podLabels:
+      # For HTTP access to the hub, to scrape metrics
+      hub.jupyter.org/network-access-hub: 'true'
+    persistentVolume:
+      size: 1000Gi
+      storageClass: ssd
+      existingClaim: prometheus-data-2024-05-15
+    retention: 180d
+    strategy:
+      # Can't really do rolling update, we have a persistent disk attached
+      type: Recreate
+    service:
+      type: ClusterIP
+
+grafana:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool
+  deploymentStrategy:
+    type: Recreate
+
+  persistence:
+    enabled: true
+    storageClassName: standard
+
+  service:
+    type: ClusterIP
+
+  ingress:
+    enabled: true
+    annotations:
+      # Increase timeout for each query made by the grafana frontend to the
+      # grafana backend to 2min, which is the default timeout for prometheus
+      # queries. This also matches the timeout for the dataproxy in grafana,
+      # set under `grafana.ini` below. These two timeouts are set together
+      # to allow prometheus the best chance of executing queries we care about.
+      # See: https://github.com/2i2c-org/infrastructure/pull/2942
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - grafana.jupyter.cal-icor.org
+    tls:
+    - hosts:
+      - grafana.jupyter.cal-icor.org
+      secretName: grafana-https-auto-tls
+
+  grafana.ini:
+    # dataproxy is used to make requests to prometheuses via the backend.
+    # This allows authless access to prometheus server in the same namespace.
+    dataproxy:
+      # See: https://github.com/2i2c-org/infrastructure/pull/2942
+      # Enable logging so we can debug grafana timeouts
+      logging: true
+      # Default prometheus query timeout is 120s, so let's allow grafana to
+      # wait until that much time.
+      # See https://prometheus.io/docs/prometheus/latest/command-line/prometheus/
+      # for default prometheus query timeouts.
+      # Because our grafana is behind an nginx ingress, this should match the
+      # read timeout set above under `ingress.annotations`.
+      timeout: 120
+    server:
+      root_url: https://grafana.jupyter.cal-icor.org/
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: prometheus
+          orgId: 1
+          type: prometheus
+          url: http://support-prometheus-server
+          access: proxy
+          isDefault: true
+          editable: true
+
+prometheus-statsd-exporter:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool
+  service:
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9102"
+
+  statsd:
+    mappingConfig: |-
+      mappings:
+      - match: "python_popcon.namespace.*.library_used.*"
+        name: "python_popcon_library_used"
+        labels:
+          namespace: "$1"
+          library: "$2"
+      - match: "python_popcon.namespace.*.reports"
+        name: "python_popcon_reports"
+        labels:
+          namespace: "$1"

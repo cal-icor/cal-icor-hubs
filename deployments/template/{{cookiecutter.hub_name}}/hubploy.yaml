@@ -1,0 +1,11 @@
+images:
+  images:
+    - name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image:6c7fadd80183
+
+cluster:
+  provider: gcloud
+  gcloud:
+    project: {{cookiecutter.project_name}}
+    service_key: gke-key.json
+    cluster: {{cookiecutter.cluster_name}}
+    zone: us-central1

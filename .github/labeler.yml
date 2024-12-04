@@ -1,0 +1,78 @@
+# add labels for code changes
+python:
+  - '**/*.py'
+R-code:
+  - '**/*.R'
+  - '**/*.r'
+bash:
+  - '**/*.sh'
+  - '**/*.bash'
+  - '**/postBuild'
+dockerfile:
+  - '**/Dockerfile'
+
+# add labels for non-singleuser image config changes
+configuration:
+  - '**/requirements.in'
+  - '**/dev-requirements.txt'
+  - '**/requirements.txt'
+  - '**/runtime.txt'
+  - '**/*.json'
+  - '**/*.yml'
+  - '**/*.yaml'
+
+# changes to hub images
+hub-images:
+  - 'images/**'
+
+# images
+images:
+  - '**/*.png'
+  - '**/*.svg'
+
+# add labels to docs
+documentation:
+  - any: ['**/*.txt',  '!**/apt.txt', '!**/infra-requirements.txt', '!**/requirements.txt', '!**/runtime.txt']
+  - 'docs/**'
+  - '**/*.md'
+  - 'LICENSE'
+
+# add build-infra label to any .github or circleci changes
+build-infra:
+  - any: ['.github/**', '!.github/ISSUE_TEMPLATE/**']
+  - '.gitignore'
+
+issue-templates:
+  - '.github/ISSUE_TEMPLATE/**'
+
+# helm chart infra
+helm-config:
+  - 'chartpress.yaml'
+  - '**/Chart.yaml'
+  - 'support/*.yaml'
+  - 'hub/*.yaml'
+  - 'node-placeholder/*.yaml'
+  - '**/.helmignore'
+
+# support systems
+support-deployment:
+  - 'support/**'
+
+# grafana panel backups
+grafana:
+  - 'vendor/grafana/**'
+
+# jupyterhub deployment
+jupyterhub-deployment:
+  - 'hub/**'
+
+# nodeplaceholder/scaler labels
+node-placeholder-deployment:
+  - 'node-placeholder/**'
+
+node-placeholder-scaler:
+  - 'images/node-placeholder-scaler/**'
+
+# add hub-specific labels for deployment changes
+'hub: base':
+  - 'deployments/base/**'

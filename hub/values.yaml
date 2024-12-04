@@ -1,0 +1,467 @@
+etcGitConfig:
+  enabled: false
+nfsPVC:
+  enabled: true
+
+jupyterhub:
+  prePuller:
+    hook:
+      pullOnlyOnChanges: true
+  ingress:
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: 256m
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      acme.cert-manager.io/http01-edit-in-place: "true"
+  scheduling:
+    podPriority:
+      enabled: true
+      globalDefault: false
+      defaultPriority: 0
+      userPlaceholderPriority: -10
+    userScheduler:
+      enabled: false
+      resources:
+        requests:
+          # FIXME: Just unset this?
+          cpu: 0.01
+          memory: 128Mi
+        limits:
+          memory: 1G
+  proxy:
+    service:
+      type: ClusterIP
+    chp:
+      # testing out a potential fix for the chp leaking ports
+      # https://github.com/jupyterhub/configurable-http-proxy/issues/434
+      # https://github.com/jupyterhub/configurable-http-proxy/issues/434#issuecomment-1924261459
+      # https://github.com/http-party/node-http-proxy/pull/1559
+      # https://github.com/Jimbly/http-proxy-node16/commit/56283e33edfc7aad8c2605dd493da8a196b4371d
+      # https://github.com/consideRatio/configurable-http-proxy/commits/main/
+      # https://jira-secure.berkeley.edu/browse/DH-382 timeouts break stuff
+      #
+      # bump the default ip_local_port_range from "32768 60999" to "10000 65000"
+      # https://z2jh.jupyter.org/en/latest/resources/reference.html#proxy-chp-extrapodspec
+      # https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec
+      #
+      extraPodSpec:
+        securityContext:
+          sysctls:
+          - name: net.ipv4.ip_local_port_range
+            value: "10000 65000"
+      image:
+        tag: 4.6.2
+      # extraCommandLineFlags:
+        # set the timeout and proxyTimeout to 5 seconds
+        # https://github.com/http-party/node-http-proxy?tab=readme-ov-file#options
+        # - "--timeout=5000"
+        # - "--proxy-timeout=5000"
+      resources:
+        requests:
+          # FIXME: We want no guarantees here!!!
+          # This is lowest possible value
+          cpu: 0.001
+          memory: 64Mi
+        limits:
+          memory: 1.5Gi
+    traefik:
+      resources:
+        requests:
+          memory: 96Mi
+        limits:
+          memory: 1Gi
+    https:
+      enabled: true
+      letsencrypt:
+        contactEmail: cal-icor-support@berkeley.edu
+  singleuser:
+    cmd:
+      # Explicitly define this, as it's no longer set by z2jh
+      # https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/2449
+      - jupyterhub-singleuser
+    cpu:
+      # Make sure all users get at least 5% of CPU, so other users can't starve them
+      # so much that they crash
+      guarantee: 0.05
+      # We use CPUs with 8 cores, and want to make sure that a single user can't take
+      # over a node (more than one still can). But we also want to give users the
+      # option of using as much CPU as they need if nobody else is using the node, as
+      # is often the case. 4 seems a reasonable compromise here.
+      limit: 4
+    extraFiles:
+      no-nfs-config:
+        mountPath: /etc/ipython/ipython_kernel_config.json
+        data:
+          HistoryManager:
+            # We do not need to keep around history for IPython, and especially not on NFS
+            enabled: false
+      jupyter_server_config.json:
+        mountPath: /usr/local/etc/jupyter/jupyter_server_config.json
+        data:
+          # Allow JupyterLab to show the 'View -> Show Hidden Files' option
+          # in the menu. Defaults are not changed.
+          # https://github.com/jupyterlab/jupyterlab/issues/11304#issuecomment-945466766
+          ContentsManager:
+            allow_hidden: true
+      culling-config:
+        mountPath: /etc/jupyter/jupyter_notebook_config.json
+        data:
+          NotebookApp:
+            # shutdown the server after no 30 mins of no activity
+            shutdown_no_activity_timeout: 1800
+
+          # if a user leaves a notebook with a running kernel,
+          # the effective idle timeout will typically be CULL_TIMEOUT + CULL_KERNEL_TIMEOUT
+          # as culling the kernel will register activity,
+          # resetting the no_activity timer for the server as a whole
+          MappingKernelManager:
+            # shutdown kernels after 30 mins of no activity
+            cull_idle_timeout: 1800
+            # check for idle kernels this often
+            cull_interval: 60
+            # a kernel with open connections but no activity still counts as idle
+            # this is what allows us to shutdown servers
+            # when people leave a notebook open and wander off
+            cull_connected: true
+          NotebookNotary:
+            # Use memory for notebook notary file to workaround corrupted files on nfs
+            # https://www.sqlite.org/inmemorydb.html
+            # https://github.com/jupyter/jupyter/issues/174
+            # https://github.com/ipython/ipython/issues/9163
+            db_file: ":memory:"
+    extraEnv:
+      SHELL: /bin/bash
+      # until https://github.com/jupyterhub/jupyterhub/pull/3918 or equivalent lands
+      # Also, with jupyter server the 'Control Panel' is not being displayed
+      JUPYTERHUB_SINGLEUSER_APP: "notebook.notebookapp.NotebookApp"
+      # Set RUNTIME_DIR to live under /tmp, as these need not persist across container restarts
+      # This doesn't cause a *lot* of NFS traffic, but does cause *some*
+      JUPYTER_RUNTIME_DIR: /tmp/jupyter-runtime
+    startTimeout: 600 # 10 mins, because sometimes we have too many new nodes coming up together
+    networkPolicy:
+      enabled: true
+      # We enable all outgoing access to the broader internet, but not to private IP ranges
+      # of pods and services inside the cluster
+      egress:
+        # Allow code in hubs to talk to ingress provider, so they can talk to the hub via its
+        # public URL
+        - to:
+            - namespaceSelector:
+                matchLabels:
+                  name: support
+              podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: ingress-nginx
+          ports:
+            - port: 443
+              protocol: TCP
+            - port: 80
+              protocol: TCP
+        - to:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+                except:
+              # Don't allow network access to private IP ranges
+              # Listed in https://datatracker.ietf.org/doc/html/rfc1918
+                  - 10.0.0.0/8
+                  - 172.16.0.0/12
+                  - 192.168.0.0/16
+              # Don't allow network access to the metadata IP
+                  - 169.254.169.254/32
+  hub:
+    # The default of 64 is way too low for us
+    concurrentSpawnLimit: 200
+    loadRoles:
+      # Should use this, not hub.config.JupyterHub.load_roles - that will
+      # override any existing load_roles set by z2jh
+      user-login:
+        name: user
+        scopes:
+        # Allow all users access to 'services', which include the hubs that
+        # use the main hub for auth
+          - access:services
+          - self
+
+    config:
+      Pagination:
+        # Disable pagination completely, since there's no search functionality yet
+        default_per_page: 30000
+        max_per_page: 30000
+      JupyterHub:
+        authenticator_class:
+        # Allow unauthenticated prometheus requests
+        # Otherwise our prometheus server can't get to these
+        authenticate_prometheus: false
+      Authenticator:
+        enable_auth_state: true
+        manage_groups: true
+      OAuthenticator:
+        allow_all: true
+      KubeSpawner:
+        # Make sure working directory is ${HOME}
+        # hubploy has a bug where it unconditionally puts workingdir to be /srv/repo
+        working_dir: '/home/jovyan'
+      #CanvasOAuthenticator:
+      #  canvas_url: https://bcourses.berkeley.edu/
+      #  strip_email_domain: berkeley.edu
+      #  login_service: bCourses
+      #  scope:
+      #    - url:GET|/api/v1/users/:user_id/profile
+      #    - url:GET|/api/v1/users/self/groups
+      #    - url:GET|/api/v1/courses
+      #  username_key: primary_email
+
+    # Generated by chartpress
+    image:
+      name:
+      tag:
+    networkPolicy:
+      enabled: true
+      # interNamespaceAccessLabels=accept makes the hub pod's associated
+      # NetworkPolicy accept ingress from pods in other namespaces that has a
+      # hub.jupyter.org/network-access-hub=true label.
+      #
+      # ref: https://z2jh.jupyter.org/en/stable/resources/reference.html#hub-networkpolicy-internamespaceaccesslabels
+      # ref: https://github.com/2i2c-org/infrastructure/pull/2648
+      #
+      interNamespaceAccessLabels: accept
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: support
+              podSelector:
+                matchLabels:
+                  app: prometheus
+                  component: server
+          ports:
+            - port: http
+              protocol: TCP
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 180
+    resources:
+      requests:
+        # Very small unit, since we don't want any CPU guarantees
+        # FIXME: Can't seem to get this to null?
+        cpu: 0.001
+        memory: 256Mi
+      limits:
+        memory: 2Gi
+    extraEnv:
+      # This is unfortunately still needed by canvas auth
+      # OAUTH2_AUTHORIZE_URL: https://bcourses.berkeley.edu/login/oauth2/auth
+    extraConfig:
+      # Use 0x-<title> in `values.yaml` extraConfig values.
+      # We want these to come *before* the extraConfig values
+      # in `values.yaml`. Since these are ordered alphabetically,
+      # 1x-<title> used in `common.yaml` will come after
+      # 0x-<title> used in `values.yaml` - so config set there
+      # will override config set here.
+      01-custom-attr-spawner: |
+        import asyncio
+        import os
+        import time
+        from kubespawner import KubeSpawner
+        from traitlets import ( Int, Unicode )
+        import textwrap
+        import z2jh
+
+        hosted_domain = 'cal-icor.org'
+
+        def memparse(val):
+          '''Parse memory for relative comparisons.'''
+          if type(val) != str or len(val) == 0:
+            return val
+          mem = int(val.upper()[0:-1])
+          unit = val[-1]
+          n = {'B':0, 'K':1, 'M':2, 'G':3}[unit]
+          return mem * 1024**n
+
+        def mem_cmp(a, b):
+          '''Compare memory values.'''
+          x = memparse(a)
+          y = memparse(b)
+          return (x > y) - (x < y)
+
+        class CustomAttrSpawner(KubeSpawner):
+          spawn_launcher_delay = Int(
+            0,
+            config=True,
+            help="""
+            Time in seconds to delay a server launch, useful for debugging.  If set to zero,
+            no delay will take place.
+            """
+          )
+
+          spawn_launcher_timer = Int(
+            60,
+            config=True,
+            help="""
+            Time in seconds to wait before injecting a 'please be patient' message to display
+            to the user.
+            """
+          )
+
+          spawn_launcher_timer_frequency = Int(
+            5,
+            config=True,
+            help="""
+            Display the patience message every 5 seconds.
+            """
+          )
+
+          spawn_launcher_timer_message = Unicode(
+            """
+            Server launch is taking longer than expected. Please be patient!
+            """,
+            config=True,
+            help="""
+            The injected 'please be patient' message to display to the user.
+            """
+          )
+
+          def _build_common_labels(self, extra_labels):
+            labels = super()._build_common_labels(extra_labels)
+            # Until https://github.com/jupyterhub/kubespawner/issues/498
+            # is fixed
+            del labels['hub.jupyter.org/username']
+            return labels
+
+          def apply_override(self, override):
+            '''Apply a dictionary of KubeSpawner settings.'''
+            self.volumes += override.get('extraVolumes', [])
+            self.volume_mounts += override.get('extraVolumeMounts', [])
+            self.init_containers += override.get('initContainers', [])
+            # set new mem thresholds if specified are bigger than current
+            if 'mem_limit' in override and \
+            mem_cmp(override['mem_limit'], self.mem_limit) == 1:
+              self.mem_limit = override['mem_limit']
+            if 'mem_guarantee' in override and \
+            mem_cmp(override['mem_guarantee'], self.mem_guarantee) == 1:
+              self.mem_guarantee = override['mem_guarantee']
+            if override.get('admin', False):
+              self.user.admin = override['admin']
+
+          async def start(self):
+            # delay if testing, see
+            # https://github.com/berkeley-dsep-infra/datahub/issues/4237
+            if self.spawn_launcher_delay:
+              await asyncio.sleep(self.spawn_launcher_delay)
+
+            # custom.memory
+            custom_memory = z2jh.get_config('custom.memory', {})
+            for attr, users in custom_memory.items():
+              if self.user.name in users:
+                self.mem_limit = attr
+                self.mem_guarantee = attr
+                break
+
+            # custom.profiles
+            # Apply overrides for specific users.
+            custom_profiles = z2jh.get_config('custom.profiles', {})
+            for profile, override in custom_profiles.items():
+              if 'users' in override and self.user.name in override['users']:
+                self.log.warning(f'using profile {profile}')
+                self.apply_override(override)
+
+            # custom.group_profiles
+            #self.log.info(f'self.user.groups: {self.user.groups}')
+
+            group_profiles = z2jh.get_config('custom.group_profiles', {})
+
+            for group in self.user.groups:
+              # Apply an override for the full group name, if it exists
+              # under group_profiles.
+              if group.name in group_profiles:
+                self.apply_override(group_profiles.get(group.name))
+
+            # custom.admin
+            # This applies overrides for those who have self.user.admin set.
+            custom_admin = z2jh.get_config('custom.admin', {})
+            if custom_admin and self.user.admin:
+              self.apply_override(custom_admin)
+
+            return (await super().start())
+
+          async def progress(self):
+            """
+            This function is reporting back the progress of spawning a pod until
+            self._start_future has fired.
+            This is working with events parsed by the python kubernetes client,
+            and here is the specification of events that is relevant to understand:
+              ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#event-v1-core
+
+            most of this code is directly copied from:
+              https://github.com/jupyterhub/kubespawner/blob/main/kubespawner/spawner.py#L2326
+            adding timer to display a message asking for patience:
+              https://github.com/berkeley-dsep-infra/datahub/issues/3845
+            """
+            if not self.events_enabled:
+              return
+
+            await self._start_watching_events()
+
+            self.log.debug('progress generator: %s', self.pod_name)
+            start_future = self._start_future
+            progress = 0
+            next_event = 0
+            timer = 0
+
+            break_while_loop = False
+            while True:
+              # This logic avoids a race condition. self._start() will be invoked by
+              # self.start() and almost directly set self._start_future. But,
+              # progress() will be invoked via self.start(), so what happen first?
+              # Due to this, the logic below is to avoid making an assumption that
+              # self._start_future was set before this function was called.
+              if start_future is None and self._start_future:
+                start_future = self._start_future
+
+              # Ensure we capture all events by inspecting events a final time
+              # after the start_future signal has fired, we could have been in
+              # .sleep() and missed something.
+              if start_future and start_future.done():
+                break_while_loop = True
+
+              # check the timer, and if we're over 60sec ask the user to be
+              # patient
+              # https://github.com/berkeley-dsep-infra/datahub/issues/3845
+              if timer >= self.spawn_launcher_timer:
+                if timer % self.spawn_launcher_timer_frequency == 0:
+                  # display only every X seconds
+                  patience_message = textwrap.dedent(self.spawn_launcher_timer_message)
+                  patience_message += " Current time spent waiting: %i seconds" % timer
+                  yield { 'message': patience_message, }
+
+              events = self.events
+              len_events = len(events)
+              if next_event < len_events:
+                for i in range(next_event, len_events):
+                  event = events[i]
+                  # move the progress bar.
+                  # Since we don't know how many events we will get,
+                  # asymptotically approach 90% completion with each event.
+                  # each event gets 33% closer to 90%:
+                  # 30 50 63 72 78 82 84 86 87 88 88 89
+                  progress += (90 - progress) / 3
+
+                  yield {
+                    'progress': int(progress),
+                    'raw_event': event,
+                    'message': "%s [%s] %s"
+                    % (
+                       event["lastTimestamp"] or event["eventTime"],
+                       event["type"],
+                       event["message"],
+                      ),
+                    }
+                next_event = len_events
+
+              if break_while_loop:
+                break
+
+              timer += 1
+              await asyncio.sleep(1)
+
+        c.JupyterHub.spawner_class = CustomAttrSpawner
