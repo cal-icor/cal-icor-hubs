@@ -10,19 +10,11 @@ assignees:
 
 **Which hub do you want more RAM on? Please link the URL to the hub while specifying the hub name**
 
-For example: Datahub (datahub.berkeley,edu), R Hub (r.datahub.berkeley.edu hub), Data 100 Hub (data100.hub.berkeley.edu), EECS hub (eecs.datahub.berkeley.edu), etc
+For example: base-hub (base-hub.jupyter.cal-icor.org), etc
 
 **Which class is this request for?**
 
 For example, "2025 Spring, Robot Studies 101".
-
-**What is the Academic Guide URL for this class?**
-
-For example, https://classes.berkeley.edu/content/2025-spring-robot-101-001-lec-001
-
-**What is the bCourses URL for this class?**
-
-For example, https://bcourses.berkeley.edu/courses/9876543
 
 **How many students do you expect in this class?**
 

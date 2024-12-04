@@ -1,17 +1,16 @@
 name: Package Addition/Change Request.
 description: Request a package addition / change.  This will take two business days.
 labels: "package-request"
-title: Request python package X for class Y
+title: Request python package X for hub Y
 assignees:
-  - felder
-  - balajialg
+  - sean-morris
   - shaneknapp
 body:
   - type: markdown
     attributes:
       value: |
         Please follow the sections in the template and provide all the required information as possible. We assume that, 
-        i) You have installed the requested package in your Datahub instance, 
+        i) You have installed the requested package in your Jupyterhub instance, 
         ii) Identified dependencies (if any) required by this package version, and 
         iii) Raising those dependencies as part of this request (if any).
   - type: input
@@ -33,24 +32,7 @@ body:
       label: Hub URL
       description: Hub that you are currently using for teaching/research
       options:
-        - datahub.berkeley.edu
-        - r.datahub.berkeley.edu
-        - a11y.datahub.berkeley.edu
-        - astro.datahub.berkeley.edu
-        - biology.datahub.berkeley.edu
-        - cee.datahub.berkeley.edu
-        - data100.datahub.berkeley.edu
-        - data101.datahub.berkeley.edu
-        - data102.datahub.berkeley.edu
-        - data8.datahub.berkeley.edu
-        - dlab.datahub.berkeley.edu
-        - eecs.datahub.berkeley.edu
-        - ischool.datahub.berkeley.edu
-        - julia.datahub.berkeley.edu
-        - prob140.datahub.berkeley.edu
-        - publichealth.datahub.berkeley.edu
-        - stat159.datahub.berkeley.edu
-        - stat20.datahub.berkeley.edu
+        - base-hub.jupyter.cal-icor.org
         - other
     validations:
       required: true
@@ -58,17 +40,9 @@ body:
     attributes:
       label: Reproducible test case
       description: Please provide instructions to admins by uploading a reproducible test notebook (ipynb, rmd) or a code block (Python/R/Julia)
-        <!-- 1. Click the following notebook URL to Launch server on x.datahub.berkeley.edu URL
+        <!-- 1. Click the following notebook URL to Launch server on x.jupyter.cal-icor.org URL
              2. Run cell no. y to execute the code block using the requested package
              3. You should get the following output to confirm that the package installation worked as expected.
-    validations:
-      required: true
-  - type: textarea
-    attributes:
-      label: Course Name
-      description: Which class will use this package?
-      value: |
-        <!--Include a link to appropriate entry in https://classes.berkeley.edu/ if available. If not, please mention class name & instructor.-->
     validations:
       required: true
   - type: input
