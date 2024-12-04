@@ -70,8 +70,8 @@ $ git remote add origin git@github.com:<your github username>/cal-icor-hubs.git
 $ git remote -v
 origin	git@github.com:<your github username>/cal-icor-hubs.git (fetch)
 origin	git@github.com:<your github username>/cal-icor-hubs.git (push)
-upstream	git@github.com:berkeley-dsep-infra/cal-icor-hubs.git (fetch)
-upstream	git@github.com:berkeley-dsep-infra/cal-icor-hubs.git (push)
+upstream	git@github.com:cal-icor/cal-icor-hubs.git (fetch)
+upstream	git@github.com:cal-icor/cal-icor-hubs.git (push)
 ```
 
 Now you can sync your local repo from `upstream`, and push those changes to your

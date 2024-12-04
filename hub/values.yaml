@@ -250,7 +250,7 @@ jupyterhub:
         memory: 2Gi
     extraEnv:
       # This is unfortunately still needed by canvas auth
-      OAUTH2_AUTHORIZE_URL: https://bcourses.berkeley.edu/login/oauth2/auth
+      # OAUTH2_AUTHORIZE_URL: https://bcourses.berkeley.edu/login/oauth2/auth
     extraConfig:
       # Use 0x-<title> in `values.yaml` extraConfig values.
       # We want these to come *before* the extraConfig values
@@ -267,7 +267,7 @@ jupyterhub:
         import textwrap
         import z2jh
 
-        hosted_domain = 'berkeley.edu'
+        hosted_domain = 'cal-icor.org'
 
         def memparse(val):
           '''Parse memory for relative comparisons.'''
