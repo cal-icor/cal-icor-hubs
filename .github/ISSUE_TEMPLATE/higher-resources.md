@@ -10,7 +10,7 @@ assignees:
 
 **Which hub do you want more RAM on? Please link the URL to the hub while specifying the hub name**
 
-For example: base-hub (base-hub.jupyter.cal-icor.org), etc
+For example: base (base.jupyter.cal-icor.org), etc
 
 **Which class is this request for?**
 

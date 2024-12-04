@@ -32,7 +32,7 @@ body:
       label: Hub URL
       description: Hub that you are currently using for teaching/research
       options:
-        - base-hub.jupyter.cal-icor.org
+        - base.jupyter.cal-icor.org
         - other
     validations:
       required: true
