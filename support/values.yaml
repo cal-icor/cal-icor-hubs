@@ -43,7 +43,7 @@ ingress-nginx:
         memory: 384Mi
     service:
       # this IP is the wildcard DNS record for jupyter.cal-icor.org
-      loadBalancerIP: #TBD
+      loadBalancerIP: 35.238.134.253
     metrics:
       enabled: true
     podAnnotations:
