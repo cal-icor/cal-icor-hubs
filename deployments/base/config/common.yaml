@@ -17,22 +17,22 @@ jupyterhub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool-2024-11-04 
     config:
-    loadRoles:
+    # loadRoles:
       # cal-icor staff
-      cal-icor-staff:
-        description: Enable admin for cal-icor staff
+      # cal-icor-staff:
+        # description: Enable admin for cal-icor staff
         # this role provides permissions to...
-        scopes:
-          - admin-ui
-          - admin:groups
-          - admin:users
-          - admin:servers
-          - read:roles
-          - read:hub
-          - access:servers
+        # scopes:
+        #   - admin-ui
+        #   - admin:groups
+        #   - admin:users
+        #   - admin:servers
+        #   - read:roles
+        #   - read:hub
+        #   - access:servers
         # this role will be assigned to...
-        groups:
-          - course::1524699::group::all-admins
+        # groups:
+        #   - course::1524699::group::all-admins  
   singleuser:
     extraFiles:
       # DH-216
