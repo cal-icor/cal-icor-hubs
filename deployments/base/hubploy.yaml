@@ -1,0 +1,11 @@
+images:
+  images:
+    - name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image:6c7fadd80183
+
+cluster:
+  provider: gcloud
+  gcloud:
+    project: cal-icor-hubs
+    service_key: gke-key.json
+    cluster: spring-2025
+    zone: us-central1

@@ -71,9 +71,9 @@ jupyterhub:
         limits:
           memory: 1Gi
     https:
-      enabled: true
-      letsencrypt:
-        contactEmail: cal-icor-support@berkeley.edu
+      enabled: false
+      # letsencrypt:
+      #   contactEmail: cal-icor-support@berkeley.edu
   singleuser:
     cmd:
       # Explicitly define this, as it's no longer set by z2jh
