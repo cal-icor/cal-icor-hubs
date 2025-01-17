@@ -47,8 +47,8 @@ jupyterhub:
       extraPodSpec:
         securityContext:
           sysctls:
-          - name: net.ipv4.ip_local_port_range
-            value: "10000 65000"
+            - name: net.ipv4.ip_local_port_range
+              value: "10000 65000"
       image:
         tag: 4.6.2
       # extraCommandLineFlags:
