@@ -47,8 +47,8 @@ jupyterhub:
       extraPodSpec:
         securityContext:
           sysctls:
-          - name: net.ipv4.ip_local_port_range
-            value: "10000 65000"
+            - name: net.ipv4.ip_local_port_range
+              value: "10000 65000"
       image:
         tag: 4.6.2
       # extraCommandLineFlags:
@@ -71,9 +71,9 @@ jupyterhub:
         limits:
           memory: 1Gi
     https:
-      enabled: true
-      letsencrypt:
-        contactEmail: cal-icor-support@berkeley.edu
+      enabled: false
+      # letsencrypt:
+      #   contactEmail: cal-icor-support@berkeley.edu
   singleuser:
     cmd:
       # Explicitly define this, as it's no longer set by z2jh
