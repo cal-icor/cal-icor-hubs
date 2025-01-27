@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/base/staging
+    shareName: shares/calicor/staging
 
 jupyterhub:
   scheduling:
