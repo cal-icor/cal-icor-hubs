@@ -1,7 +1,7 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: ip-address-of-fileshare-instance
+    serverIP: 10.95.98.178
 
 jupyterhub:
   scheduling:
