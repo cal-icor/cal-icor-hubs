@@ -5,7 +5,7 @@ resources:
   - name: support-pool
     type: ../templates/support_pool_template.py
     properties:
-      poolName: support
+      poolName: support-pool
       clusterName: cal-icor-spring-2025
       region: us-central1
       dateSuffix: '2024-11-04'
