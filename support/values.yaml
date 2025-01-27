@@ -32,7 +32,7 @@ ingress-nginx:
     # Best effort guess on resource needs
     # We overprovision a little - issues here cause a full cluster outage
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool-2024-05-08
+      hub.jupyter.org/pool-name: core-pool-2024-11-04
     replicaCount: 3
     resources:
       limits:
@@ -178,16 +178,4 @@ prometheus-statsd-exporter:
     annotations:
       prometheus.io/scrape: "true"
       prometheus.io/port: "9102"
-
-  statsd:
-    mappingConfig: |-
-      mappings:
-      - match: "python_popcon.namespace.*.library_used.*"
-        name: "python_popcon_library_used"
-        labels:
-          namespace: "$1"
-          library: "$2"
-      - match: "python_popcon.namespace.*.reports"
-        name: "python_popcon_reports"
-        labels:
-          namespace: "$1"
+ 
