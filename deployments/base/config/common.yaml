@@ -17,6 +17,12 @@ jupyterhub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-2024-11-04 
     config:
+      GitHubOAuthenticator:
+        allowed_organizations:
+          - berkeley-dsep-infra
+          - cal-icor
+        scope:
+          - read:org
     # loadRoles:
       # cal-icor staff
       # cal-icor-staff:
