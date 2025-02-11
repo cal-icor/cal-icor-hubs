@@ -7,15 +7,15 @@ jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: base-pool 
+        hub.jupyter.org/pool-name: base-pool
   proxy:
     chp:
       nodeSelector:
-        hub.jupyter.org/pool-name: base-pool 
+        hub.jupyter.org/pool-name: base-pool
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: base-pool 
+      hub.jupyter.org/pool-name: base-pool
     config:
     # loadRoles:
       # cal-icor staff
