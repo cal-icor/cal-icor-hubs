@@ -1,5 +1,5 @@
 creation_rules:
   - path_regex: deployments/.*/secrets/.*
-    gcp_kms: projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops
+    kms: arn:aws:kms:us-west-2:296062562246:alias/sops
   - path_regex: support/secrets.yaml
-    gcp_kms: projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops
+    kms: arn:aws:kms:us-west-2:296062562246:alias/sops

@@ -1,0 +1,19 @@
+nfsPVC:
+  nfs:
+    shareName: TBD
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - base-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - base-staging.jupyter.cal-icor.org

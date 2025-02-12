@@ -1,0 +1,18 @@
+nfsPVC:
+  nfs:
+    shareName: TBD
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - base.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - base.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi

@@ -1,12 +1,12 @@
 cert-manager:
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool
+    hub.jupyter.org/pool-name: base-pool
   cainjector:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool
+      hub.jupyter.org/pool-name: base-pool
   webhook:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool
+      hub.jupyter.org/pool-name: base-pool
   # # Our cluster-internal DNS seems to cache aggressively in
   # # some cases. The cache is also more likely to be warm,
   # # causing issues when cert-manager tries to verify
@@ -32,7 +32,7 @@ ingress-nginx:
     # Best effort guess on resource needs
     # We overprovision a little - issues here cause a full cluster outage
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool-2024-05-08
+      hub.jupyter.org/pool-name: base-pool
     replicaCount: 3
     resources:
       limits:
@@ -43,7 +43,7 @@ ingress-nginx:
         memory: 384Mi
     service:
       # this IP is the wildcard DNS record for jupyter.cal-icor.org
-      loadBalancerIP: #TBD
+      loadBalancerIP: 35.238.134.253
     metrics:
       enabled: true
     podAnnotations:
@@ -81,13 +81,13 @@ prometheus:
   # make sure we collect metrics on pods by app/component at least
   kube-state-metrics:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool
+      hub.jupyter.org/pool-name: base-pool
     metricLabelsAllowlist:
       - pods=[app,component,hub.jupyter.org/username,app.kubernetes.io/component]
       - nodes=[*]
   server:
     nodeSelector:
-      hub.jupyter.org/pool-name: prometheus-pool
+      hub.jupyter.org/pool-name: base-pool
     resources:
       # Without this, prometheus can easily starve users
       requests:
@@ -112,7 +112,7 @@ prometheus:
 
 grafana:
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool
+    hub.jupyter.org/pool-name: base-pool
   deploymentStrategy:
     type: Recreate
 
@@ -173,21 +173,9 @@ grafana:
 
 prometheus-statsd-exporter:
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool
+    hub.jupyter.org/pool-name: base-pool
   service:
     annotations:
       prometheus.io/scrape: "true"
       prometheus.io/port: "9102"
-
-  statsd:
-    mappingConfig: |-
-      mappings:
-      - match: "python_popcon.namespace.*.library_used.*"
-        name: "python_popcon_library_used"
-        labels:
-          namespace: "$1"
-          library: "$2"
-      - match: "python_popcon.namespace.*.reports"
-        name: "python_popcon_reports"
-        labels:
-          namespace: "$1"
+ 

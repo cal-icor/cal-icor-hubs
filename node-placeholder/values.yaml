@@ -69,7 +69,7 @@ calendarUrl:
 #nodePools:
 #  placeholder:
 #    nodeSelector:
-#      hub.jupyter.org/pool-name: placeholder-pool
+#      hub.jupyter.org/pool-name: base-pool
 #    resources:
 #      requests:
 #        # Some value slightly lower than allocatable RAM on the nodepool
