@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/calicor/prod
+    shareName: TBD
 
 jupyterhub:
   ingress:

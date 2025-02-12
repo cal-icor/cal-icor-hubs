@@ -7,15 +7,15 @@ jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-2024-11-04 
+        hub.jupyter.org/pool-name: core-pool
   proxy:
     chp:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-2024-11-04 
+        hub.jupyter.org/pool-name: core-pool
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: core-2024-11-04 
+      hub.jupyter.org/pool-name: core-pool
     config:
       GitHubOAuthenticator:
         allowed_organizations:
