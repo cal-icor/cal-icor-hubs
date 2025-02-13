@@ -1,5 +1,7 @@
 creation_rules:
   - path_regex: deployments/.*/secrets/.*
-    kms: arn:aws:kms:us-west-2:296062562246:alias/sops
+    kms: arn:aws:kms:us-west-2:296062562246:alias/sops2+arn:aws:iam::296062562246:role/aws-service-role/cks.kms.amazonaws.com/AWSServiceRoleForKeyManagementServiceCustomKeyStores
+    aws_profile: cal-icor-admin
   - path_regex: support/secrets.yaml
-    kms: arn:aws:kms:us-west-2:296062562246:alias/sops
+    kms: arn:aws:kms:us-west-2:296062562246:alias/sops2+arn:aws:iam::296062562246:role/aws-service-role/cks.kms.amazonaws.com/AWSServiceRoleForKeyManagementServiceCustomKeyStores
+    aws_profile: cal-icor-admin
