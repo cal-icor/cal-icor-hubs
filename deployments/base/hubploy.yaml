@@ -3,9 +3,9 @@ images:
     - name: 296062562246.dkr.ecr.us-west-2.amazonaws.com/cal-icor/base-user-image:0304c102b998
 
 cluster:
-  provider: gcloud
-  gcloud:
-    project: cal-icor-hubs
-    service_key: gke-key.json
-    cluster: spring-2025
-    zone: us-central1
+  provider: aws
+  aws:
+    account_id:
+    cluster: cal-icor-jupyterhubs
+    region: us-west-2
+    service_key: eks-key.cfg
