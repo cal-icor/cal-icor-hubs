@@ -1,7 +1,7 @@
-nfsPVC:
-  enabled: true
-  nfs:
-    serverIP: TBD
+#nfsPVC:
+#  enabled: true
+#  nfs:
+#    serverIP: TBD
 
 jupyterhub:
   scheduling:
@@ -53,11 +53,11 @@ jupyterhub:
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
     nodeSelector:
       hub.jupyter.org/pool-name: base-pool
-    storage:
-      type: static
-      static:
-        pvcName: home-nfs-v3
-        subPath: "{username}"
+    #storage:
+    #  type: static
+    #  static:
+    #    pvcName: home-nfs-v3
+    #    subPath: "{username}"
     memory:
       guarantee: 512M
       limit: 1G

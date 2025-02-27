@@ -1,6 +1,6 @@
 charts:
   - name: hub
-    imagePrefix: 296062562246.dkr.ecr.us-west-2.amazonaws.com/cal-icor/
+    imagePrefix: public.ecr.aws/s7x4g6w9/cal-icor/
     images:
       hub:
         valuesPath: jupyterhub.hub.image

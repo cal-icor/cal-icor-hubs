@@ -13,7 +13,7 @@ jupyterhub:
     enabled: true
     hosts:
       - base-staging.jupyter.cal-icor.org
-    tls:
-      - secretName: tls-cert
-        hosts:
-          - base-staging.jupyter.cal-icor.org
+#    tls:
+#      - secretName: tls-cert
+#        hosts:
+#          - base-staging.jupyter.cal-icor.org

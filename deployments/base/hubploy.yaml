@@ -1,6 +1,6 @@
 images:
   images:
-    - name: 296062562246.dkr.ecr.us-west-2.amazonaws.com/cal-icor/base-user-image:0304c102b998
+    - name: public.ecr.aws/s7x4g6w9/cal-icor/base-user-image:4ed1b973f674
 
 cluster:
   provider: aws
