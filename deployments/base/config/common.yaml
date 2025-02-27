@@ -17,12 +17,26 @@ jupyterhub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool
     config:
-      GitHubOAuthenticator:
-        allowed_organizations:
-          - berkeley-dsep-infra
-          - cal-icor
-        scope:
-          - read:org
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - rylo
+          - sknapp
+          - felder
+          - balajialwar
+          - gmerritt
+          - eric_vandusen@berkeley.edu
+          - sean.smorris@berkeley.edu
+      # GitHubOAuthenticator:
+        # allowed_organizations:
+          # - berkeley-dsep-infra
+          # - cal-icor
+        # scope:
+          # - read:org
     # loadRoles:
       # cal-icor staff
       # cal-icor-staff:
