@@ -1,6 +1,6 @@
-nfsPVC:
-  nfs:
-    shareName: TBD
+# nfsPVC:
+#   nfs:
+#     shareName: TBD
 
 jupyterhub:
   scheduling:
