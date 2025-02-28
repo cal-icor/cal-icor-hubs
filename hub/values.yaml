@@ -1,7 +1,7 @@
 etcGitConfig:
   enabled: false
-#nfsPVC:
-#  enabled: true
+nfsPVC:
+  enabled: false
 
 jupyterhub:
   prePuller:
