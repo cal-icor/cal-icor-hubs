@@ -1,0 +1,11 @@
+images:
+  images:
+    - name: public.ecr.aws/s7x4g6w9/cal-icor/base-user-image:4ed1b973f674
+
+cluster:
+  provider: aws
+  aws:
+    account_id:
+    cluster: cal-icor-jupyterhubs
+    region: us-west-2
+    service_key: eks-key.cfg

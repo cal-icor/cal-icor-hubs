@@ -1,22 +1,42 @@
-nfsPVC:
-  enabled: true
-  nfs:
-    serverIP: {{cookiecutter.hub_filestore_ip}}
+#nfsPVC:
+#  enabled: true
+#  nfs:
+#    serverIP: TBD
 
 jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: base-pool
+        hub.jupyter.org/pool-name: core-pool
   proxy:
     chp:
       nodeSelector:
-        hub.jupyter.org/pool-name: base-pool
+        hub.jupyter.org/pool-name: core-pool
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: base-pool
+      hub.jupyter.org/pool-name: core-pool
     config:
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - rylo
+          - sknapp
+          - felder
+          - balajialwar
+          - gmerritt
+          - eric_vandusen@berkeley.edu
+          - sean.smorris@berkeley.edu
+      # GitHubOAuthenticator:
+        # allowed_organizations:
+          # - berkeley-dsep-infra
+          # - cal-icor
+        # scope:
+          # - read:org
     # loadRoles:
       # cal-icor staff
       # cal-icor-staff:
@@ -32,7 +52,7 @@ jupyterhub:
         #   - access:servers
         # this role will be assigned to...
         # groups:
-        #   - course::1524699::group::all-admins
+        #   - course::1524699::group::all-admins  
   singleuser:
     extraFiles:
       # DH-216
@@ -46,12 +66,12 @@ jupyterhub:
       # Unset NotebookApp from hub/values. Necessary for recent lab versions.
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
     nodeSelector:
-      hub.jupyter.org/pool-name: {{cookiecutter.pool_name}}
-    storage:
-      type: static
-      static:
-        pvcName: home-nfs-v3
-        subPath: "{username}"
+      hub.jupyter.org/pool-name: base-pool
+    #storage:
+    #  type: static
+    #  static:
+    #    pvcName: home-nfs-v3
+    #    subPath: "{username}"
     memory:
       guarantee: 512M
       limit: 1G
