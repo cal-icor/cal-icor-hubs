@@ -3,6 +3,12 @@
 #     shareName: TBD
 
 jupyterhub:
+  hub:
+    db:
+      pvc:
+        # prod stores logs, so let's make it big
+        storage: 10Gi
+        storageClassName: gp2
   scheduling:
     userScheduler:
       replicas: 1
