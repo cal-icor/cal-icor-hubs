@@ -7,15 +7,15 @@ jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-pool
-  proxy:
-    chp:
-      nodeSelector:
-        hub.jupyter.org/pool-name: core-pool
+        hub.jupyter.org/pool-name: base-pool
+  # proxy:
+  #   chp:
+  #     nodeSelector:
+  #       hub.jupyter.org/pool-name: base-pool
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool
+      hub.jupyter.org/pool-name: base-pool
     config:
       JupyterHub:
         admin_access: true
@@ -30,7 +30,10 @@ jupyterhub:
           - balajialwar
           - gmerritt
           - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
+          - jonathanferrari@berkeley.edu
+          - fraser@berkeley.edu
       # GitHubOAuthenticator:
         # allowed_organizations:
           # - berkeley-dsep-infra

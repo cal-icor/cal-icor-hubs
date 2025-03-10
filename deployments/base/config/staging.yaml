@@ -15,10 +15,14 @@ jupyterhub:
   prePuller:
     continuous:
       enabled: false
-  ingress:
-    enabled: true
-    hosts:
-      - base-staging.jupyter.cal-icor.org
+  proxy:
+    https:
+      hosts:
+        - base.jupyter.cal-icor.org
+#  ingress:
+#    enabled: true
+#    hosts:
+#     - base.jupyter.cal-icor.org
 #    tls:
 #      - secretName: tls-cert
 #        hosts:
