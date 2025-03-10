@@ -29,6 +29,11 @@ jupyterhub:
           memory: 128Mi
         limits:
           memory: 1G
+  proxy:
+    https:
+      enabled: true
+      letsencrypt:
+        contactEmail: calicor-letsencrypt@berkeley.edu
   # proxy:
   #   service:
   #     type: LoadBalancer

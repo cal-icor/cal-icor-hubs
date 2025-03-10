@@ -17,11 +17,8 @@ jupyterhub:
       enabled: false
   proxy:
     https:
-      enabled: true
       hosts:
         - base.jupyter.cal-icor.org
-      letsencrypt:
-        contactEmail: calicor-letsencrypt@berkeley.edu
 #  ingress:
 #    enabled: true
 #    hosts:
