@@ -32,7 +32,7 @@ images:
 
 # add labels to docs
 documentation:
-  - any: ['**/*.txt',  '!**/apt.txt', '!**/infra-requirements.txt', '!**/requirements.txt', '!**/runtime.txt']
+  - any: ['**/*.txt',  '!**/apt.txt', '!**/dev-requirements.txt', '!**/requirements.txt', '!**/runtime.txt']
   - 'docs/**'
   - '**/*.md'
   - 'LICENSE'

@@ -1,0 +1,29 @@
+# nfsPVC:
+#   nfs:
+#     shareName: TBD
+
+jupyterhub:
+  hub:
+    db:
+      pvc:
+        # prod stores logs, so let's make it big
+        storage: 10Gi
+        storageClassName: gp2
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  proxy:
+    https:
+      hosts:
+        - base.jupyter.cal-icor.org
+#  ingress:
+#    enabled: true
+#    hosts:
+#     - base.jupyter.cal-icor.org
+#    tls:
+#      - secretName: tls-cert
+#        hosts:
+#          - base-staging.jupyter.cal-icor.org
