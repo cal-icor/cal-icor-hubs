@@ -4,6 +4,9 @@ hub/charts
 **/*.lock
 **/*.tgz
 
+# decrypted secrets (pre-commit checks will catch this but this is jsut extra safe
+**/*.dec.*
+
 # vi
 **/*.swp
 
