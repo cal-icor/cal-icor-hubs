@@ -3,6 +3,15 @@
 #     shareName: TBD
 
 jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - base-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - base-staging.jupyter.cal-icor.org
+
   hub:
     db:
       pvc:
@@ -18,12 +27,4 @@ jupyterhub:
   proxy:
     https:
       hosts:
-        - base.jupyter.cal-icor.org
-#  ingress:
-#    enabled: true
-#    hosts:
-#     - base.jupyter.cal-icor.org
-#    tls:
-#      - secretName: tls-cert
-#        hosts:
-#          - base-staging.jupyter.cal-icor.org
+        - base-staging.jupyter.cal-icor.org
