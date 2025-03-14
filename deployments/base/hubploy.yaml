@@ -7,4 +7,4 @@ cluster:
   aws:
     cluster: cal-icor-jupyterhubs
     region: us-west-2
-    service_key: eks-key.cfg
+    service_key: eks-key.yaml
