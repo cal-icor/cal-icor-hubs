@@ -252,7 +252,7 @@ jupyterhub:
         memory: 256Mi
       limits:
         memory: 2Gi
-    extraEnv:
+    # extraEnv:
       # This is unfortunately still needed by canvas auth
       # OAUTH2_AUTHORIZE_URL: https://bcourses.berkeley.edu/login/oauth2/auth
     extraConfig:
