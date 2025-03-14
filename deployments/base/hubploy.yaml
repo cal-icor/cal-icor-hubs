@@ -5,7 +5,6 @@ images:
 cluster:
   provider: aws
   aws:
-    account_id:
     cluster: cal-icor-jupyterhubs
     region: us-west-2
     service_key: eks-key.cfg
