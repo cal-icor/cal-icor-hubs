@@ -1,6 +1,6 @@
 images:
   images:
-    - name: public.ecr.aws/s7x4g6w9/cal-icor/base-user-image:0624e17a9376
+    - name: public.ecr.aws/s7x4g6w9/cal-icor/base-user-image:a4e1b2e1c4f9
 
 cluster:
   provider: aws
