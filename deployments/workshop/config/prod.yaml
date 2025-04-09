@@ -6,16 +6,16 @@ jupyterhub:
   ingress:
     enabled: true
     hosts:
-      - base.jupyter.cal-icor.org
+      - workshop.jupyter.cal-icor.org
     tls:
       - secretName: tls-cert
         hosts:
-          - base-staging.jupyter.cal-icor.org
+          - workshop.jupyter.cal-icor.org
 
   proxy:
     https:
       hosts:
-        - base.jupyter.cal-icor.org
+        - workshop.jupyter.cal-icor.org
   hub:
     db:
       pvc:
