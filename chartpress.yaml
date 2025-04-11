@@ -4,8 +4,8 @@ charts:
     images:
       hub:
         valuesPath: jupyterhub.hub.image
-  # - name: node-placeholder
-  #   imagePrefix: us-central1-docker.pkg.dev/cal-icor-hubs/core/
-  #   images:
-  #     node-placeholder-scaler:
-  #       valuesPath: image
+  - name: node-placeholder
+    imagePrefix: us-central1-docker.pkg.dev/cal-icor-hubs/core/
+    images:
+      node-placeholder-scaler:
+        valuesPath: image
