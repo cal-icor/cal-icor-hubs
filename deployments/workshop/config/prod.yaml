@@ -6,18 +6,26 @@ jupyterhub:
   ingress:
     enabled: true
     hosts:
-      - workshop.jupyter.cal-icor.org
+      - jupyter.cal-icor.org
     tls:
       - secretName: tls-cert
         hosts:
-          - workshop.jupyter.cal-icor.org
-
+          - jupyter.cal-icor.org
   proxy:
     https:
-      hosts:
-        - workshop.jupyter.cal-icor.org
+      enabled: false
   hub:
     db:
       pvc:
         # This also holds logs
-        storage: 4Gi
+        storage: 80Gi
+    resources:
+      requests:
+        # DataHub often takes up a full CPU now, so let's guarantee it at least that
+        cpu: 1
+        memory: 1Gi
+      limits:
+        memory: 2Gi
+  scheduling:
+    userPlaceholder:
+      enabled: false
