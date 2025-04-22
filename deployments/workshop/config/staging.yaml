@@ -18,9 +18,9 @@ jupyterhub:
     hosts:
       - staging.jupyter.cal-icor.org
     tls:
-      - secretName: tls-cert
-        hosts:
-          - staging.jupyter.cal-icor.org
+      - hosts:
+        - staging.jupyter.cal-icor.org
+        secretName: tls-cert
   hub:
     db:
       pvc:
