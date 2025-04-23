@@ -1,6 +1,7 @@
-# nfsPVC:
-#   nfs:
-#     shareName: TBD
+nfsPVC:
+  nfs:
+    shareName: shares/jupyter/staging
+
 jupyterhub:
   scheduling:
     userPlaceholder:
@@ -21,8 +22,3 @@ jupyterhub:
       - hosts:
         - staging.jupyter.cal-icor.org
         secretName: tls-cert
-  hub:
-    db:
-      pvc:
-        # prod stores logs, so let's make it big
-        storage: 10Gi

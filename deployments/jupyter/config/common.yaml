@@ -1,7 +1,7 @@
 nfsPVC:
- enabled: false
-#  nfs:
-#    serverIP: TBD
+ enabled: true
+ nfs:
+   serverIP: 10.5.151.90
 
 jupyterhub:
   scheduling:
@@ -32,6 +32,9 @@ jupyterhub:
         manage_groups: false
         admin_users:
           # infrastructure
+          - denero
+          - denero@berkeley.edu
+          - yijunge
           - rylo
           - sknapp
           - felder
@@ -40,7 +43,9 @@ jupyterhub:
           - eric_vandusen@berkeley.edu
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
+          - sean.smorris
           - jonathanferrari@berkeley.edu
+          - jonathanferrari
           - fraser@berkeley.edu
       # GitHubOAuthenticator:
         # allowed_organizations:
@@ -78,11 +83,11 @@ jupyterhub:
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
     nodeSelector:
       hub.jupyter.org/pool-name: base-pool
-    # storage:
-    #  type: static
-    #  static:
-    #    pvcName: home-nfs
-    #    subPath: "{username}"
+    storage:
+     type: static
+     static:
+       pvcName: home-nfs-v3
+       subPath: "{username}"
     memory:
       guarantee: 512M
       limit: 1G

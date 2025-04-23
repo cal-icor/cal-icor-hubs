@@ -1,6 +1,6 @@
-#nfsPVC:
-#  nfs:
-#    shareName: TBD
+nfsPVC:
+ nfs:
+   shareName: shares/jupyter/prod
 
 jupyterhub:
   ingress:
@@ -8,9 +8,9 @@ jupyterhub:
     hosts:
       - jupyter.cal-icor.org
     tls:
-      - secretName: tls-cert
-        hosts:
-          - jupyter.cal-icor.org
+      - hosts:
+        - jupyter.cal-icor.org
+        secretName: tls-cert
   proxy:
     https:
       enabled: false
