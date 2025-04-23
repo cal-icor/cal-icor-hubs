@@ -75,5 +75,5 @@ node-placeholder-scaler:
   - 'images/node-placeholder-scaler/**'
 
 # add hub-specific labels for deployment changes
-'hub: base':
-  - 'deployments/base/**'
+'hub: jupyter':
+  - 'deployments/jupyter/**'
