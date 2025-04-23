@@ -1,21 +1,29 @@
-#nfsPVC:
-#  enabled: true
-#  nfs:
-#    serverIP: TBD
+nfsPVC:
+ enabled: true
+ nfs:
+   serverIP: 10.5.151.90
 
 jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: base-pool
-  # proxy:
-  #   chp:
-  #     nodeSelector:
-  #       hub.jupyter.org/pool-name: base-pool
+        hub.jupyter.org/pool-name: core-pool
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool
+      resources:
+        requests:
+          # FIXME: We want no guarantees here!!!
+          # This is lowest possible value
+          cpu: 0.001
+          memory: 3Gi
+        limits:
+          memory: 3Gi
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: base-pool
+      hub.jupyter.org/pool-name: core-pool
     config:
       JupyterHub:
         admin_access: true
@@ -24,6 +32,9 @@ jupyterhub:
         manage_groups: false
         admin_users:
           # infrastructure
+          - denero
+          - denero@berkeley.edu
+          - yijunge
           - rylo
           - sknapp
           - felder
@@ -32,7 +43,9 @@ jupyterhub:
           - eric_vandusen@berkeley.edu
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
+          - sean.smorris
           - jonathanferrari@berkeley.edu
+          - jonathanferrari
           - fraser@berkeley.edu
       # GitHubOAuthenticator:
         # allowed_organizations:
@@ -70,11 +83,11 @@ jupyterhub:
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
     nodeSelector:
       hub.jupyter.org/pool-name: base-pool
-    #storage:
-    #  type: static
-    #  static:
-    #    pvcName: home-nfs-v3
-    #    subPath: "{username}"
+    storage:
+     type: static
+     static:
+       pvcName: home-nfs-v3
+       subPath: "{username}"
     memory:
       guarantee: 512M
       limit: 1G

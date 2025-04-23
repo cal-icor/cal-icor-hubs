@@ -1,7 +1,7 @@
 etcGitConfig:
   enabled: false
 nfsPVC:
-  enabled: false
+  enabled: true
 
 jupyterhub:
   prePuller:
@@ -9,11 +9,11 @@ jupyterhub:
       pullOnlyOnChanges: true
   ingress:
     enabled: true
-    #annotations:
-    #  nginx.ingress.kubernetes.io/proxy-body-size: 256m
-    #  kubernetes.io/ingress.class: nginx
-    #  cert-manager.io/cluster-issuer: letsencrypt-prod
-    #  acme.cert-manager.io/http01-edit-in-place: "true"
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: 256m
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      acme.cert-manager.io/http01-edit-in-place: "true"
   scheduling:
     podPriority:
       enabled: true
@@ -30,54 +30,49 @@ jupyterhub:
         limits:
           memory: 1G
   proxy:
+    service:
+      type: ClusterIP
+    chp:
+      # testing out a potential fix for the chp leaking ports
+      # https://github.com/jupyterhub/configurable-http-proxy/issues/434
+      # https://github.com/jupyterhub/configurable-http-proxy/issues/434#issuecomment-1924261459
+      # https://github.com/http-party/node-http-proxy/pull/1559
+      # https://github.com/Jimbly/http-proxy-node16/commit/56283e33edfc7aad8c2605dd493da8a196b4371d
+      # https://github.com/consideRatio/configurable-http-proxy/commits/main/
+      # https://jira-secure.berkeley.edu/browse/DH-382 timeouts break stuff
+      #
+      # bump the default ip_local_port_range from "32768 60999" to "10000 65000"
+      # https://z2jh.jupyter.org/en/latest/resources/reference.html#proxy-chp-extrapodspec
+      # https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec
+      #
+      extraPodSpec:
+        securityContext:
+          sysctls:
+            - name: net.ipv4.ip_local_port_range
+              value: "10000 65000"
+      # extraCommandLineFlags:
+        # set the timeout and proxyTimeout to 5 seconds
+        # https://github.com/http-party/node-http-proxy?tab=readme-ov-file#options
+        # - "--timeout=5000"
+        # - "--proxy-timeout=5000"
+      resources:
+        requests:
+          # FIXME: We want no guarantees here!!!
+          # This is lowest possible value
+          cpu: 0.001
+          memory: 64Mi
+        limits:
+          memory: 1.5Gi
+    traefik:
+      resources:
+        requests:
+          memory: 96Mi
+        limits:
+          memory: 1Gi
     https:
       enabled: true
       letsencrypt:
         contactEmail: calicor-letsencrypt@berkeley.edu
-  # proxy:
-  #   service:
-  #     type: LoadBalancer
-  #   chp:
-  #     # testing out a potential fix for the chp leaking ports
-  #     # https://github.com/jupyterhub/configurable-http-proxy/issues/434
-  #     # https://github.com/jupyterhub/configurable-http-proxy/issues/434#issuecomment-1924261459
-  #     # https://github.com/http-party/node-http-proxy/pull/1559
-  #     # https://github.com/Jimbly/http-proxy-node16/commit/56283e33edfc7aad8c2605dd493da8a196b4371d
-  #     # https://github.com/consideRatio/configurable-http-proxy/commits/main/
-  #     # https://jira-secure.berkeley.edu/browse/DH-382 timeouts break stuff
-  #     #
-  #     # bump the default ip_local_port_range from "32768 60999" to "10000 65000"
-  #     # https://z2jh.jupyter.org/en/latest/resources/reference.html#proxy-chp-extrapodspec
-  #     # https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec
-  #     #
-  #     extraPodSpec:
-  #       securityContext:
-  #         sysctls:
-  #           - name: net.ipv4.ip_local_port_range
-  #             value: "10000 65000"
-  #     # extraCommandLineFlags:
-  #       # set the timeout and proxyTimeout to 5 seconds
-  #       # https://github.com/http-party/node-http-proxy?tab=readme-ov-file#options
-  #       # - "--timeout=5000"
-  #       # - "--proxy-timeout=5000"
-  #     resources:
-  #       requests:
-  #         # FIXME: We want no guarantees here!!!
-  #         # This is lowest possible value
-  #         cpu: 0.001
-  #         memory: 64Mi
-  #       limits:
-  #         memory: 1.5Gi
-  #   traefik:
-  #     resources:
-  #       requests:
-  #         memory: 96Mi
-  #       limits:
-  #         memory: 1Gi
-    # https:
-    #   enabled: true
-    #   letsencrypt:
-    #     contactEmail: calicor-letsencrypt@berkeley.edu
   singleuser:
     cmd:
       # Explicitly define this, as it's no longer set by z2jh
@@ -152,13 +147,13 @@ jupyterhub:
         - to:
             - namespaceSelector:
                 matchLabels:
-                  name: core
+                  name: support
               podSelector:
                 matchLabels:
                   app.kubernetes.io/name: ingress-nginx
           ports:
-            # - port: 443
-            #   protocol: TCP
+            - port: 443
+              protocol: TCP
             - port: 80
               protocol: TCP
         - to:
@@ -192,7 +187,7 @@ jupyterhub:
         default_per_page: 30000
         max_per_page: 30000
       JupyterHub:
-        authenticator_class:
+        authenticator_class: dummy
         # Allow unauthenticated prometheus requests
         # Otherwise our prometheus server can't get to these
         authenticate_prometheus: false
@@ -217,8 +212,8 @@ jupyterhub:
 
     # Generated by chartpress
     image:
-      name: public.ecr.aws/s7x4g6w9/cal-icor/hub
-      tag: 0.0.1-0.dev.git.87.h409a420
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/core/jupyterhub-hub
+      tag: 0.0.1-0.dev.git.117.hb68d4e9
     networkPolicy:
       enabled: true
       # interNamespaceAccessLabels=accept makes the hub pod's associated

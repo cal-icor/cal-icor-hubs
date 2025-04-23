@@ -52,14 +52,6 @@ jobs:
           chmod 755 ${HOME}/bin/sops
           echo "${HOME}/bin" >> $GITHUB_PATH
 
-      - name: Store SOPS secret in a file
-        if: ${{ env.DEPLOY }}
-        run: |
-          cat << EOF > ${HOME}/sops.key
-          ${{ secrets.SOPS_KEY }}
-          EOF
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> $GITHUB_ENV
-
       - name: Install Helm
         if: ${{ env.DEPLOY }}
         run: |
@@ -82,8 +74,6 @@ jobs:
       - name: Deploy node placeholder helm chart
         if: ${{ env.DEPLOY }}
         run: |
-          sops -d -i node-placeholder/secrets.yaml
           helm upgrade \
             --install --wait \
-            --namespace=node-placeholder node-placeholder node-placeholder \
-            -f node-placeholder/secrets.yaml
+            --namespace=node-placeholder node-placeholder node-placeholder
