@@ -52,6 +52,14 @@ jobs:
           chmod 755 ${HOME}/bin/sops
           echo "${HOME}/bin" >> $GITHUB_PATH
 
+      - name: Store SOPS secret in a file
+        if: ${{ env.DEPLOY }}
+        run: |
+          cat << EOF > ${HOME}/sops.key
+          ${{ secrets.SOPS_KEY }}
+          EOF
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> $GITHUB_ENV
+
       - name: Install Helm
         if: ${{ env.DEPLOY }}
         run: |
@@ -69,7 +77,7 @@ jobs:
             --key-file deployments/jupyter/secrets/gke-key.json
           gcloud container clusters \
             --region=us-central1 --project=cal-icor-hubs \
-            get-credentials spring-2024
+            get-credentials spring-2025
 
       - name: Deploy node placeholder helm chart
         if: ${{ env.DEPLOY }}
