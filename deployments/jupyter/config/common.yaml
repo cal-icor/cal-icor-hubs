@@ -89,6 +89,7 @@ jupyterhub:
     #     volumeMounts:
     #       - name: custom-templates
     #         mountPath: /srv/repo
+
   singleuser:
     extraFiles:
       # DH-216
