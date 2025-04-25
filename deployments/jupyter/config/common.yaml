@@ -89,6 +89,20 @@ jupyterhub:
         volumeMounts:
           - name: custom-templates
             mountPath: /srv/repo
+    extraVolumes:
+      - name: custom-templates
+        emptyDir: {}
+    extraVolumeMounts:
+      - mountPath: /usr/local/share/jupyterhub/custom_templates
+        name: custom-templates
+        subPath: "templates"
+      - mountPath: /usr/local/share/jupyterhub/static/extra-assets
+        name: custom-templates
+        subPath: "extra-assets"
+    extraConfig:
+      04-custom-theme: |
+        c.JupyterHub.template_paths = ['/usr/local/share/jupyterhub/custom_templates/']
+
   singleuser:
     extraFiles:
       # DH-216
