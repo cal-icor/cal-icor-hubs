@@ -77,3 +77,4 @@ node-placeholder-scaler:
 # add hub-specific labels for deployment changes
 'hub: jupyter':
   - 'deployments/jupyter/**'
+  - 'deployments/lacc/**'
