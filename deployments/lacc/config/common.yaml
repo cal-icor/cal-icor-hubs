@@ -1,7 +1,7 @@
 nfsPVC:
- enabled: true
- nfs:
-   serverIP: 10.183.114.2
+  enabled: true
+  nfs:
+    serverIP: 10.183.114.2
 
 jupyterhub:
   scheduling:
@@ -12,14 +12,6 @@ jupyterhub:
     chp:
       nodeSelector:
         hub.jupyter.org/pool-name: core-pool
-      resources:
-        requests:
-          # FIXME: We want no guarantees here!!!
-          # This is lowest possible value
-          cpu: 0.001
-          memory: 3Gi
-        limits:
-          memory: 3Gi
 
   hub:
     nodeSelector:
@@ -47,12 +39,7 @@ jupyterhub:
           - jonathanferrari@berkeley.edu
           - jonathanferrari
           - fraser@berkeley.edu
-      # GitHubOAuthenticator:
-        # allowed_organizations:
-          # - berkeley-dsep-infra
-          # - cal-icor
-        # scope:
-          # - read:org
+
     # loadRoles:
       # cal-icor staff
       # cal-icor-staff:
@@ -69,27 +56,6 @@ jupyterhub:
         # this role will be assigned to...
         # groups:
         #   - course::1524699::group::all-admins
-    # initContainers:
-    #   # There's another sidecar, specified in `secrets/staging.yaml` and `secrets/prod.yaml`
-    #   # that keeps this up to date. https://github.com/jupyterhub/kubespawner/issues/468
-    #   # should help us move that back here.
-    #   - name: templates-clone
-    #     image: alpine/git
-    #     args:
-    #       - clone
-    #       - --depth=1
-    #       - --single-branch
-    #       - --
-    #       - https://github.com/cal-icor/jupyter-hub-homepage
-    #       - /srv/repo
-    #     securityContext:
-    #       runAsUser: 1000
-    #       allowPrivilegeEscalation: false
-    #       readOnlyRootFilesystem: true
-    #     volumeMounts:
-    #       - name: custom-templates
-    #         mountPath: /srv/repo
-
   singleuser:
     extraFiles:
       # DH-216
@@ -105,10 +71,10 @@ jupyterhub:
     nodeSelector:
       hub.jupyter.org/pool-name: base-pool
     storage:
-     type: static
-     static:
-       pvcName: home-nfs-v3
-       subPath: "{username}"
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
     memory:
       guarantee: 512M
       limit: 1G
