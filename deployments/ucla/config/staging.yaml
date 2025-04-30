@@ -22,7 +22,7 @@ jupyterhub:
       JupyterHub:
         authenticator_class: cilogon
       CILogonOAuthenticator:
-        oauth_callback_url: https://ucla-staging.cloudbank.2i2c.cloud/hub/oauth_callback
+        oauth_callback_url: https://ucla-staging.jupyter.cal-icor.org/hub/oauth_callback
         allowed_idps:
           hub:urn:mace:incommon:ucla.edu:
             default: true
