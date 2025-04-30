@@ -312,7 +312,7 @@ jupyterhub:
 
           spawn_launcher_timer_message = Unicode(
             """
-            Server launch is taking longer than expected. Please be patient!
+            Server launch is taking longer than expected. Please be patient, the timeout is 300 seconds.
             """,
             config=True,
             help="""
