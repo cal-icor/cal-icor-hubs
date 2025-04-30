@@ -21,7 +21,7 @@ jupyterhub:
         authenticator_class: cilogon
       CILogonOAuthenticator:
         allowed_idps:
-          hub:urn:mace:incommon:ucla.edu:
+          urn:mace:incommon:ucla.edu:
             default: true
             username_derivation:
               username_claim: "email"
