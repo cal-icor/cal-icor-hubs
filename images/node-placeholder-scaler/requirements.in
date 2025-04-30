@@ -3,4 +3,4 @@ DateTime
 ical==5.0.0
 niquests==3.7.2
 ruamel.yaml
-urllib3==2.2.2
+urllib3==2.4.0
