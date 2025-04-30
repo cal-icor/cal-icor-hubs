@@ -19,22 +19,5 @@ jupyterhub:
           - ucla-staging.jupyter.cal-icor.org
   hub:
     config:
-      JupyterHub:
-        authenticator_class: cilogon
       CILogonOAuthenticator:
         oauth_callback_url: https://ucla-staging.jupyter.cal-icor.org/hub/oauth_callback
-        allowed_idps:
-          hub:urn:mace:incommon:ucla.edu:
-            default: true
-            username_derivation:
-              username_claim: "email"
-            allowed_domains:
-              - ucla.edu
-          http://google.com/accounts/o8/id:
-            username_derivation:
-              username_claim: "email"
-      Authenticator:
-        admin_users:
-          - ericvd@berkeley.edu
-          - sean.smorris@berkeley.edu
-          - bwinjum@ucla.edu
