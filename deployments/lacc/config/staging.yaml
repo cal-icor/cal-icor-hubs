@@ -17,3 +17,17 @@ jupyterhub:
       - secretName: tls-cert
         hosts:
           - lacc-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      JupyterHub:
+        authenticator_class: github
+      GitHubOAuthenticator:
+        oauth_callback_url: https://lacc-staging.jupyter.cal-icor.org/hub/oauth_callback
+        allowed_organizations:
+          - LACC-Statistical-Data-Analytics
+        scope:
+          - read:org
+      Authenticator:
+        admin_users:
+          - sean-morris
+          - pineda0021
