@@ -17,3 +17,8 @@ jupyterhub:
       - secretName: tls-cert
         hosts:
           - lacc-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      GitHubOAuthenticator:
+        oauth_callback_url: https://lacc-staging.jupyter.cal-icor.org/hub/oauth_callback
+      
