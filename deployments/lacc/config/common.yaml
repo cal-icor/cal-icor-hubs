@@ -18,27 +18,20 @@ jupyterhub:
       hub.jupyter.org/pool-name: core-pool
     config:
       JupyterHub:
-        admin_access: true
-        authenticator_class: dummy
+        authenticator_class: github
+      GitHubOAuthenticator:
+        allowed_organizations:
+          - LACC-Statistical-Data-Analytics
+        scope:
+          - read:org
       Authenticator:
         manage_groups: false
         admin_users:
           # infrastructure
-          - denero
-          - denero@berkeley.edu
-          - yijunge
-          - rylo
-          - sknapp
-          - felder
-          - balajialwar
-          - gmerritt
-          - eric_vandusen@berkeley.edu
-          - ericvd@berkeley.edu
-          - sean.smorris@berkeley.edu
-          - sean.smorris
-          - jonathanferrari@berkeley.edu
-          - jonathanferrari
-          - fraser@berkeley.edu
+          - shaneknapp
+          - ericvd-ucb
+          - sean-morris
+          - pineda0021
 
     # loadRoles:
       # cal-icor staff
