@@ -18,20 +18,26 @@ jupyterhub:
       hub.jupyter.org/pool-name: core-pool
     config:
       JupyterHub:
-        authenticator_class: github
-      GitHubOAuthenticator:
-        allowed_organizations:
-          - LACC-Statistical-Data-Analytics
-        scope:
-          - read:org
+        authenticator_class: cilogon
+      CILogonOAuthenticator:
+        allowed_idps:
+          urn:mace:incommon:ucla.edu:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allowed_domains:
+              - ucla.edu
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
       Authenticator:
         manage_groups: false
         admin_users:
           # infrastructure
-          - shaneknapp
-          - ericvd-ucb
-          - sean-morris
-          - pineda0021
+          - sknapp@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - bwinjum@ucla.edu
 
     # loadRoles:
       # cal-icor staff

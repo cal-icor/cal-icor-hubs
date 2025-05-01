@@ -16,3 +16,6 @@ jupyterhub:
       pvc:
         # This also holds logs
         storage: 4Gi
+    config:
+      GitHubOAuthenticator:
+        oauth_callback_url: https://lacc.jupyter.cal-icor.org/hub/oauth_callback
