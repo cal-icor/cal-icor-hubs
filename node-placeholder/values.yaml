@@ -4,7 +4,7 @@ image:
   repository: us-central1-docker.pkg.dev/cal-icor-hubs/core/node-placeholder-scaler
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.0.1-0.dev.git.120.h0aed68a"
+  tag: "v0.0.1-0.dev.git.168.h31c5073"
 
 imagePullSecrets: []
 nameOverride: ""
