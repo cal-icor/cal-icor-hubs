@@ -13,8 +13,8 @@ def find_target_channels(namespace, project_id):
         target_channels.append(project_id + "-staging-alert-channel")
     if "prod" in namespace:
         target_channels.append(project_id + "-prod-alert-channel")
-        target_channels.append("Berkeley Datahub - PagerDuty")
-        target_channels.append("ds-infrastructure-email")
+        target_channels.append("Cal-ICOR Alerts")
+        target_channels.append("Cal-ICOR email alerts")
     return target_channels
 
 
