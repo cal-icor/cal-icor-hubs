@@ -1,0 +1,35 @@
+name: Request a new jupyterhub deployment
+description: Request a new jupyterhub deployment
+labels: "support"
+assignees:
+- sean-morris
+- shaneknapp
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide details for the new JupyterHub deployment request. This will help us understand the requirements and expedite the process.
+  - type: textarea
+    attributes:
+      label: Reason for the request
+      description: Please provide a brief description of the reason for this request (e.g, new institution, resource-intensive course, etc.)
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Student Count
+      description: Total number of students/users who will be using this JupyterHub deployment.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Deadline for this request
+      description: When do you want this request to get fulfilled?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional inputs
+      description: Any other additional information we need to know about?
+    validations:
+      required: true
