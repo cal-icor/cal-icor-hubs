@@ -22,6 +22,9 @@ configuration:
   - '**/*.yml'
   - '**/*.yaml'
 
+template:
+  - 'deployments/template/**'
+
 # changes to hub images
 hub-images:
   - 'images/**'
