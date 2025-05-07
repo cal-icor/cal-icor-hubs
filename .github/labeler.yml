@@ -22,6 +22,9 @@ configuration:
   - '**/*.yml'
   - '**/*.yaml'
 
+template:
+  - 'deployments/template/**'
+
 # changes to hub images
 hub-images:
   - 'images/**'
@@ -75,6 +78,8 @@ node-placeholder-scaler:
   - 'images/node-placeholder-scaler/**'
 
 # add hub-specific labels for deployment changes
+'hub: dvc':
+  - 'deployments/dvc/**'
 'hub: jupyter':
   - 'deployments/jupyter/**'
 'hub: lacc':
