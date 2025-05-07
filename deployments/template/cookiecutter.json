@@ -2,8 +2,8 @@
     "hub_name": "dns-valid-hub-name",
     "project_name": "cal-icor-hubs",
     "cluster_name": "spring-2025",
-    "pool_name": "name-of-the-pool",
+    "pool_name": "base-pool",
     "hub_filestore_share": "shares",
-    "hub_filestore_ip": "ip-address-of-fileshare-instance",
-    "hub_filestore_capacity": "desired-capacity"
+    "hub_filestore_ip": "10.183.114.2",
+    "hub_filestore_capacity": "1T"
 }
