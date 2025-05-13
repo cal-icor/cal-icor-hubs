@@ -17,3 +17,7 @@ jupyterhub:
       - secretName: tls-cert
         hosts:
           - dvc-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      CILogonOAuthenticator:
+        oauth_callback_url: https://dvc-staging.jupyter.cal-icor.org/hub/oauth_callback
