@@ -17,29 +17,36 @@ jupyterhub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool
     config:
-      # placeholder for future auth config
       JupyterHub:
-        admin_access: true
-        authenticator_class: dummy
+        authenticator_class: cilogon
+      CILogonOAuthenticator:
+        allowed_idps:
+          http://login.microsoftonline.com/common/oauth2/v2.0/authorize:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allowed_domains:
+              - dvc.edu
+              - 4cd.edu
+              - email.4cd.edu
+              - insite.4cd.edu
+              - losmedanos.edu
+              - contracosta.edu
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
+            allowed_domains:
+              - dvc.edu
       Authenticator:
         manage_groups: false
         admin_users:
-          # infrastructure
-          - denero
-          - denero@berkeley.edu
-          - yijunge
-          - rylo
-          - sknapp
-          - felder
-          - balajialwar
-          - gmerritt
-          - eric_vandusen@berkeley.edu
+          - sknapp@berkeley.edu
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
-          - sean.smorris
-          - jonathanferrari@berkeley.edu
-          - jonathanferrari
-          - fraser@berkeley.edu
+          - namato@dvc.edu
+          - llo@dvc.edu
+          - jazlin.dvc@gmail.com
+          
     # loadRoles:
       # cal-icor staff
       # cal-icor-staff:
