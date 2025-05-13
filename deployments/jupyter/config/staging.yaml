@@ -3,41 +3,6 @@ nfsPVC:
     shareName: shares/jupyter/staging
 
 jupyterhub:
-  hub:
-    initContainers:
-      # There's another sidecar, specified in `secrets/staging.yaml` and `secrets/prod.yaml`
-      # that keeps this up to date. https://github.com/jupyterhub/kubespawner/issues/468
-      # should help us move that back here.
-      - name: templates-clone
-        image: alpine/git
-        args:
-          - clone
-          - --depth=1
-          - --single-branch
-          - --
-          - https://github.com/cal-icor/jupyter-hub-homepage
-          - /srv/repo
-        securityContext:
-          runAsUser: 1000
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-        volumeMounts:
-          - name: custom-templates
-            mountPath: /srv/repo
-    extraVolumes:
-      - name: custom-templates
-        emptyDir: {}
-    extraVolumeMounts:
-      - mountPath: /usr/local/share/jupyterhub/custom_templates
-        name: custom-templates
-        subPath: "templates"
-      - mountPath: /usr/local/share/jupyterhub/static/extra-assets
-        name: custom-templates
-        subPath: "extra-assets"
-    extraConfig:
-      04-custom-theme: |
-        c.JupyterHub.template_paths = ['/usr/local/share/jupyterhub/custom_templates/']
-
   scheduling:
     userPlaceholder:
       enabled: false
