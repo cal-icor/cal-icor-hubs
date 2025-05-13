@@ -3,6 +3,106 @@ nfsPVC:
     shareName: shares/jupyter/staging
 
 jupyterhub:
+  hub:
+    initContainers:
+      - name: templates-clone
+        image: alpine/git:2.40.1
+        command:
+          - /bin/sh
+        args:
+          - -c
+          # Remove the existing repo first if it exists, as otherwise we will
+          # error out when the pod restarts. /srv/extra-templates-dir is an
+          # emptyDir volume, so it is *not* cleaned up when the pod's containers restarts -
+          # only when the pod is deleted and cleaned back up.
+          # We also mount the emptyDir in `/srv/extra-templates-dir` but
+          # clone into a *subdirectory*, as the mount itself is owned by
+          # root, and git freaks out when that is the case. By putting
+          # the repo in a sub directory, we avoid the permission problems.
+          - |
+            rm -rf /srv/extra-templates-dir/repo;
+            git clone ${GIT_REPO_URL} /srv/extra-templates-dir/repo
+        env:
+          - name: GIT_REPO_URL
+            valueFrom:
+              configMapKeyRef:
+                name: hub-custom-templates-config
+                key: GIT_REPO_URL
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+          - name: custom-templates
+            mountPath: /srv/extra-templates-dir
+    extraContainers:
+      - name: templates-sync
+        image: alpine/git:2.40.1
+        workingDir: /srv/extra-templates-dir/repo
+        command:
+          - /bin/sh
+        args:
+          - -c
+          - |
+            handle_sigterm() {
+                echo "SIGTERM received, terminating...";
+                exit;
+            }
+            trap handle_sigterm SIGTERM;
+
+            echo "Starting template sync...";
+
+            echo "";
+            echo "Info about local git repo to be synced:";
+            (
+                # set -x causes commands run to be printed, helping log readers
+                # understand what the generated output is about. set -x is
+                # configured within a subshell to just print info about the
+                # specific chosen commands and avoid printing info about running
+                # "echo", "sleep", "set +x", or similar commands.
+                set -x;
+                git remote -v;
+                ls -lhd /srv/extra-templates-dir/repo;
+            )
+
+            echo "";
+            echo "Syncing local git repo /srv/extra-templates-dir/repo against origin's branch $(GIT_REPO_BRANCH) every 5 minutes...";
+            while true; do
+                git fetch origin;
+                git reset --hard origin/$(GIT_REPO_BRANCH);
+
+                # signal handling can only be done between sleep calls, so this
+                # shouldn't be reduced to the otherwise equivalent "sleep 5m"
+                for i in $(seq 300); do
+                    sleep 1s;
+                done
+            done
+        env:
+          - name: GIT_REPO_BRANCH
+            valueFrom:
+              configMapKeyRef:
+                name: hub-custom-templates-config
+                key: GIT_REPO_BRANCH
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+          - name: custom-templates
+            mountPath: /srv/extra-templates-dir
+    extraVolumes:
+      - name: custom-templates
+        emptyDir: {}
+    extraVolumeMounts:
+      - mountPath: /usr/local/share/jupyterhub/custom_templates
+        name: custom-templates
+        subPath: repo/templates
+      - mountPath: /usr/local/share/jupyterhub/static/extra-assets
+        name: custom-templates
+        subPath: repo/extra-assets
+
   custom:
     homepage:
       gitRepoBranch: "username-and-password-homepage"
