@@ -4,6 +4,16 @@ nfsPVC:
     serverIP: {{cookiecutter.hub_filestore_ip}}
 
 jupyterhub:
+  custom:
+    homepage:
+      # gitRepoBranch: "username-and-password-homepage"
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Some institution
+          logo_url: https://cal-icor.org/assets/logo-trans.png
+          url: https://www.berkeley.edu/
   scheduling:
     userScheduler:
       nodeSelector:
