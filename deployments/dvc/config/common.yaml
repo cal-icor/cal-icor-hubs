@@ -4,6 +4,15 @@ nfsPVC:
     serverIP: 10.183.114.2
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Diablo Valley College
+          logo_url: https://www.dvcinquirer.com/wp-content/uploads/2022/03/dvc-logo-sidebar.png
+          url: https://www.dvc.edu/
   scheduling:
     userScheduler:
       nodeSelector:
