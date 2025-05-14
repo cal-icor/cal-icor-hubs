@@ -4,6 +4,25 @@ nfsPVC:
     serverIP: 10.183.114.2
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        designed_by:
+          name: Cal-ICOR
+          url: https://cal-icor.org
+        funded_by:
+          name: California Learning Lab
+          url: https://callearninglab.org
+        operated_by:
+          name: Cal-ICOR
+          url: https://cal-icor.org
+        org:
+          name: Los Angeles City College
+          logo_url: https://www.lacitycollege.edu/sites/lacc.edu/files/lacc-logo.svg
+          url: https://www.lacitycollege.edu/
+
   scheduling:
     userScheduler:
       nodeSelector:
