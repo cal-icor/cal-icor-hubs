@@ -7,13 +7,13 @@ jupyterhub:
   custom:
     homepage:
       # gitRepoBranch: "username-and-password-homepage"
-      gitRepoBranch: "main"
+      gitRepoBranch: "{{cookiecutter.landing_page_branch}}"
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
-          name: Some institution
-          logo_url: https://cal-icor.org/assets/logo-trans.png
-          url: https://www.berkeley.edu/
+          name: {{cookiecutter.institution}}
+          logo_url: {{cookiecutter.institution_logo_url}}
+          url: {{cookiecutter.institution_url}}
   scheduling:
     userScheduler:
       nodeSelector:

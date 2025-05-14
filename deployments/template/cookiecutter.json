@@ -1,5 +1,9 @@
 {
     "hub_name": "dns-valid-hub-name",
+    "institution": "full-name-of-institution",
+    "institution_url": "https://example.edu",
+    "institution_logo_url": "https://example.edu/logo.png",
+    "landing_page_branch": "main",
     "project_name": "cal-icor-hubs",
     "cluster_name": "spring-2025",
     "pool_name": "base-pool",
