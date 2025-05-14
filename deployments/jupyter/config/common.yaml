@@ -11,18 +11,8 @@ jupyterhub:
       templateVars:
         org:
           name: Cal-ICOR Workshop Hub
-          url: https://cal-icor.org
           logo_url: https://cal-icor.org/assets/logo-trans.png
-        designed_by:
-          name: Cal-ICOR
           url: https://cal-icor.org
-        operated_by:
-          name: Cal-ICOR
-          url: https://cal-icor.org
-        funded_by:
-          name: California Learning Lab
-          url: https://callearninglab.org
-
   scheduling:
     userScheduler:
       nodeSelector:
