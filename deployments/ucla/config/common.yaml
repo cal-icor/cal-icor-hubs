@@ -4,6 +4,15 @@ nfsPVC:
     serverIP: 10.183.114.2
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: UCLA
+          logo_url: https://brand.ucla.edu/images/logos-and-marks/campus-logo.jpg
+          url: https://www.ucla.edu/
   scheduling:
     userScheduler:
       nodeSelector:
