@@ -159,7 +159,7 @@ git push origin <branch name>
 ### Creating a pull request
 
 Once you've pushed to your fork, you can go to the
-[Datahub repo](https://github.com/cal-icor/cal-icor-hubs) and there
+[Cal-ICOR hubs repo](https://github.com/cal-icor/cal-icor-hubs) and there
 should be a big green button on the top that says `Compare and pull request`.
 Click on that, check out the commits and file diffs, edit the title and
 description if needed and then click `Create pull request`.
