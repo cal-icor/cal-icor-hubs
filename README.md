@@ -1,5 +1,7 @@
 # Cal-ICOR JupyterHubs
 
+![Cal-ICOR Logo](https://cal-icor.org/assets/logo-trans.png)
+
 Contains a fully reproducible configuration for JupyterHub for the Cal ICOR deployments.
 
 [Cal ICOR](https://cal-icor.org)
@@ -24,10 +26,14 @@ All user images are located in their own repositories located in the
 find them either by [searching there](https://github.com/orgs/cal-icor/repositories?language=&q=image&sort=&type=all)
 or from links in the deployment's `image/README.md`.
 
+We currently only use one single-user server image,
+[calicor/base](https://github.com/cal-icor/base-user-image). This will likely
+change in the future as we add more images to support different environments.
+
 ## Branches
 
-The `staging` branch always reflects the state of the [staging JupyterHub](https://hub-staging.jupyterhubs.cal-icor.org),
-and the `prod` branch reflects the state of the [production JupyterHub](https://hub.jupyterhubs.cal-icor.org).
+The `staging` branch always reflects the state of the [staging JupyterHub](https://staging.jupyter.cal-icor.org),
+and the `prod` branch reflects the state of the [production JupyterHub](https://jupyter.cal-icor.org).
 
 ## Installing the required python packages for working with datahub
 
