@@ -1,21 +1,39 @@
-# Cal-ICOR JupyterHubs 
+# Cal-ICOR JupyterHubs
+
+![Cal-ICOR Logo](https://cal-icor.org/assets/logo-trans.png)
 
 Contains a fully reproducible configuration for JupyterHub for the Cal ICOR deployments.
 
 [Cal ICOR](https://cal-icor.org)
 
-In partnership with [UC Berkeley CDSS](https://cdss.berkeley.edu)
+In partnership with [UC Berkeley CDSS](https://cdss.berkeley.edu) and the
+[California Learning Lab](https://callearninglab.org/).
+
+This repository contains the Helm chart and configuration files for
+deploying JupyterHub on the Google Cloud Platform (GCP) using
+[Zero to JupyterHub](https://z2jh.jupyter.org/). It is designed to be
+reproducible and easy to use, allowing users to quickly set up and
+configure JupyterHub for their needs.
+
+This deployment is based on the [UC Berkeley DataHub](https://github.com/berkeley-dsep/datahub)
+deployment, which is a JupyterHub deployment used by UC Berkeley students,
+faculty, and staff.
 
 ## Single-user server images
+
 All user images are located in their own repositories located in the
 [Cal ICOR repo](https://github.com/cal-icor).  You can
 find them either by [searching there](https://github.com/orgs/cal-icor/repositories?language=&q=image&sort=&type=all)
 or from links in the deployment's `image/README.md`.
 
+We currently only use one single-user server image,
+[calicor/base](https://github.com/cal-icor/base-user-image). This will likely
+change in the future as we add more images to support different environments.
+
 ## Branches
 
-The `staging` branch always reflects the state of the [staging JupyterHub](https://hub-staging.jupyterhubs.cal-icor.org),
-and the `prod` branch reflects the state of the [production JupyterHub](https://hub.jupyterhubs.cal-icor.org).
+The `staging` branch always reflects the state of the [staging JupyterHub](https://staging.jupyter.cal-icor.org),
+and the `prod` branch reflects the state of the [production JupyterHub](https://jupyter.cal-icor.org).
 
 ## Installing the required python packages for working with datahub
 
@@ -37,7 +55,7 @@ to help ensure no mistakes are committed to the repo.
 After you've installed `dev-requirements.txt`, execute the following two
 commands:
 
-```
+``` bash
 pre-commit install
 pre-commit run --all-files
 ```
@@ -53,30 +71,33 @@ and create a fork.  To do this, click on the `fork` button and then `Create fork
 Now clone this repo on your local device.  You can get the URL to do
 this by clicking on the green `Code` button in the primary Datahub repo (*not* your fork)
 and clicking on `ssh`:
-```
+
+``` bash
 git clone git@github.com:cal-icor/cal-icor-hubs.git
 ```
 
 Now `cd` in to `cal-icor-hubs` and set up your local repo to point both at the primary
 Jupyterhub repo (`upstream`) and your fork (`origin`).  After the initial clone,
 `origin` will be pointing to the main repo and we'll need to change that.
-```
-$ cd datahub
+
+``` bash
+$ cd cal-icor-hubs
 $ git remote -v
-origin	git@github.com:cal-icor/cal-icor-hubs.git (fetch)
-origin	git@github.com:cal-icor/cal-icor-hubs.git (push)
+origin  git@github.com:cal-icor/cal-icor-hubs.git (fetch)
+origin  git@github.com:cal-icor/cal-icor-hubs.git (push)
 $ git remote rename origin upstream
 $ git remote add origin git@github.com:<your github username>/cal-icor-hubs.git
 $ git remote -v
-origin	git@github.com:<your github username>/cal-icor-hubs.git (fetch)
-origin	git@github.com:<your github username>/cal-icor-hubs.git (push)
-upstream	git@github.com:cal-icor/cal-icor-hubs.git (fetch)
-upstream	git@github.com:cal-icor/cal-icor-hubs.git (push)
+origin  git@github.com:<your github username>/cal-icor-hubs.git (fetch)
+origin  git@github.com:<your github username>/cal-icor-hubs.git (push)
+upstream    git@github.com:cal-icor/cal-icor-hubs.git (fetch)
+upstream    git@github.com:cal-icor/cal-icor-hubs.git (push)
 ```
 
 Now you can sync your local repo from `upstream`, and push those changes to your
 fork (`origin`):
-```
+
+``` bash
 git checkout staging && \
 git fetch --prune --all && \
 git rebase upstream/staging && \
@@ -93,7 +114,8 @@ after you last synced with this repo but before you upstreamed your changes.
 ### Syncing your repo
 
 The following commands will sync the local clone of your fork with `upstream`:
-```
+
+``` bash
 git checkout staging && \
 git fetch --prune --all && \
 git rebase upstream/staging && \
@@ -103,7 +125,8 @@ git push origin staging
 ### Creating a feature branch
 
 To create a new feature branch and switch to it, run the following command:
-```
+
+``` bash
 git checkout -b <branch name>
 ```
 
@@ -116,24 +139,27 @@ what's been modified and check out the diffs:  `git status` and `git diff`.
 
 When you're ready to push these changes, first you'll need to stage them for a
 commit:
-```
+
+``` bash
 git add <file1> <file2> <etc>
 ```
 
 Commit these changes locally:
-```
+
+``` bash
 git commit -m "some pithy commit description"
 ```
 
 Now push to your fork:
-```
+
+``` bash
 git push origin <branch name>
 ```
 
 ### Creating a pull request
 
 Once you've pushed to your fork, you can go to the
-[Datahub repo](https://github.com/cal-icor/cal-icor-hubs) and there
+[Cal-ICOR hubs repo](https://github.com/cal-icor/cal-icor-hubs) and there
 should be a big green button on the top that says `Compare and pull request`.
 Click on that, check out the commits and file diffs, edit the title and
 description if needed and then click `Create pull request`.
@@ -160,7 +186,8 @@ PR will trigger a similar Travis process. Test your change on production
 for good measure.
 
 ## SSL: LetsEncrypt Strategy
-The Berkeley-based SPA email address, cal-icor-support@berkeley.edu, is the
+
+The Berkeley-based SPA email address, <cal-icor-support@berkeley.edu>, is the
 contact email used to create the SSL certificate for the datahub at
 [LetsEncrypt](https://letsencrypt.org/). The address is only used by LetsEncrypt
 when there is a problem renewing the certificate.
