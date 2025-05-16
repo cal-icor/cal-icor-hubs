@@ -12,7 +12,7 @@ jupyterhub:
       templateVars:
         org:
           name: Evergreen Valley College
-          logo_url: https://www.evc.edu/images/evc-logo.png
+          logo_url: https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Evergreen_Valley_College_logo.png/799px-Evergreen_Valley_College_logo.png?20210323212539
           url: https://www.evc.edu
   scheduling:
     userScheduler:
