@@ -17,3 +17,7 @@ jupyterhub:
       - secretName: tls-cert
         hosts:
           - {{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      {{cookiecutter.authenticator_class_instance}}:
+        oauth_callback_url: https://{{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org/hub/oauth_callback

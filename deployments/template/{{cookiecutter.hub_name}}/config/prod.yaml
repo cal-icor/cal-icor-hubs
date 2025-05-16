@@ -16,3 +16,6 @@ jupyterhub:
       pvc:
         # This also holds logs
         storage: 4Gi
+    config:
+        {{cookiecutter.authenticator_class_instance}}:
+          oauth_callback_url: https://{{cookiecutter.hub_name}}.jupyter.cal-icor.org/hub/oauth_callback
