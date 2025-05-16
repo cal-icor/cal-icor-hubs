@@ -42,7 +42,7 @@ if __name__ == "__main__":
             "admin_emails": ", ".join(email for email in config["admin_emails"]),
         },
     )
-    print(f"{config["hub_name"]} cookiecutter template configured successfully.")
+    print(f"{config['hub_name']} cookiecutter template configured successfully.")
     # Generate secrets for prod and staging
     for env in ["prod", "staging"]:
         sfg.handle_secrets(config["hub_name"], env)
