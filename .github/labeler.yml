@@ -80,6 +80,8 @@ node-placeholder-scaler:
 # add hub-specific labels for deployment changes
 'hub: dvc':
   - 'deployments/dvc/**'
+'hub: evc':
+  - 'deployments/evc/**'
 'hub: jupyter':
   - 'deployments/jupyter/**'
 'hub: lacc':

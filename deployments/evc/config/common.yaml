@@ -1,19 +1,19 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: {{cookiecutter.hub_filestore_ip}}
+    serverIP: 10.183.114.2
 
 jupyterhub:
   custom:
     homepage:
       # gitRepoBranch: "username-and-password-homepage"
-      gitRepoBranch: "{{cookiecutter.landing_page_branch}}"
+      gitRepoBranch: "main"
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
-          name: {{cookiecutter.institution}}
-          logo_url: {{cookiecutter.institution_logo_url}}
-          url: {{cookiecutter.institution_url}}
+          name: Evergreen Valley College
+          logo_url: https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Evergreen_Valley_College_logo.png/799px-Evergreen_Valley_College_logo.png?20210323212539
+          url: https://www.evc.edu
   scheduling:
     userScheduler:
       nodeSelector:
@@ -28,17 +28,18 @@ jupyterhub:
       hub.jupyter.org/pool-name: core-pool
     config:
       JupyterHub:
-        authenticator_class: {{cookiecutter.authenticator_class}}
-      {{cookiecutter.authenticator_class_instance}}:
+        authenticator_class: cilogon
+      CILogonOAuthenticator:
         allowed_idps:
-          {{cookiecutter.idp_url}}:
+          http://login.microsoftonline.com/common/oauth2/v2.0/authorize:
             default: true
             username_derivation:
               username_claim: "email"
             allowed_domains:
-              {%- for domain in cookiecutter.idp_allowed_domains.split(',') %}
-              - {{ domain.strip() }}
-              {%- endfor %}
+                - sjcc.edu
+                - stu.sjcc.edu
+                - stu.evc.edu
+                - evc.edu
           http://google.com/accounts/o8/id:
             username_derivation:
               username_claim: "email"
@@ -49,9 +50,10 @@ jupyterhub:
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
-          {%- for email in cookiecutter.admin_emails.split(',') %}
-          - {{ email.strip() }}
-          {%- endfor %}
+          - Henry.Estrada@evc.edu
+          - hestrada@evc.edu
+          - David.Eisenberg@evc.edu
+          - Kathy.Jensen@evc.edu
   singleuser:
     extraFiles:
       # DH-216
@@ -65,7 +67,7 @@ jupyterhub:
       # Unset NotebookApp from hub/values. Necessary for recent lab versions.
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
     nodeSelector:
-      hub.jupyter.org/pool-name: {{cookiecutter.pool_name}}
+      hub.jupyter.org/pool-name: base-pool
     storage:
       type: static
       static:

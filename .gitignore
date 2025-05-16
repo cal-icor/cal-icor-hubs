@@ -17,3 +17,5 @@ hub/charts
 # random stuff
 **/.DS_Store
 **/*.bak
+
+_deploy_configs/*

@@ -1,4 +1,0 @@
-dvc
-jupyter
-lacc
-ucla
