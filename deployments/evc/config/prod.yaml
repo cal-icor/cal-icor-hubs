@@ -1,0 +1,21 @@
+nfsPVC:
+  nfs:
+    shareName: shares/evc/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - evc.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - evc.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+        CILogonOAuthenticator:
+          oauth_callback_url: https://evc.jupyter.cal-icor.org/hub/oauth_callback
