@@ -35,7 +35,7 @@ jupyterhub:
             default: true
             username_derivation:
               username_claim: "email"
-              allowed_domains:
+            allowed_domains:
                 - sjcc.edu
                 - stu.sjcc.edu
                 - stu.evc.edu
