@@ -15,12 +15,13 @@ logger = logging.getLogger(__name__)
 def find_target_channels(namespace, project_id):
     logger.info(f"Finding target channels for namespace: {namespace}")
     target_channels = []
-    if "staging" in namespace:
-        target_channels.append(project_id + "-staging-alert-channel")
     if "prod" in namespace:
         target_channels.append(project_id + "-prod-alert-channel")
         target_channels.append("Cal-ICOR Alerts")
         target_channels.append("Cal-ICOR email alerts")
+    else:
+        print("Be sure to use 'prod' namespace, eg: jupyter-prod")
+        sys.exit(1)
 
     logger.info(f"Target channels: {target_channels}")
     return target_channels
@@ -52,25 +53,26 @@ def extract_channel_names(target_channels):
 
 
 def get_notification_channels(namespace, project_id):
+    logger.info(f"Getting notification channels for namespace: {namespace}")
     target_channels = find_target_channels(namespace, project_id)
     notification_channels = extract_channel_names(target_channels)
+
+    logger.info(f"Notification channels: {notification_channels}")
     return notification_channels
 
 
 def find_host(namespace, domain):
     host = ""
-    if "staging" in namespace:
-        host = (
-            namespace + "." + domain
-            if namespace != "jupyter-staging"
-            else "staging." + domain
-        )
-    elif "prod" in namespace:
+    if "prod" in namespace:
         host = (
             namespace.split("-")[0] + "." + domain
             if namespace != "jupyter-prod"
             else domain
         )
+    else:
+        print("Be sure to use 'prod' namespace, eg: jupyter-prod")
+        sys.exit(1)
+
     return host
 
 
@@ -91,6 +93,7 @@ def extract_policy_id(namespace):
 
     for document in documents:
         if namespace + " uptime failure" == document.get("displayName"):
+            logger.info(f"Found alert policy for {namespace}: {document.get('name')}")
             return document.get("name")
     return None
 
@@ -222,11 +225,8 @@ def create_alerts(namespaces, domain, project_id):
             )
             continue
 
-        duration = "600s"
-        if "staging" in namespace:
-            duration = "1800s"
-
         # Create JSON structure for alert policy
+        duration = "600s"
         alert_policy = {
             "displayName": f"{namespace} uptime failure",
             "conditions": [
