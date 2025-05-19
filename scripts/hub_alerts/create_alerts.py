@@ -285,11 +285,11 @@ def main():
     """
     Usage:
     1. Create a new uptime checker and associate an alert policy with it for a namespace.
-        python3 create_alerts.py --create --namespaces dev-staging dev-prod
+        create_alerts.py --create --namespaces jupyter-prod
     2. Enable an alert policy for a namespace.
-        python3 create_alerts.py --enable_alerts --namespaces dev-staging
+        create_alerts.py --enable_alerts --namespaces jupyter-prod
     3. Disable an alert policy for a namespace.
-        python3 create_alerts.py --disable_alerts --namespaces dev-staging
+        create_alerts.py --disable_alerts --namespaces jupyter-prod
     """
     parser = argparse.ArgumentParser(
         description="Create alerts with specified parameters."
@@ -326,14 +326,17 @@ def main():
     namespaces = args.namespaces
 
     if args.enable_alerts:
+        logger.info("Enabling alerts...")
         for namespace in namespaces:
             enable_alert_for_policy(namespace)
 
     if args.disable_alerts:
+        logger.info("Disabling alerts...")
         for namespace in namespaces:
             disable_alert_for_policy(namespace)
 
     if args.create:
+        logger.info("Creating alerts...")
         create_alerts(namespaces, args.domain, args.project_id)
 
 
