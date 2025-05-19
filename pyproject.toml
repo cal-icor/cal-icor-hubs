@@ -7,4 +7,4 @@ profile = "black"
 
 [tool.codespell]
 skip = '.git,*.pdf,*.svg,deployments/*/secrets/*'
-ignore-words-list = 'demog,wasn,NotIn,notin'
+ignore-words-list = 'demog,wasn,NotIn,notin,ShowIn,showin'
