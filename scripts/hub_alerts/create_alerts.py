@@ -319,10 +319,6 @@ def main():
 
     args = parser.parse_args()
 
-    if not args:
-        parser.print_help()
-        sys.exit(1)
-
     if args.verbose:
         logger.setLevel(logging.INFO)
     logger.info(args)
