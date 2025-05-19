@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import logging
 import re
 import subprocess
+import sys
 
 import yaml
 
+logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
+logger = logging.getLogger(__name__)
+
 
 def find_target_channels(namespace, project_id):
+    logger.info(f"Finding target channels for namespace: {namespace}")
     target_channels = []
     if "staging" in namespace:
         target_channels.append(project_id + "-staging-alert-channel")
@@ -15,10 +21,13 @@ def find_target_channels(namespace, project_id):
         target_channels.append(project_id + "-prod-alert-channel")
         target_channels.append("Cal-ICOR Alerts")
         target_channels.append("Cal-ICOR email alerts")
+
+    logger.info(f"Target channels: {target_channels}")
     return target_channels
 
 
 def extract_channel_names(target_channels):
+    logger.info("Extracting channel names...")
     try:
         result = subprocess.run(
             ["gcloud", "alpha", "monitoring", "channels", "list"],
@@ -38,6 +47,7 @@ def extract_channel_names(target_channels):
         if document.get("displayName") in target_channels:
             channel_names.append(document.get("name"))
 
+    logger.info(f"Extracted channel names: {channel_names}")
     return channel_names
 
 
@@ -303,9 +313,22 @@ def main():
     parser.add_argument(
         "--create", action="store_true", help="Create an alert policy.", default=False
     )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Enable verbose logging."
+    )
 
     args = parser.parse_args()
+
+    if not args:
+        parser.print_help()
+        sys.exit(1)
+
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+    logger.info(args)
+
     namespaces = args.namespaces
+
     if args.enable_alerts:
         for namespace in namespaces:
             enable_alert_for_policy(namespace)
@@ -313,6 +336,7 @@ def main():
     if args.disable_alerts:
         for namespace in namespaces:
             disable_alert_for_policy(namespace)
+
     if args.create:
         create_alerts(namespaces, args.domain, args.project_id)
 
