@@ -13,6 +13,7 @@ def create_deployment(config, root_path, manual_config=False):
     Args:
         config (dict): The configuration dictionary containing deployment details.
         root_path (str): The parent path where the deployment will be created.
+        manual_config (bool): If True, the script will ask for confirmation for each step.
     """
 
     cookiecutter(
