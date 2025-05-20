@@ -7,17 +7,17 @@ import yaml
 from cookiecutter.main import cookiecutter
 
 
-def create_deployment(config, par_path, manual_config=False):
+def create_deployment(config, root_path, manual_config=False):
     """
     Create a new deployment for an institution using the provided configuration.
     Args:
         config (dict): The configuration dictionary containing deployment details.
-        par_path (str): The parent path where the deployment will be created.
+        root_path (str): The parent path where the deployment will be created.
     """
-    print(manual_config)
+
     cookiecutter(
-        template=f"{par_path}/deployments/template",
-        output_dir=f"{par_path}/deployments",
+        template=f"{root_path}/deployments/template",
+        output_dir=f"{root_path}/deployments",
         no_input=manual_config,
         extra_context={
             "hub_name": config["hub_name"],
@@ -96,15 +96,15 @@ def main():
         print(f"Error: The config file {args.institution_name}.yaml does not exist.")
         exit(1)
 
-    par_path = Path(__file__).resolve().parents[1]
-    file_path = f"{par_path}/_deploy_configs/{args.institution_name}.yaml"
+    root_path = Path(__file__).resolve().parents[1]
+    file_path = f"{root_path}/_deploy_configs/{args.institution_name}.yaml"
     with open(file_path) as f:
         config = yaml.safe_load(f)
     if not config:
         print(f"Error loading config for {args.institution_name}.")
         exit(1)
 
-    create_deployment(config, par_path, args.manual_config)
+    create_deployment(config, root_path, args.manual_config)
 
 
 if __name__ == "__main__":
