@@ -62,7 +62,7 @@ def main():
         + "<institution_name>.yaml",
     )
     parser.add_argument(
-        "--manual_config",
+        "--manual-config",
         "-m",
         action="store_false",
         help="If set, the script will ask for confirmation for each step, "
