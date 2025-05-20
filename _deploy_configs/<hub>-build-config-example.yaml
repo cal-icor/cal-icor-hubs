@@ -1,0 +1,18 @@
+hub_name: 
+institution: 
+institution_url: 
+institution_logo_url: 
+landing_page_branch: main
+prod:
+  client: 
+  secret: 
+staging:
+  client: 
+  secret: 
+admin_emails:
+  - 
+authenticator_class: cilogon
+authenticator_class_instance: "CILogonOAuthenticator"
+idp_url:   http://login.microsoftonline.com/common/oauth2/v2.0/authorize
+idp_allowed_domains:
+  - 
