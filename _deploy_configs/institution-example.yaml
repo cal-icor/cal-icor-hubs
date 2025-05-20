@@ -1,3 +1,6 @@
+# This is an example of a configuration file for a JupyterHub deployment.
+# This file should be renamed to <name of deployment>.yaml and kept in the
+# _deploy_configs directory.
 hub_name: 
 institution: 
 institution_url: 

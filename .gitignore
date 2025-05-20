@@ -18,5 +18,5 @@ hub/charts
 **/.DS_Store
 **/*.bak
 
-_deploy_configs/*-build-config.yaml
-!_deploy_configs/<hub>build-config-example.yaml
+_deploy_configs/*.yaml
+!_deploy_configs/institution-example.yaml
