@@ -53,6 +53,10 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create a new deployment for an institution.  This should "
         + "be run from the root cal-icor-hubs directory."
+        + "\n\n"
+        + "You will also need to fill out the cookiecutter template config "
+        + "in the _deploy_configs/<hubname>.yaml dir in the root of the repo.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
         "institution_name",
