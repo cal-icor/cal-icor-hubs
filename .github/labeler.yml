@@ -78,6 +78,8 @@ node-placeholder-scaler:
   - 'images/node-placeholder-scaler/**'
 
 # add hub-specific labels for deployment changes
+'hub: cuesta':
+  - 'deployments/cuesta/**'
 'hub: dvc':
   - 'deployments/dvc/**'
 'hub: evc':
