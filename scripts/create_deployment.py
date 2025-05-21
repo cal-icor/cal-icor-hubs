@@ -116,6 +116,17 @@ def create_deployment(config, root_path, manual_config=False):
     for env in ["prod", "staging"]:
         handle_secrets(config["hub_name"], env)
 
+    # add the new deployment to the github labeler
+    labeler_path = os.path.join(root_path, ".github", "labeler.yml")
+    hub_name = config["hub_name"]
+    hub_label = f"""
+'hub: {hub_name}':
+  - 'deployments/{hub_name}/**'
+""".strip()
+    with open(labeler_path, "a") as f:
+        print(hub_label, file=f)
+    print(f"Added {hub_name} to the labeler.yml file.")
+
 
 def main():
     """
