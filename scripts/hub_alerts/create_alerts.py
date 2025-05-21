@@ -1,24 +1,34 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import logging
 import re
 import subprocess
+import sys
 
 import yaml
 
+logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
+logger = logging.getLogger(__name__)
+
 
 def find_target_channels(namespace, project_id):
+    logger.info(f"Finding target channels for namespace: {namespace}")
     target_channels = []
-    if "staging" in namespace:
-        target_channels.append(project_id + "-staging-alert-channel")
     if "prod" in namespace:
         target_channels.append(project_id + "-prod-alert-channel")
         target_channels.append("Cal-ICOR Alerts")
         target_channels.append("Cal-ICOR email alerts")
+    else:
+        print("Be sure to use 'prod' namespace, eg: jupyter-prod")
+        sys.exit(1)
+
+    logger.info(f"Target channels: {target_channels}")
     return target_channels
 
 
 def extract_channel_names(target_channels):
+    logger.info("Extracting channel names...")
     try:
         result = subprocess.run(
             ["gcloud", "alpha", "monitoring", "channels", "list"],
@@ -38,29 +48,31 @@ def extract_channel_names(target_channels):
         if document.get("displayName") in target_channels:
             channel_names.append(document.get("name"))
 
+    logger.info(f"Extracted channel names: {channel_names}")
     return channel_names
 
 
 def get_notification_channels(namespace, project_id):
+    logger.info(f"Getting notification channels for namespace: {namespace}")
     target_channels = find_target_channels(namespace, project_id)
     notification_channels = extract_channel_names(target_channels)
+
+    logger.info(f"Notification channels: {notification_channels}")
     return notification_channels
 
 
 def find_host(namespace, domain):
     host = ""
-    if "staging" in namespace:
-        host = (
-            namespace + "." + domain
-            if namespace != "jupyter-staging"
-            else "staging." + domain
-        )
-    elif "prod" in namespace:
+    if "prod" in namespace:
         host = (
             namespace.split("-")[0] + "." + domain
             if namespace != "jupyter-prod"
             else domain
         )
+    else:
+        print("Be sure to use 'prod' namespace, eg: jupyter-prod")
+        sys.exit(1)
+
     return host
 
 
@@ -81,6 +93,7 @@ def extract_policy_id(namespace):
 
     for document in documents:
         if namespace + " uptime failure" == document.get("displayName"):
+            logger.info(f"Found alert policy for {namespace}: {document.get('name')}")
             return document.get("name")
     return None
 
@@ -212,11 +225,8 @@ def create_alerts(namespaces, domain, project_id):
             )
             continue
 
-        duration = "600s"
-        if "staging" in namespace:
-            duration = "1800s"
-
         # Create JSON structure for alert policy
+        duration = "600s"
         alert_policy = {
             "displayName": f"{namespace} uptime failure",
             "conditions": [
@@ -275,11 +285,11 @@ def main():
     """
     Usage:
     1. Create a new uptime checker and associate an alert policy with it for a namespace.
-        python3 create_alerts.py --create --namespaces dev-staging dev-prod
+        create_alerts.py --create --namespaces jupyter-prod
     2. Enable an alert policy for a namespace.
-        python3 create_alerts.py --enable_alerts --namespaces dev-staging
+        create_alerts.py --enable_alerts --namespaces jupyter-prod
     3. Disable an alert policy for a namespace.
-        python3 create_alerts.py --disable_alerts --namespaces dev-staging
+        create_alerts.py --disable_alerts --namespaces jupyter-prod
     """
     parser = argparse.ArgumentParser(
         description="Create alerts with specified parameters."
@@ -303,17 +313,30 @@ def main():
     parser.add_argument(
         "--create", action="store_true", help="Create an alert policy.", default=False
     )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Enable verbose logging."
+    )
 
     args = parser.parse_args()
+
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+    logger.info(args)
+
     namespaces = args.namespaces
+
     if args.enable_alerts:
+        logger.info("Enabling alerts...")
         for namespace in namespaces:
             enable_alert_for_policy(namespace)
 
     if args.disable_alerts:
+        logger.info("Disabling alerts...")
         for namespace in namespaces:
             disable_alert_for_policy(namespace)
+
     if args.create:
+        logger.info("Creating alerts...")
         create_alerts(namespaces, args.domain, args.project_id)
 
 
