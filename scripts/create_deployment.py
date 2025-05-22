@@ -117,10 +117,10 @@ def create_label(hub_name, root_path):
         print(f"Unable to get branch from {root_path}: {e}.")
         exit(1)
 
-    return hub_label
+    return github_label
 
 
-def create_pr(github_user, hub_name, root_path, branch_name, hub_label):
+def create_pr(github_user, hub_name, root_path, branch_name, github_label):
     """
     Add, commit and create a pull request for the new hub deployment.
     Args:
@@ -182,7 +182,7 @@ def create_pr(github_user, hub_name, root_path, branch_name, hub_label):
             f"-R{owner_and_repo}",
             f"-H{github_user}:{branch_name}",
             "-Bstaging",
-            f"-l{hub_label}",
+            f"-l {github_label}",
         ]
         if body is not None:
             command.append(f"-b {body}")
@@ -269,10 +269,10 @@ def create_deployment(config, github_user, root_path, manual_config=False):
         handle_secrets(config["hub_name"], env)
 
     # Create labels for the new hub
-    hub_label = create_label(config["hub_name"], root_path)
+    github_label = create_label(config["hub_name"], root_path)
 
     # Create a pull request for the new hub
-    create_pr(github_user, config["hub_name"], root_path, branch_name, hub_label)
+    create_pr(github_user, config["hub_name"], root_path, branch_name, github_label)
 
 
 def main():
