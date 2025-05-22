@@ -182,7 +182,7 @@ def create_pr(github_user, hub_name, root_path, branch_name, github_label):
             f"-R{owner_and_repo}",
             f"-H{github_user}:{branch_name}",
             "-Bstaging",
-            f"-l {github_label}",
+            f"-l{github_label}",
         ]
         if body is not None:
             command.append(f"-b {body}")
