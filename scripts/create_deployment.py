@@ -112,6 +112,7 @@ def create_label(hub_name, root_path):
                 github_label,
                 "--description",
                 f"Label for {hub_name} deployment.",
+                "--force",
             ],
             check=True,
         )
