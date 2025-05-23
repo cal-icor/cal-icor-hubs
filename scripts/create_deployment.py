@@ -87,6 +87,8 @@ def create_label(hub_name, root_path):
     Args:
         hub_name (str): The name of the hub.
         root_path (str): The path to the root directory of the repository.
+    Returns:
+        str: The GitHub label created for the new hub.
     """
     labeler_path = os.path.join(root_path, ".github", "labeler.yml")
     hub_label = f"""
@@ -120,28 +122,15 @@ def create_label(hub_name, root_path):
     return github_label
 
 
-def create_pr(github_user, hub_name, root_path, branch_name, github_label):
+def stage_and_push(hub_name, root_path, branch_name):
     """
-    Add, commit and create a pull request for the new hub deployment.
+    Stage the new deployment files for the hub.
+
     Args:
-        github_user (str): The GitHub username of the user creating the pull request.
         hub_name (str): The name of the hub.
         root_path (str): The path to the root directory of the repository.
+        branch_name (str): The name of the branch to push the changes to.
     """
-    body = f"Add {hub_name} deployment."
-    remote = "origin"
-    title = f"Add {hub_name} deployment."
-    upstream_repo = "git@github.com:cal-icor/cal-icor-hubs.git"
-    changed_files = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=root_path,
-        capture_output=True,
-        text=True,
-    )
-
-    print(f"Adding all changes for {hub_name} to feature branch:")
-    print(changed_files.stdout.strip())
-
     files_to_add = [
         f"deployments/{hub_name}/",
         ".github/labeler.yml",
@@ -164,12 +153,26 @@ def create_pr(github_user, hub_name, root_path, branch_name, github_label):
         print(f"Error committing {hub_name}: {e}")
         exit(1)
 
+    remote = "origin"
     print(f"Pushing {branch_name} to {remote}")
     try:
         subprocess.check_call(["git", "push", remote, branch_name], cwd=root_path)
     except subprocess.CalledProcessError as e:
         print(f"Error pushing {branch_name} to {remote}: {e}")
         exit(1)
+
+
+def create_pr(github_user, hub_name, branch_name, github_label):
+    """
+    Add, commit and create a pull request for the new hub deployment.
+    Args:
+        github_user (str): The GitHub username of the user creating the pull request.
+        hub_name (str): The name of the hub.
+        root_path (str): The path to the root directory of the repository.
+    """
+    body = f"Add `{hub_name}` deployment, brought to you by `create_deployment.py`."
+    title = f"Add `{hub_name}` deployment."
+    upstream_repo = "git@github.com:cal-icor/cal-icor-hubs.git"
 
     print(f"Creating a pull request for {hub_name} on branch {branch_name}")
     owner_and_repo = re.search(".+:(.+?).git$", upstream_repo).group(1)
@@ -267,12 +270,17 @@ def create_deployment(config, github_user, root_path, manual_config=False):
     # Generate secrets for prod and staging
     for env in ["prod", "staging"]:
         handle_secrets(config["hub_name"], env)
+    print(f"Secrets for {config['hub_name']} generated and encrypted successfully.")
 
     # Create labels for the new hub
     github_label = create_label(config["hub_name"], root_path)
 
+    # Stage the new deployment files
+    print(f"Staging new deployment files for {config['hub_name']}.")
+    stage_and_push(config["hub_name"], root_path, branch_name)
+
     # Create a pull request for the new hub
-    create_pr(github_user, config["hub_name"], root_path, branch_name, github_label)
+    create_pr(github_user, config["hub_name"], branch_name, github_label)
 
 
 def main():
