@@ -70,6 +70,7 @@ def handle_secrets(school_arg, env_arg):
     2. Encrypts the plain YAML file.
     3. Deletes the plain YAML file after encryption.
     """
+    print("Secret file generation and encryption beginning.")
     encrypt_file(
         os.path.join("deployments", school_arg, "secrets", f"{env_arg}.plain.yaml"),
         os.path.join("deployments", school_arg, "secrets", f"{env_arg}.yaml"),
@@ -77,7 +78,6 @@ def handle_secrets(school_arg, env_arg):
     delete_file(
         os.path.join("deployments", school_arg, "secrets", f"{env_arg}.plain.yaml")
     )
-    print("Secret file generation and encryption completed.")
 
 
 def create_label(hub_name, root_path):
@@ -229,20 +229,17 @@ def create_branch(branch_name, root_path):
         exit(1)
 
 
-def create_deployment(config, github_user, root_path, manual_config=False):
+def populate_deployment_config(config, root_path, manual_config):
     """
-    Create a new deployment for an institution using the provided configuration.
+    Populate the deployment configuration file with the provided configuration.
+
     Args:
         config (dict): The configuration dictionary containing deployment details.
-        root_path (str): The parent path where the deployment will be created.
+        root_path (str): The path to the root directory of the repository.
         manual_config (bool): If True, the script will ask for confirmation for each step.
     """
-
-    # Create a feature branch
-    branch_name = f"add-{config['hub_name']}-deployment"
-    create_branch(branch_name, root_path)
-
     # Run the cookiecutter to generate the deployment files
+    print(f"Generating {config['hub_name']} cookiecutter template.")
     cookiecutter(
         template=f"{root_path}/deployments/template",
         output_dir=f"{root_path}/deployments",
@@ -266,11 +263,28 @@ def create_deployment(config, github_user, root_path, manual_config=False):
             "admin_emails": ", ".join(email for email in config["admin_emails"]),
         },
     )
-    print(f"{config['hub_name']} cookiecutter template configured successfully.")
+
     # Generate secrets for prod and staging
+    print(f"Generating and encrypting secrets for {config['hub_name']}.")
     for env in ["prod", "staging"]:
         handle_secrets(config["hub_name"], env)
-    print(f"Secrets for {config['hub_name']} generated and encrypted successfully.")
+
+
+def create_deployment(config, github_user, root_path, manual_config=False):
+    """
+    Create a new deployment for an institution using the provided configuration.
+    Args:
+        config (dict): The configuration dictionary containing deployment details.
+        root_path (str): The parent path where the deployment will be created.
+        manual_config (bool): If True, the script will ask for confirmation for each step.
+    """
+    # Create a feature branch
+    branch_name = f"add-{config['hub_name']}-deployment"
+    create_branch(branch_name, root_path)
+
+    # Populate the deployment configuration
+    print(f"Populating deployment config for {config['hub_name']}.")
+    populate_deployment_config(config, root_path, manual_config)
 
     # Create labels for the new hub
     github_label = create_label(config["hub_name"], root_path)
@@ -280,6 +294,7 @@ def create_deployment(config, github_user, root_path, manual_config=False):
     stage_and_push(config["hub_name"], root_path, branch_name)
 
     # Create a pull request for the new hub
+    print(f"Creating pull request for {config['hub_name']}.")
     create_pr(github_user, config["hub_name"], branch_name, github_label)
 
 
