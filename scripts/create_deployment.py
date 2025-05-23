@@ -398,7 +398,7 @@ def main():
     create_deployment(config, args.github_user, root_path, args.manual_config)
 
     if args.deploy:
-        print(f"Deploying the hub to {config["hub_name"]}-staging.")
+        print(f"Deploying the hub to {config['hub_name']}-staging.")
         helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
         print(f"Deployment to {config['hub_name']}-staging complete.")
 
