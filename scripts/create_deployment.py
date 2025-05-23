@@ -8,6 +8,7 @@ from pathlib import Path
 
 import yaml
 from cookiecutter.main import cookiecutter
+from hubploy import helm
 
 
 def delete_file(filepath):
@@ -314,6 +315,12 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
+        "--deploy",
+        "-d",
+        action="store_true",
+        help="If set, the script will deploy the hub after creating the PR.",
+    )
+    parser.add_argument(
         "--github_user",
         "-g",
         type=str,
@@ -367,6 +374,11 @@ def main():
         exit(1)
 
     create_deployment(config, args.github_user, root_path, args.manual_config)
+
+    if args.deploy:
+        print(f"Deploying the hub to {config["hub_name"]}-staging.")
+        helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
+        print(f"Deployment to {config['hub_name']}-staging complete.")
 
 
 if __name__ == "__main__":
