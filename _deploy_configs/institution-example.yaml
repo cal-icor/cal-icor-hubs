@@ -17,5 +17,5 @@ admin_emails:
 authenticator_class: cilogon
 authenticator_class_instance: "CILogonOAuthenticator"
 idp_url:   http://login.microsoftonline.com/common/oauth2/v2.0/authorize
-idp_allowed_domains:
-  - 
+idp_allowed_domains: "" # This is an empty string or a yaml list e.g. - my.cuesta.edu
+allow_all: "" # This is either an empty string or true but only when idp_allowed_domains is empty
