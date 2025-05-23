@@ -35,10 +35,14 @@ jupyterhub:
             default: true
             username_derivation:
               username_claim: "email"
+            {%- if cookiecutter.allow_all == "true" %}
+            allow_all: true
+            {%- elif cookiecutter.idp_allowed_domains %}
             allowed_domains:
               {%- for domain in cookiecutter.idp_allowed_domains.split(',') %}
               - {{ domain.strip() }}
               {%- endfor %}
+            {%- endif %}
           http://google.com/accounts/o8/id:
             username_derivation:
               username_claim: "email"

@@ -260,6 +260,7 @@ def populate_deployment_config(config, root_path, manual_config):
             "idp_allowed_domains": ", ".join(
                 domain for domain in config["idp_allowed_domains"]
             ),
+            "allow_all": config["allow_all"],
             "admin_emails": ", ".join(email for email in config["admin_emails"]),
         },
     )
