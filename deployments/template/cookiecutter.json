@@ -19,5 +19,6 @@
     "client_secret_staging": "valid-client-secret-staging",
     "client_id_prod": "valid-client-id-production",
     "client_secret_prod": "valid-client-secret-production",
-    "idp_allowed_domains": ""
+    "idp_allowed_domains": "",
+    "allow_all": ""
 }
