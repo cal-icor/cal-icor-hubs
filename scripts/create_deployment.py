@@ -280,6 +280,27 @@ def create_deployment(config, github_user, root_path, manual_config=False):
         root_path (str): The parent path where the deployment will be created.
         manual_config (bool): If True, the script will ask for confirmation for each step.
     """
+    # create the prod and staging directories on filestore for the new hub
+    print(f"Creating directories for {config['hub_name']} on filestore.")
+    try:
+        subprocess.check_call(
+            [
+                "gcloud",
+                "compute",
+                "ssh",
+                "nfsserver",
+                "--tunnel-through-iap",
+                "--zone=us-central1-b",
+                "--command",
+                "sudo -u ubuntu install -d -o 1000 -g 1000 "
+                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod "
+                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging",
+            ]
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating directories for {config['hub_name']}: {e}")
+        exit(1)
+
     # Create a feature branch
     branch_name = f"add-{config['hub_name']}-deployment"
     create_branch(branch_name, root_path)
