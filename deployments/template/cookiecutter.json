@@ -8,7 +8,6 @@
     "cluster_name": "spring-2025",
     "pool_name": "base-pool",
     "hub_filestore_share": "shares",
-    "hub_filestore_ip": "10.183.114.2",
     "hub_filestore_capacity": "1T",
     "authenticator_class": "valid-auth-class",
     "authenticator_class_instance": "valid-auth-instance",
@@ -19,5 +18,6 @@
     "client_secret_staging": "valid-client-secret-staging",
     "client_id_prod": "valid-client-id-production",
     "client_secret_prod": "valid-client-secret-production",
-    "idp_allowed_domains": ""
+    "idp_allowed_domains": "",
+    "allow_all": ""
 }
