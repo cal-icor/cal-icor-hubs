@@ -112,6 +112,7 @@ def create_label(hub_name, root_path):
                 github_label,
                 "--description",
                 f"Label for {hub_name} deployment.",
+                "--force",
             ],
             check=True,
         )
@@ -247,6 +248,8 @@ def populate_deployment_config(config, root_path, manual_config):
         no_input=manual_config,
         extra_context={
             "hub_name": config["hub_name"],
+            "hub_filestore_instance": config["hub_filestore_instance"],
+            "hub_filestore_ip": config["hub_filestore_ip"],
             "institution": config["institution"],
             "institution_url": config["institution_url"],
             "institution_logo_url": config["institution_logo_url"],
