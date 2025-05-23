@@ -289,6 +289,7 @@ def create_deployment(config, github_user, root_path, manual_config=False):
     populate_deployment_config(config, root_path, manual_config)
 
     # Create labels for the new hub
+    print(f"Creating repo and github labels for {config['hub_name']}.")
     github_label = create_label(config["hub_name"], root_path)
 
     # Stage the new deployment files
