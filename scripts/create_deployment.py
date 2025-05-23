@@ -8,6 +8,7 @@ from pathlib import Path
 
 import yaml
 from cookiecutter.main import cookiecutter
+from hubploy import helm
 
 
 def delete_file(filepath):
@@ -279,6 +280,27 @@ def create_deployment(config, github_user, root_path, manual_config=False):
         root_path (str): The parent path where the deployment will be created.
         manual_config (bool): If True, the script will ask for confirmation for each step.
     """
+    # create the prod and staging directories on filestore for the new hub
+    print(f"Creating directories for {config['hub_name']} on filestore.")
+    try:
+        subprocess.check_call(
+            [
+                "gcloud",
+                "compute",
+                "ssh",
+                "nfsserver",
+                "--tunnel-through-iap",
+                "--zone=us-central1-b",
+                "--command",
+                "sudo -u ubuntu install -d -o 1000 -g 1000 "
+                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod "
+                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging",
+            ]
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating directories for {config['hub_name']}: {e}")
+        exit(1)
+
     # Create a feature branch
     branch_name = f"add-{config['hub_name']}-deployment"
     create_branch(branch_name, root_path)
@@ -288,6 +310,7 @@ def create_deployment(config, github_user, root_path, manual_config=False):
     populate_deployment_config(config, root_path, manual_config)
 
     # Create labels for the new hub
+    print(f"Creating repo and github labels for {config['hub_name']}.")
     github_label = create_label(config["hub_name"], root_path)
 
     # Stage the new deployment files
@@ -312,6 +335,12 @@ def main():
         + "You will also need to fill out the cookiecutter template config "
         + "in the _deploy_configs/<hubname>.yaml dir in the root of the repo.",
         formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument(
+        "--deploy",
+        "-d",
+        action="store_true",
+        help="If set, the script will deploy the hub after creating the PR.",
     )
     parser.add_argument(
         "--github_user",
@@ -367,6 +396,11 @@ def main():
         exit(1)
 
     create_deployment(config, args.github_user, root_path, args.manual_config)
+
+    if args.deploy:
+        print(f"Deploying the hub to {config['hub_name']}-staging.")
+        helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
+        print(f"Deployment to {config['hub_name']}-staging complete.")
 
 
 if __name__ == "__main__":

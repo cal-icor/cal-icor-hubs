@@ -2,6 +2,8 @@
 # This file should be copied to <name of deployment>.yaml and kept in the
 # _deploy_configs directory.
 hub_name: 
+hub_filestore_instance: shared-filestore
+hub_filestore_ip: 10.183.114.2
 institution: 
 institution_url: 
 institution_logo_url: 
