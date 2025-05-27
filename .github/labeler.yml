@@ -90,3 +90,5 @@ node-placeholder-scaler:
   - 'deployments/lacc/**'
 'hub: ucla':
   - 'deployments/ucla/**'
+'hub: csuf':
+  - 'deployments/csuf/**'
