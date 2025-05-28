@@ -7,6 +7,8 @@
     "project_name": "cal-icor-hubs",
     "cluster_name": "spring-2025",
     "pool_name": "base-pool",
+    "hub_filestore_instance": "shared-filestore",
+    "hub_filestore_ip": "10.183.114.2",
     "hub_filestore_share": "shares",
     "hub_filestore_capacity": "1T",
     "authenticator_class": "valid-auth-class",
