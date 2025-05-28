@@ -94,3 +94,5 @@ node-placeholder-scaler:
   - 'deployments/csuf/**'
 'hub: csum':
   - 'deployments/csum/**'
+'hub: csulb':
+  - 'deployments/csulb/**'
