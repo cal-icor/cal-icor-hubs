@@ -39,6 +39,9 @@ jupyterhub:
           http://google.com/accounts/o8/id:
             username_derivation:
               username_claim: "email"
+            allowed_domains:
+              - csulb.edu
+              - student.csulb.edu
       Authenticator:
         manage_groups: false
         admin_users:
