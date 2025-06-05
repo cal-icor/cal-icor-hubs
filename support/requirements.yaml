@@ -1,6 +1,6 @@
 dependencies:
   - name: node-placeholder-scaler
-    version: 20240731-224556.git.292.hbc2de843
+    version: 20240731-224556.git.295.hf56190ba
     repository: oci://us-central1-docker.pkg.dev/cal-icor-hubs/core/node-placeholder-scaler
   - name: prometheus-statsd-exporter
     version: 0.11.0
