@@ -55,7 +55,6 @@ helm-config:
   - '**/Chart.yaml'
   - 'support/*.yaml'
   - 'hub/*.yaml'
-  - 'node-placeholder/*.yaml'
   - '**/.helmignore'
 
 # support systems
@@ -69,13 +68,6 @@ grafana:
 # jupyterhub deployment
 jupyterhub-deployment:
   - 'hub/**'
-
-# nodeplaceholder/scaler labels
-node-placeholder-deployment:
-  - 'node-placeholder/**'
-
-node-placeholder-scaler:
-  - 'images/node-placeholder-scaler/**'
 
 # add hub-specific labels for deployment changes
 'hub: cuesta':
