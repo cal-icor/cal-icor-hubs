@@ -3,7 +3,3 @@ appVersion: '1.0'
 description: Deployment Chart for JupyterHub
 name: hub
 version: 0.0.1-0.dev.git.170.h0a78cb9
-dependencies:
-  - name: node-placeholder
-    version: 20240731-224556.git.288.h5ae00c2e
-    repository: oci://us-central1-docker.pkg.dev/cal-icor-hubs/core/node-placeholder-scaler
