@@ -405,6 +405,13 @@ def main():
         helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
         print(f"Deployment to {config['hub_name']}-staging complete.")
 
+    print(
+        f"\nDeployment for {config['hub_name']} created."
+        + "\nDo not forget to create the alerts for the new hub after merging "
+        + "the PR to prod. The instructions for that are found here: "
+        + "https://docs.cal-icor.org/content/admin/new_hub.html#create-the-alerts-for-the-new-hub"
+    )
+
 
 if __name__ == "__main__":
     main()
