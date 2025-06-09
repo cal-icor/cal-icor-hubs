@@ -104,3 +104,5 @@ node-placeholder-scaler:
   - 'deployments/csumb/**'
 'hub: csula':
   - 'deployments/csula/**'
+'hub: csusj':
+  - 'deployments/csusj/**'
