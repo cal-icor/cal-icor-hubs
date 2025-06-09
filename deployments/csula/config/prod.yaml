@@ -1,0 +1,21 @@
+nfsPVC:
+  nfs:
+    shareName: shares/csula/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - csula.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csula.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+        CILogonOAuthenticator:
+          oauth_callback_url: https://csula.jupyter.cal-icor.org/hub/oauth_callback
