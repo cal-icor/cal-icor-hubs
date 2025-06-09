@@ -1,0 +1,21 @@
+nfsPVC:
+  nfs:
+    shareName: shares/csus/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - csus.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csus.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+        CILogonOAuthenticator:
+          oauth_callback_url: https://csus.jupyter.cal-icor.org/hub/oauth_callback
