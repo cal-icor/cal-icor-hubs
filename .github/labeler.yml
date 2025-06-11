@@ -106,3 +106,5 @@ node-placeholder-scaler:
   - 'deployments/csula/**'
 'hub: csusj':
   - 'deployments/csusj/**'
+'hub: folsomlake':
+  - 'deployments/folsomlake/**'
