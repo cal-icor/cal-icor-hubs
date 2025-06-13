@@ -182,7 +182,7 @@ node-placeholder-scaler:
       us-central1-docker.pkg.dev/cal-icor-hubs/core/node-placeholder-scaler
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.0.1-0.dev.git.302.h3ba8a55"
+    # tag: ""
 
   # The URL of the public calendar to use for the node placeholder
   calendarUrl: 
