@@ -60,16 +60,16 @@ jobs:
         with:
           install_components: 'gke-gcloud-auth-plugin'
 
-      - name: Activate credentials for cluster
-        if: ${{ env.DEPLOY }}
-        run: |
-          sops -d -i deployments/jupyter/secrets/gke-key.json
-          gcloud auth \
-            activate-service-account \
-            --key-file deployments/jupyter/secrets/gke-key.json
-          gcloud container clusters \
-            --region=us-central1 --project=cal-icor-hubs \
-            get-credentials spring-2025
+      # - name: Activate credentials for cluster
+      #   if: ${{ env.DEPLOY }}
+      #   run: |
+      #     sops -d -i deployments/jupyter/secrets/gke-key.json
+      #     gcloud auth \
+      #       activate-service-account \
+      #       --key-file deployments/jupyter/secrets/gke-key.json
+      #     gcloud container clusters \
+      #       --region=us-central1 --project=cal-icor-hubs \
+      #       get-credentials spring-2025
 
       - name: Set up Google Cloud authentication
         if: ${{ env.DEPLOY }}
