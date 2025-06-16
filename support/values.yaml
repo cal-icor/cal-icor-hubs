@@ -176,3 +176,25 @@ prometheus-statsd-exporter:
       prometheus.io/scrape: "true"
       prometheus.io/port: "9102"
  
+node-placeholder-scaler:
+  image:
+    repository: 
+      us-central1-docker.pkg.dev/cal-icor-hubs/core/node-placeholder-scaler
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    # tag: ""
+
+  # The URL of the public calendar to use for the node placeholder
+  calendarUrl: 
+    https://calendar.google.com/calendar/ical/c_35d90f50598c1472a4154c538bb49a21eabd8be93831d7de345d53fea8e19390%40group.calendar.google.com/public/basic.ics
+
+  nodePools:
+    base:
+      nodeSelector:
+        hub.jupyter.org/pool-name: base-pool
+      resources:
+        requests:
+          # Some value slightly lower than allocatable RAM on the nodepool
+          # This is an example using a GCP n2-highmem-8 node with 64G of RAM allocatable
+          memory: 60929654784
+      replicas: 0
