@@ -46,11 +46,6 @@ jupyterhub:
               username_claim: "email"
             allowed_domains:
               - dvc.edu
-              - 4cd.edu
-              - email.4cd.edu
-              - insite.4cd.edu
-              - losmedanos.edu
-              - contracosta.edu
       Authenticator:
         manage_groups: false
         admin_users:
