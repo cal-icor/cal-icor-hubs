@@ -30,6 +30,7 @@ jupyterhub:
       JupyterHub:
         authenticator_class: {{cookiecutter.authenticator_class}}
       {{cookiecutter.authenticator_class_instance}}:
+        {%- if cookiecutter.authenticator_class == "cilogon" %}
         allowed_idps:
           {{cookiecutter.idp_url}}:
             default: true
@@ -46,6 +47,14 @@ jupyterhub:
           http://google.com/accounts/o8/id:
             username_derivation:
               username_claim: "email"
+        {%- elif cookiecutter.authenticator_class == "github" %}
+        allowed_organizations:
+          {%- for org in cookiecutter.allowed_organizations.split(',') %}
+          - {{ org.strip() }}
+          {%- endfor %}
+        scope:
+          - read:org
+        {%- endif %}
       Authenticator:
         manage_groups: false
         admin_users:
