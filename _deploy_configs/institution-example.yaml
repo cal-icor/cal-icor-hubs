@@ -16,8 +16,9 @@ staging:
   secret: 
 admin_emails:
   - 
-authenticator_class: cilogon
-authenticator_class_instance: "CILogonOAuthenticator"
-idp_url:   http://login.microsoftonline.com/common/oauth2/v2.0/authorize
-idp_allowed_domains: "" # This is an empty string or a yaml list e.g. - my.cuesta.edu
-allow_all: "" # This is either an empty string or true but only when idp_allowed_domains is empty
+authenticator_class: cilogon # This is either cilogon or github
+authenticator_class_instance: "CILogonOAuthenticator" # This is either "CILogonOAuthenticator" or "GitHubOAuthenticator"
+idp_url: "" # cilogon only e.g.  http://login.microsoftonline.com/common/oauth2/v2.0/authorize
+idp_allowed_domains: "" # cilogon only: Microsoft or Google Auth Schemes only  e.g, This is an empty string or a yaml list e.g. - my.cuesta.edu
+allow_all: "" # cilogon only: Shibboleth or inCommon auth schemes set allow_all to true; this is an empty string for google and microsoft auth schemes
+allowed_organizations: "" # github only: This is an empty string or This is a yaml list e.g. - LACC-Statistical-Data-Analytics
