@@ -104,8 +104,8 @@ jupyterhub:
           subPath: _shared
           readOnly: false
     memory:
-      guarantee: 512M
-      limit: 1G
+      guarantee: 1G
+      limit: 2G
 
   #custom:
   #  group_profiles:
