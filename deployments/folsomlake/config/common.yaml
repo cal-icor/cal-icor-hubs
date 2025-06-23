@@ -46,6 +46,7 @@ jupyterhub:
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
           - mukarra@flc.losrios.edu
+          - w1475529@apps.losrios.edu
   singleuser:
     extraFiles:
       # DH-216
