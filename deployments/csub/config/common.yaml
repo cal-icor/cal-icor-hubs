@@ -11,9 +11,9 @@ jupyterhub:
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
-          name: Folsom Lake College
-          logo_url: https://flc.losrios.edu/flc/shared/img/admin/logos-icons/flc-desktop-logo.svg
-          url: https://www.flc.losrios.edu/
+          name: California State University, Bakersfield
+          logo_url: https://www.csueastbay.edu/_global/images/footer/new-csueb-logo/vp2-logo.png
+          url: https://www.csueastbay.edu/
   scheduling:
     userScheduler:
       nodeSelector:
@@ -31,13 +31,14 @@ jupyterhub:
         authenticator_class: cilogon
       CILogonOAuthenticator:
         allowed_idps:
-          http://google.com/accounts/o8/id:
+          https://shib.csub.edu/idp/shibboleth:
             default: true
             username_derivation:
               username_claim: "email"
-            allowed_domains:
-              - apps.losrios.edu
-              - flc.losrios.edu
+            allow_all: true
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
       Authenticator:
         manage_groups: false
         admin_users:
@@ -45,8 +46,7 @@ jupyterhub:
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
-          - mukarra@flc.losrios.edu
-          - w1475529@apps.losrios.edu
+          - ayatawara@csub.edu
   singleuser:
     extraFiles:
       # DH-216
