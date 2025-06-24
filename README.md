@@ -35,7 +35,7 @@ change in the future as we add more images to support different environments.
 The `staging` branch always reflects the state of the [staging JupyterHub](https://staging.jupyter.cal-icor.org),
 and the `prod` branch reflects the state of the [production JupyterHub](https://jupyter.cal-icor.org).
 
-## Installing the required python packages for working with datahub
+## Installing the required python packages for working with this repo
 
 In the root directory of this repo, install `dev-requirements.txt` with the
 following command:  `pip install -r dev-requirements.txt`.  This will install
@@ -69,7 +69,7 @@ Next, go to the [Cal ICOR hubs github repo](https://github.com/cal-icor/cal-icor
 and create a fork.  To do this, click on the `fork` button and then `Create fork`.
 
 Now clone this repo on your local device.  You can get the URL to do
-this by clicking on the green `Code` button in the primary Datahub repo (*not* your fork)
+this by clicking on the green `Code` button in the `cal-icor-hubs` repo (*not* your fork)
 and clicking on `ssh`:
 
 ``` bash
@@ -188,6 +188,6 @@ for good measure.
 ## SSL: LetsEncrypt Strategy
 
 The Berkeley-based SPA email address, <cal-icor-support@berkeley.edu>, is the
-contact email used to create the SSL certificate for the datahub at
+contact email used to create the SSL certificate for the Cal-ICOR hubs at
 [LetsEncrypt](https://letsencrypt.org/). The address is only used by LetsEncrypt
 when there is a problem renewing the certificate.
