@@ -12,8 +12,8 @@ jupyterhub:
       templateVars:
         org:
           name: California State University, Bakersfield
-          logo_url: https://www.csueastbay.edu/_global/images/footer/new-csueb-logo/vp2-logo.png
-          url: https://www.csueastbay.edu/
+          logo_url: https://www.csub.edu/brand/_images/brand-primary-logo.jpg
+          url: https://www.csub.edu/
   scheduling:
     userScheduler:
       nodeSelector:
