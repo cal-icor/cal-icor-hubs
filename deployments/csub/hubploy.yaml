@@ -1,6 +1,6 @@
 images:
   images:
-    - name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image:af96c5e40451
+    - name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image:79e7ee67211e
 
 cluster:
   provider: gcloud
