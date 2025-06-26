@@ -106,3 +106,5 @@ jupyterhub-deployment:
   - 'deployments/csub/**'
 'hub: ucsc':
   - 'deployments/ucsc/**'
+'hub: usc':
+  - 'deployments/usc/**'
