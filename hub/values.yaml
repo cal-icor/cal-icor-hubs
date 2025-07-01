@@ -109,7 +109,7 @@ jupyterhub:
         data:
           NotebookApp:
             # shutdown the server after no 30 mins of no activity
-            shutdown_no_activity_timeout: 1800
+            shutdown_no_activity_timeout: 3600
 
           # if a user leaves a notebook with a running kernel,
           # the effective idle timeout will typically be CULL_TIMEOUT + CULL_KERNEL_TIMEOUT
@@ -117,9 +117,9 @@ jupyterhub:
           # resetting the no_activity timer for the server as a whole
           MappingKernelManager:
             # shutdown kernels after 30 mins of no activity
-            cull_idle_timeout: 1800
+            cull_idle_timeout: 3600
             # check for idle kernels this often
-            cull_interval: 60
+            cull_interval: 120
             # a kernel with open connections but no activity still counts as idle
             # this is what allows us to shutdown servers
             # when people leave a notebook open and wander off
