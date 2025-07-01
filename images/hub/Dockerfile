@@ -5,5 +5,6 @@ FROM jupyterhub/k8s-hub:4.2.0
 USER root
 
 RUN python3 -m pip install --no-cache jupyterhub-ltiauthenticator==1.6.2
+RUN python3 -m pip install --no-cache oauthenticator==17.1.0
 
 USER ${NB_USER}
