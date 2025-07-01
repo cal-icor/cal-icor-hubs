@@ -51,7 +51,7 @@ jupyterhub:
             - name: net.ipv4.ip_local_port_range
               value: "10000 65000"
       image:
-        tag: 5.0.0-beta.1
+        tag: 5.0.1
       # extraCommandLineFlags:
         # set the timeout and proxyTimeout to 5 seconds
         # https://github.com/http-party/node-http-proxy?tab=readme-ov-file#options
