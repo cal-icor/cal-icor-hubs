@@ -80,8 +80,6 @@ jupyterhub-deployment:
   - 'deployments/jupyter/**'
 'hub: lacc':
   - 'deployments/lacc/**'
-'hub: ucla':
-  - 'deployments/ucla/**'
 'hub: csuf':
   - 'deployments/csuf/**'
 'hub: csum':
