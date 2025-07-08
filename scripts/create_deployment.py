@@ -226,7 +226,6 @@ def create_branch(branch_name: str, root_path: str):
         exit(1)
     try:
         subprocess.check_call(["git", "switch", "-c", branch_name], cwd=root_path)
-        print(f"Created new branch: {branch_name}")
     except subprocess.CalledProcessError as e:
         print(f"Error creating branch {branch_name}: {e}")
         exit(1)
@@ -315,6 +314,7 @@ def create_deployment(
 
     # Create a feature branch
     branch_name = f"add-{config['hub_name']}-deployment"
+    print(f"Creating feature branch {branch_name}.")
     create_branch(branch_name, root_path)
 
     # Populate the deployment configuration
