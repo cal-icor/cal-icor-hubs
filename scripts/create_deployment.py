@@ -11,7 +11,7 @@ from cookiecutter.main import cookiecutter
 from hubploy import helm
 
 
-def delete_file(filepath):
+def delete_file(filepath: str):
     """
     Deletes a file from the filesystem.
 
@@ -34,7 +34,7 @@ def delete_file(filepath):
         print(f"Error deleting file: {e}")
 
 
-def encrypt_file(input_file, output_file):
+def encrypt_file(input_file: str, output_file: str):
     """
     Encrypts a file using the `sops` command-line tool.
 
@@ -59,7 +59,7 @@ def encrypt_file(input_file, output_file):
         sys.exit(1)
 
 
-def handle_secrets(school_arg, env_arg):
+def handle_secrets(school_arg: str, env_arg: str):
     """
     Handles the encryption and cleanup of secret files.
 
@@ -81,7 +81,7 @@ def handle_secrets(school_arg, env_arg):
     )
 
 
-def create_label(hub_name, root_path):
+def create_label(hub_name: str, root_path: str) -> str:
     """
     Create labels for the new hub in the GitHub repository.
 
@@ -124,7 +124,7 @@ def create_label(hub_name, root_path):
     return github_label
 
 
-def stage_and_push(hub_name, root_path, branch_name):
+def stage_and_push(hub_name: str, root_path: str, branch_name: str):
     """
     Stage the new deployment files for the hub.
 
@@ -164,7 +164,7 @@ def stage_and_push(hub_name, root_path, branch_name):
         exit(1)
 
 
-def create_pr(github_user, hub_name, branch_name, github_label):
+def create_pr(github_user: str, hub_name: str, branch_name: str, github_label: str):
     """
     Add, commit and create a pull request for the new hub deployment.
     Args:
@@ -198,12 +198,13 @@ def create_pr(github_user, hub_name, branch_name, github_label):
         exit(1)
 
 
-def create_branch(branch_name, root_path):
+def create_branch(branch_name: str, root_path: str):
     """
     Create a new branch in the Git repository.
 
     Args:
         branch_name (str): The name of the new branch to be created.
+        root_path (str): The path to the root directory of the repository.
     """
     try:
         branch = (
@@ -225,13 +226,14 @@ def create_branch(branch_name, root_path):
         exit(1)
     try:
         subprocess.check_call(["git", "switch", "-c", branch_name], cwd=root_path)
-        print(f"Created new branch: {branch_name}")
     except subprocess.CalledProcessError as e:
         print(f"Error creating branch {branch_name}: {e}")
         exit(1)
 
 
-def populate_deployment_config(config, root_path, manual_config):
+def populate_deployment_config(
+    config: dict, root_path: str, manual_config: bool = False
+):
     """
     Populate the deployment configuration file with the provided configuration.
 
@@ -278,11 +280,14 @@ def populate_deployment_config(config, root_path, manual_config):
         handle_secrets(config["hub_name"], env)
 
 
-def create_deployment(config, github_user, root_path, manual_config=False):
+def create_deployment(
+    config: dict, github_user: str, root_path: str, manual_config: bool = False
+):
     """
     Create a new deployment for an institution using the provided configuration.
     Args:
         config (dict): The configuration dictionary containing deployment details.
+        github_user (str): The GitHub username of the user creating the pull request.
         root_path (str): The parent path where the deployment will be created.
         manual_config (bool): If True, the script will ask for confirmation for each step.
     """
@@ -309,6 +314,7 @@ def create_deployment(config, github_user, root_path, manual_config=False):
 
     # Create a feature branch
     branch_name = f"add-{config['hub_name']}-deployment"
+    print(f"Creating feature branch {branch_name}.")
     create_branch(branch_name, root_path)
 
     # Populate the deployment configuration
