@@ -74,12 +74,8 @@ jobs:
       - name: Login to GAR
         if: ${{ env.DEPLOY }}
         run: |
-          cat deployments/jupyter/secrets/gke-key.json | helm registry login -u _json_key --password-stdin \
-            https://us-central1-docker.pkg.dev
-
-          # gcloud auth application-default print-access-token | \
-          #   helm registry login -u oauth2accesstoken \
-          #   --password-stdin https://us-central1-docker.pkg.dev
+          cat deployments/jupyter/secrets/gke-key.json | helm registry login \
+            -u _json_key --password-stdin https://us-central1-docker.pkg.dev
 
       - name: Deploy support helm chart
         if: ${{ env.DEPLOY }}
