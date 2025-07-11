@@ -60,33 +60,23 @@ jobs:
         with:
           install_components: 'gke-gcloud-auth-plugin'
 
-      # - name: Activate credentials for cluster
-      #   if: ${{ env.DEPLOY }}
-      #   run: |
-      #     sops -d -i deployments/jupyter/secrets/gke-key.json
-      #     gcloud auth \
-      #       activate-service-account \
-      #       --key-file deployments/jupyter/secrets/gke-key.json
-      #     gcloud container clusters \
-      #       --region=us-central1 --project=cal-icor-hubs \
-      #       get-credentials spring-2025
-
-      - name: Set up Google Cloud authentication
+      - name: Activate credentials for cluster
         if: ${{ env.DEPLOY }}
-        uses: 'google-github-actions/auth@v2'
-        id: auth
-        with:
-          token_format: 'access_token'
-          service_account: 'hubploy-922@cal-icor-hubs.iam.gserviceaccount.com'
-          workload_identity_provider: 'projects/1045396016572/locations/global/workloadIdentityPools/github-actions/providers/github-actions-publish'
+        run: |
+          sops -d -i deployments/jupyter/secrets/gke-key.json
+          gcloud auth \
+            activate-service-account \
+            --key-file deployments/jupyter/secrets/gke-key.json
+          gcloud container clusters \
+            --region=us-central1 --project=cal-icor-hubs \
+            get-credentials spring-2025
 
       - name: Login to GAR
         if: ${{ env.DEPLOY }}
-        uses: docker/login-action@v3
-        with:
-          registry: us-central1-docker.pkg.dev
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
+        run: |
+          gcloud auth application-default print-access-token | \
+            helm registry login -u oauth2accesstoken \
+            --password-stdin https://us-central1-docker.pkg.dev
 
       - name: Deploy support helm chart
         if: ${{ env.DEPLOY }}
