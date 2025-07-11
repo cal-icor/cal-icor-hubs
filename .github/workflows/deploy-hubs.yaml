@@ -80,14 +80,6 @@ jobs:
           EOF
           echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> $GITHUB_ENV
 
-      - name: Install Helm
-        if: ${{ env.DEPLOY }}
-        run: |
-            curl -L https://get.helm.sh/helm-v3.13.3-linux-amd64.tar.gz | tar -xzf -
-            mv linux-amd64/helm /usr/local/bin
-            helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
-            helm repo update
-
       - name: Deploy hubs to staging
         if: ${{ env.DEPLOY }}
         run: |
@@ -166,14 +158,6 @@ jobs:
           ${{ secrets.SOPS_KEY }}
           EOF
           echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> $GITHUB_ENV
-
-      - name: Install Helm
-        if: ${{ env.DEPLOY }}
-        run: |
-            curl -L https://get.helm.sh/helm-v3.13.3-linux-amd64.tar.gz | tar -xzf -
-            mv linux-amd64/helm /usr/local/bin
-            helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
-            helm repo update
 
       - name: Deploy hubs to prod
         if: ${{ env.DEPLOY }}
