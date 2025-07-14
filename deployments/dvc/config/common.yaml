@@ -47,7 +47,7 @@ jupyterhub:
             allowed_domains:
               - dvc.edu
       Authenticator:
-        manage_groups: true
+        manage_groups: false
         admin_users:
           - sknapp@berkeley.edu
           - ericvd@berkeley.edu
