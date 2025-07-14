@@ -47,6 +47,8 @@ jupyterhub:
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
           - jjaynes@fullerton.edu
+          - wpeng@fullerton.edu
+          - dchandswang@fullerton.edu
   singleuser:
     extraFiles:
       # DH-216
