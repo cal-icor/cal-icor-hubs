@@ -85,7 +85,7 @@ body:
       required: true
 
   - type: input
-    id: end_date
+    id: end-date
     attributes:
       label: End Date
       description: "Until when (MM/DD/YYYY) do you require the additional RAM? This will help us scale down resources when the RAM increase is no longer required"
