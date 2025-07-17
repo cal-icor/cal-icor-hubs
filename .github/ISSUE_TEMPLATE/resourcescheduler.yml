@@ -9,7 +9,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please follow the sections in the template and provide all the required information for us to to validate and allocate increased compute for your class.
+        Please follow the sections in the template and provide all the required information for us to validate and allocate increased compute for your class.
   - type: textarea
     attributes:
       label: Course Name
