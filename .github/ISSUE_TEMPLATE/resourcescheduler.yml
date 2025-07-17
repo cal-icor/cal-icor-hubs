@@ -29,7 +29,7 @@ body:
   - type: dropdown
     attributes:
       label: Session Details
-      description: Is this request for the current quarter or semester?
+      description: Is this request for the current academic session?
       options:
       - "Yes"
       - "No"
