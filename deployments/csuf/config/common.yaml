@@ -7,13 +7,11 @@ jupyterhub:
   custom:
     homepage:
       # gitRepoBranch: "username-and-password-homepage"
-      gitRepoBranch: "main"
+      gitRepoBranch: "csuf-specific"
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
           name: California State University, Fullerton
-          logo_url: https://www.cal-icor.org/assets/CalIcor-logo2.png
-          url: https://www.cal-icor.org/
   scheduling:
     userScheduler:
       nodeSelector:
