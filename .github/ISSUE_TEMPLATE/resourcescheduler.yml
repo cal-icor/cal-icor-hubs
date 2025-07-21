@@ -1,0 +1,28 @@
+name: Schedule Hub Availability for Large Groups (>75 concurrent users)
+description: Schedule specific dates/times when your coursework requires higher computing resources
+labels: "support"
+title: Increase compute resources for Course XXX between specific date(s)/time(s)
+assignees:
+  - shaneknapp
+  - sean-morris
+body:
+  - type: markdown
+    attributes:
+      value: |
+        To ensure quicker access for users, please notify us if you anticipate more than 75 people logging into your hub concurrently. This applies to both scheduled events (e.g., recurring course/lab sessions) and one-time large gatherings (e.g., workshops). Scheduling in advance allows us to provision additional resources to accommodate peak demand.
+  - type: textarea
+    attributes:
+      label: Course Name
+      description: What is the name of the course?
+      value: |
+        <!--Include a link to appropriate webpage of the class if available. If not, please mention class name, instructor and a brief description.-->
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Request Details
+      description: Specify the time duration for which you are expecting this increase in compute, as well as the number of users you expect to be logged in concurrently and when you would expect the users to be logging in.
+      value: |
+        <!-- Specify the start date and end dates, the time of day when the expected logins will occur, as well as the frequency (eg: daily, monday/wednesday/friday). An example might look like "september 1st through september 15th, M/W/F at 10am." -->
+    validations:
+      required: true

@@ -1,0 +1,100 @@
+name: Increased RAM Request
+description: Fill out this template to request additional RAM for your course
+title: Request more RAM for class X
+labels: ["support", "add memory config"]
+assignees: ["shaneknapp", "sean-morris"]
+
+body:
+  - type: markdown
+    attributes:
+      value: "# RAM Increase Request Form"
+
+  - type: dropdown
+    id: hub_url
+    attributes:
+      label: Institution URL
+      description: Hub that you are currently using for teaching/research
+      options:
+        - csub.jupyter.cal-icor.org
+        - csueb.jupyter.cal-icor.org
+        - csuf.jupyter.cal-icor.org
+        - csula.jupyter.cal-icor.org
+        - csulb.jupyter.cal-icor.org
+        - csum.jupyter.cal-icor.org
+        - csumb.jupyter.cal-icor.org
+        - csus.jupyter.cal-icor.org
+        - csusj.jupyter.cal-icor.org
+        - cuesta.jupyter.cal-icor.org
+        - dvc.jupyter.cal-icor.org
+        - evc.jupyter.cal-icor.org
+        - folsomlake.jupyter.cal-icor.org
+        - fresno.jupyter.cal-icor.org
+        - jupyter.jupyter.cal-icor.org
+        - lacc.jupyter.cal-icor.org
+        - ucla.jupyter.cal-icor.org
+        - ucsc.jupyter.cal-icor.org
+        - usc.jupyter.cal-icor.org
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Course Name
+      description: Include a link to appropriate webpage of the class if available. If not, please mention class name, instructor and a brief description.
+    validations:
+      required: true
+
+  - type: input
+    id: student-count
+    attributes:
+      label: "How many students do you expect in this class?"
+      description: "An approximate number would do."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ram-needed
+    attributes:
+      label: "How much RAM per user is needed?"
+      description: "The default is 1 GB (One GB) of RAM per student."
+      options:
+        - "2 GB"
+        - "3 GB"
+        - "4 GB"
+        - "5 GB"
+        - "6 GB"
+        - "7 GB"
+        - "8 GB"
+    validations:
+      required: true
+
+  - type: textarea
+    id: justification
+    attributes:
+      label: "Why does this class need this much RAM?"
+      description: "A short justification for this resource request."
+    validations:
+      required: true
+
+  - type: input
+    id: fulfillment-date
+    attributes:
+      label: "By what date (MM/DD/YYYY) do you want this request to be fulfilled?"
+      description: "This will help us with the prioritization of this request."
+    validations:
+      required: true
+
+  - type: input
+    id: end-date
+    attributes:
+      label: End Date
+      description: "Until when (MM/DD/YYYY) do you require the additional RAM? This will help us scale down resources when the RAM increase is no longer required"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: "Any additional information we should know about?"
+    validations:
+      required: false
