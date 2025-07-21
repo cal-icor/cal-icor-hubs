@@ -1,4 +1,4 @@
-name: Request to schedule events to increase compute
+name: Schedule Hub Availability for Large Groups (>75 concurrent users)
 description: Schedule specific dates/times when your coursework requires higher computing resources
 labels: "support"
 title: Increase compute resources for Course XXX between specific date(s)/time(s)
@@ -9,7 +9,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please follow the sections in the template and provide all the required information for us to validate and allocate increased compute for your class.
+        To ensure quicker access for users, please notify us if you anticipate more than 75 people logging into your hub concurrently. This applies to both scheduled events (e.g., recurring course/lab sessions) and one-time large gatherings (e.g., workshops). Scheduling in advance allows us to provision additional resources to accommodate peak demand.
   - type: textarea
     attributes:
       label: Course Name
@@ -20,27 +20,9 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: Detailed Requirements
-      description: Rationale for requesting increased compute
+      label: Request Details
+      description: Specify the time duration for which you are expecting this increase in compute, as well as the number of users you expect to be logged in concurrently and when you would expect the users to be logging in.
       value: |
-        - <!--Eg: Conducting Live Workshops/Exams/Flipped Classroom(s) or due to Deadline for Compute Intensive Assignment-->
-    validations:
-      required: true
-  - type: dropdown
-    attributes:
-      label: Session Details
-      description: Is this request for the current academic session?
-      options:
-      - "Yes"
-      - "No"
-      - Not Sure
-    validations:
-      required: true
-  - type: textarea
-    attributes:
-      label: Request Deadline
-      description: Specify the time duration for which you are expecting this increase in compute
-      value: |
-        <!-- Specify the start date/time and end date/time -->
+        <!-- Specify the start date/time and end date/time, as well as the frequency (eg: daily, monday/wednesday/friday) -->
     validations:
       required: true
