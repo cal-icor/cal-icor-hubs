@@ -23,6 +23,6 @@ body:
       label: Request Details
       description: Specify the time duration for which you are expecting this increase in compute, as well as the number of users you expect to be logged in concurrently and when you would expect the users to be logging in.
       value: |
-        <!-- Specify the start date/time and end date/time, as well as the frequency (eg: daily, monday/wednesday/friday) -->
+        <!-- Specify the start date and end dates, the time of day when the expected logins will occur, as well as the frequency (eg: daily, monday/wednesday/friday). An example might look like "september 1st through september 15th, M/W/F at 10am." -->
     validations:
       required: true
