@@ -56,10 +56,10 @@ body:
   - type: textarea
     attributes:
       label: Reproducible test case
-      description: Please provide instructions to admins by uploading a reproducible test notebook (ipynb, rmd) or a code block (Python/R/Julia)
-        <!-- 1. Click the following notebook URL to Launch server on x.jupyter.cal-icor.org URL
-             2. Run cell no. y to execute the code block using the requested package
-             3. You should get the following output to confirm that the package installation worked as expected.
+      description: Please provide instructions to admins by uploading a reproducible test notebook (ipynb, rmd) or a code block (Python/R/Julia):<br>
+            1. Click the following notebook URL to Launch server on x.jupyter.cal-icor.org URL<br>
+            2. Run cell no. y to execute the code block using the requested package<br>
+            3. You should get the following output to confirm that the package installation worked as expected.<br>
     validations:
       required: true
   - type: input

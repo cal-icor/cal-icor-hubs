@@ -20,3 +20,4 @@ hub/charts
 
 _deploy_configs/*.yaml
 !_deploy_configs/institution-example.yaml
+git-manage.sh
