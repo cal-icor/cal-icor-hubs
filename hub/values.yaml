@@ -474,7 +474,6 @@ jupyterhub:
                   v['readOnly'] = False
                   v['mountPath'] = '/home/jovyan/shared_readwrite'
                   self.log.info(f'Giving {self.user.name} read/write access to shared folder')
-                  self.volume_mounts[count] = v
                 count += 1
 
             # custom.memory
