@@ -102,7 +102,7 @@ jupyterhub:
         - name: home
           mountPath: /home/jovyan/shared
           subPath: _shared
-          readOnly: false
+          readOnly: true
     memory:
       guarantee: 1G
       limit: 2G
