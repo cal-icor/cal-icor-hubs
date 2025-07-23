@@ -470,8 +470,10 @@ jupyterhub:
             if self.user.admin:
               for v in volume_mounts:
                 if v.get('mountPath') == '/home/jovyan/shared':
-                  v['readOnly'] = False
-                  v['mountPath'] = '/home/jovyan/shared_readwrite'
+                  rw = v.copy()
+                  rw['readOnly'] = False
+                  rw['mountPath'] = '/home/jovyan/shared_readwrite'
+                  volume_mounts.append(rw)
                   self.log.info(f'Giving {self.user.name} read/write access to shared folder')
 
             # custom.memory
