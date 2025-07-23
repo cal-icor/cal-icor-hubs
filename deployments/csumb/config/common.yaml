@@ -71,7 +71,7 @@ jupyterhub:
         - name: home
           mountPath: /home/jovyan/shared
           subPath: _shared
-          readOnly: false
+          readOnly: true
     memory:
       guarantee: 512M
       limit: 1G
