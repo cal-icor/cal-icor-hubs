@@ -465,6 +465,17 @@ jupyterhub:
             if self.spawn_launcher_delay:
               await asyncio.sleep(self.spawn_launcher_delay)
 
+            # give admins read/write access to the shared folder
+            volume_mounts = self.volume_mounts
+            if self.user.admin:
+              for v in volume_mounts:
+                if v.get('mountPath') == '/home/jovyan/shared':
+                  rw = v.copy()
+                  rw['readOnly'] = False
+                  rw['mountPath'] = '/home/jovyan/shared_readwrite'
+                  volume_mounts.append(rw)
+                  self.log.info(f'Giving {self.user.name} read/write access to shared folder')
+
             # custom.memory
             custom_memory = z2jh.get_config('custom.memory', {})
             for attr, users in custom_memory.items():
