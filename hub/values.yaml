@@ -468,13 +468,11 @@ jupyterhub:
             # give admins read/write access to the shared folder
             volume_mounts = self.volume_mounts
             if self.user.admin:
-              count = 0
               for v in volume_mounts:
                 if v.get('mountPath') == '/home/jovyan/shared':
                   v['readOnly'] = False
                   v['mountPath'] = '/home/jovyan/shared_readwrite'
                   self.log.info(f'Giving {self.user.name} read/write access to shared folder')
-                count += 1
 
             # custom.memory
             custom_memory = z2jh.get_config('custom.memory', {})
