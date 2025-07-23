@@ -305,7 +305,9 @@ def create_deployment(
                 "--command",
                 "sudo -u ubuntu install -d -o 1000 -g 1000 "
                 + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod "
-                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging",
+                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod/_shared ",
+                +f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging ",
+                +f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging/_shared",
             ]
         )
     except subprocess.CalledProcessError as e:
