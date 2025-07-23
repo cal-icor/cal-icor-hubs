@@ -84,27 +84,33 @@ jupyterhub:
         - -cx
         args:
           - |
-            echo Setting permissions for shared access based on SHARED_ACCESS=$SHARED_ACCESS...
+            ls -ld /home/jovyan/shared
+            echo "Setting permissions for shared access based on SHARED_ACCESS=$SHARED_ACCESS..."
             if [ "$SHARED_ACCESS" = "read_write" ]; then
                 # For admins (instructors): give read/write/execute to owner, and read/execute to group.
                 # Adjust owner/group as necessary for your NFS setup.
                 # If you don't have specific group needs, 'root:root' can work if your pod runs as root initially.
-                chmod -R 770 /home/jovyan/shared
-                # Example: chown root:root /shared  (Adjust user/group as needed for your NFS)
+                chmod 0770 /home/jovyan/shared
+                # Example: chown root:root /home/jovyan/shared  (Adjust user/group as needed for your NFS)
             else
               # For regular users: give read/execute to owner and read/execute to group.
               # This effectively makes it read-only for them.
-              chmod -R 750 /home/jovyan/shared
+              chmod 0550 /home/jovyan/shared
               # Example: chown root:root /shared (Adjust user/group as needed for your NFS)
             fi
-            echo Permissions set for /shared.
+            echo "Permissions set for /home/jovyan/shared."
+            ls -ld /home/jovyan/shared
         env:
-          # This env var will be populated by the pre_spawn_hook
+          # This env var will be populated by the pre_spawn_hook somehow?
           - name: SHARED_ACCESS
-            value: "" # read_only
+            value: "read_write" # "read_only"
         volumeMounts:
-          - name: home-nfs-v3
+          - name: home
+            mountPath: /home/jovyan
+            subPath: "{escaped_username}"
+          - name: home
             mountPath: /home/jovyan/shared
+            subPath: _shared
         securityContext:
           # Init containers often need to run as root to change permissions
           runAsUser: 0
