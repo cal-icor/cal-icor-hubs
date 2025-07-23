@@ -76,44 +76,6 @@ jupyterhub:
       letsencrypt:
         contactEmail: calicor-letsencrypt@berkeley.edu
   singleuser:
-    initContainers:
-      - name: set-shared-perms
-        image: busybox:1.36.1
-        command:
-        - sh
-        - -cx
-        args:
-          - |
-            ls -ld /home/jovyan/shared
-            echo "Setting permissions for shared access based on SHARED_ACCESS=$SHARED_ACCESS..."
-            if [ "$SHARED_ACCESS" = "read_write" ]; then
-                # For admins (instructors): give read/write/execute to owner, and read/execute to group.
-                # Adjust owner/group as necessary for your NFS setup.
-                # If you don't have specific group needs, 'root:root' can work if your pod runs as root initially.
-                chmod 0770 /home/jovyan/shared
-                # Example: chown root:root /home/jovyan/shared  (Adjust user/group as needed for your NFS)
-            else
-              # For regular users: give read/execute to owner and read/execute to group.
-              # This effectively makes it read-only for them.
-              chmod 0550 /home/jovyan/shared
-              # Example: chown root:root /shared (Adjust user/group as needed for your NFS)
-            fi
-            echo "Permissions set for /home/jovyan/shared."
-            ls -ld /home/jovyan/shared
-        env:
-          # This env var will be populated by the pre_spawn_hook somehow?
-          - name: SHARED_ACCESS
-            value: "read_write" # "read_only"
-        volumeMounts:
-          - name: home
-            mountPath: /home/jovyan
-            subPath: "{escaped_username}"
-          - name: home
-            mountPath: /home/jovyan/shared
-            subPath: _shared
-        securityContext:
-          # Init containers often need to run as root to change permissions
-          runAsUser: 0
     cmd:
       # Explicitly define this, as it's no longer set by z2jh
       # https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/2449
@@ -412,22 +374,7 @@ jupyterhub:
             'custom': get_config('custom.homepage.templateVars')
         })
 
-      02-custom-attr-spawner-shared: |
-        def set_shared_access_permissions(spawner):
-          """
-          Determines if the user is an admin and sets an environment variable
-          in the user's pod to control shared folder access.
-          """
-          is_admin = spawner.user.admin
-          if is_admin:
-              spawner.environment["SHARED_ACCESS"] = "read_write"
-          else:
-              spawner.environment["SHARED_ACCESS"] = "read_only"
-
-        # Register the hook
-        c.Spawner.pre_spawn_hook = set_shared_access_permissions
-
-      03-custom-attr-spawner: |
+      02-custom-attr-spawner: |
         import asyncio
         import os
         import time
@@ -517,6 +464,20 @@ jupyterhub:
             # https://github.com/berkeley-dsep-infra/datahub/issues/4237
             if self.spawn_launcher_delay:
               await asyncio.sleep(self.spawn_launcher_delay)
+
+            # give admins read/write access to the shared folder
+            admins = z2jh.get_config('hub.config.Authenticator.admin_users')
+            volume_mounts = self.volume_mounts
+            for admin in admins:
+              if self.user.name == admin:
+                count = 0
+                for v in volume_mounts:
+                  if v.get('mountPath') == '/home/jovyan/shared':
+                    v['readOnly'] = False
+                    v['mountPath'] = '/home/jovyan/shared_readwrite'
+                    self.log.warning(f'Giving {self.user.name} read/write access to shared folder')
+                    self.volume_mounts[count] = v
+                  count += 1
 
             # custom.memory
             custom_memory = z2jh.get_config('custom.memory', {})
