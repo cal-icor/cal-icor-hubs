@@ -1,0 +1,52 @@
+name: Admin Access Request
+description: Fill out this form to request Admin access to your JupyterHub instance.
+title: Request Admin Access
+labels: ["admin", "access"]
+assignees: ["shaneknapp", "sean-morris"]
+
+body:
+  - type: markdown
+    attributes:
+      value: "# Admin Access Request Form"
+
+  - type: dropdown
+    id: hub_url
+    attributes:
+      label: Institution URL
+      description: Hub that you are currently using for teaching/research
+      options:
+        - csub.jupyter.cal-icor.org
+        - csueb.jupyter.cal-icor.org
+        - csuf.jupyter.cal-icor.org
+        - csula.jupyter.cal-icor.org
+        - csulb.jupyter.cal-icor.org
+        - csum.jupyter.cal-icor.org
+        - csumb.jupyter.cal-icor.org
+        - csus.jupyter.cal-icor.org
+        - csusj.jupyter.cal-icor.org
+        - cuesta.jupyter.cal-icor.org
+        - dvc.jupyter.cal-icor.org
+        - evc.jupyter.cal-icor.org
+        - folsomlake.jupyter.cal-icor.org
+        - fresno.jupyter.cal-icor.org
+        - jupyter.jupyter.cal-icor.org
+        - lacc.jupyter.cal-icor.org
+        - ucla.jupyter.cal-icor.org
+        - ucsc.jupyter.cal-icor.org
+        - usc.jupyter.cal-icor.org
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Email Address
+      description: "Please provide your email address so we can contact you regarding this request, and add it to the Admin list for your hub."
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: "Any additional information we should know about?"
+    validations:
+      required: false
