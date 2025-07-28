@@ -138,6 +138,12 @@ jupyterhub:
       # Set RUNTIME_DIR to live under /tmp, as these need not persist across container restarts
       # This doesn't cause a *lot* of NFS traffic, but does cause *some*
       JUPYTER_RUNTIME_DIR: /tmp/jupyter-runtime
+    storage:
+      extraVolumeMounts:
+        - name: home
+          mountPath: /home/jovyan/shared
+          subPath: _shared
+          readOnly: true
     startTimeout: 600 # 10 mins, because sometimes we have too many new nodes coming up together
     networkPolicy:
       enabled: true
