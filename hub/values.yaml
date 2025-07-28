@@ -169,6 +169,13 @@ jupyterhub:
                   - 192.168.0.0/16
               # Don't allow network access to the metadata IP
                   - 169.254.169.254/32
+    storage:
+      extraVolumeMounts:
+        - name: home
+          mountPath: /home/jovyan/shared
+          subPath: _shared
+          readOnly: true
+
 
   custom:
     homepage:
