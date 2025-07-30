@@ -189,6 +189,8 @@ node-placeholder-scaler:
   calendarUrl: 
     https://calendar.google.com/calendar/ical/c_35d90f50598c1472a4154c538bb49a21eabd8be93831d7de345d53fea8e19390%40group.calendar.google.com/public/basic.ics
 
+  calendarTimezone: "America/Los_Angeles"
+
   nodePools:
     # short name of the node pool, used in the calendar event description
     base:
