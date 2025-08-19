@@ -51,6 +51,7 @@ jupyterhub:
           - sajorgensen@csumb.edu
           - ducampbell@csumb.edu
           - javmata@csumb.edu
+          - njue@csumb.edu
   singleuser:
     extraFiles:
       # DH-216
