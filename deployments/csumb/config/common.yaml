@@ -48,6 +48,9 @@ jupyterhub:
           - sknapp@berkeley.edu
           - jmccall@csumb.edu
           - sogden@csumb.edu
+          - sajorgensen@csumb.edu
+          - ducampbell@csumb.edu
+          - javmata@csumb.edu
   singleuser:
     extraFiles:
       # DH-216
