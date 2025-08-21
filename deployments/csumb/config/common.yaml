@@ -46,12 +46,18 @@ jupyterhub:
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
-          - jmccall@csumb.edu
-          - sogden@csumb.edu
-          - sajorgensen@csumb.edu
+          - aunfried@csumb.edu
           - ducampbell@csumb.edu
+          - etang@csumb.edu
+          - hglanz@csumb.edu 
+          - hswift@csumb.edu
           - javmata@csumb.edu
+          - jmccall@csumb.edu     
           - njue@csumb.edu
+          - sajorgensen@csumb.edu
+          - shereynolds@csumb.edu
+          - sogden@csumb.edu
+          - stkim@csumb.edu
   singleuser:
     extraFiles:
       # DH-216
