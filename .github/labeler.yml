@@ -74,12 +74,8 @@ jupyterhub-deployment:
   - 'deployments/cuesta/**'
 'hub: dvc':
   - 'deployments/dvc/**'
-'hub: evc':
-  - 'deployments/evc/**'
 'hub: jupyter':
   - 'deployments/jupyter/**'
-'hub: lacc':
-  - 'deployments/lacc/**'
 'hub: ucla':
   - 'deployments/ucla/**'
 'hub: csuf':
