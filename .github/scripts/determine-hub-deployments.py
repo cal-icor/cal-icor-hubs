@@ -31,7 +31,9 @@ def main(args):
     # Deploy only the modified/flagged hubs by PR labels
     else:
         hub_labels = [
-            k.lower() for k in os.environ.keys() if k.startswith("GITHUB_PR_LABEL_HUB_")
+            k.replace("GITHUB_PR_LABEL_HUB_", "").replace("_", "-").lower()
+            for k in os.environ.keys()
+            if k.startswith("GITHUB_PR_LABEL_HUB_")
         ]
         hubs = [x.split("_")[-1] for x in hub_labels]
         hubs = [x for x in hubs if x not in args.ignore]
