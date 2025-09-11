@@ -293,6 +293,12 @@ def create_deployment(
     """
     # create the prod and staging directories on filestore for the new hub
     print(f"Creating directories for {config['hub_name']} on filestore.")
+    dirs = [
+        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod",
+        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod/_shared",
+        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging",
+        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging/_shared",
+    ]
     try:
         subprocess.check_call(
             [
@@ -303,11 +309,7 @@ def create_deployment(
                 "--tunnel-through-iap",
                 "--zone=us-central1-b",
                 "--command",
-                "sudo -u ubuntu install -d -o 1000 -g 1000 "
-                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod "
-                + f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod/_shared ",
-                +f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging ",
-                +f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging/_shared",
+                "sudo -u ubuntu install -d -o 1000 -g 1000 " + " ".join(dirs),
             ]
         )
     except subprocess.CalledProcessError as e:
