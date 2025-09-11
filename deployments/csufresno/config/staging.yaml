@@ -1,0 +1,23 @@
+nfsPVC:
+  nfs:
+    shareName: shares/csufresno/staging
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - csufresno-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csufresno-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      CILogonOAuthenticator:
+        oauth_callback_url: https://csufresno-staging.jupyter.cal-icor.org/hub/oauth_callback
