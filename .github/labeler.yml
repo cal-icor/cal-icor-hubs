@@ -76,8 +76,6 @@ jupyterhub-deployment:
   - 'deployments/dvc/**'
 'hub: jupyter':
   - 'deployments/jupyter/**'
-'hub: ucla':
-  - 'deployments/ucla/**'
 'hub: csuf':
   - 'deployments/csuf/**'
 'hub: csum':
