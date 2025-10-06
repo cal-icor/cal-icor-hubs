@@ -58,6 +58,9 @@ jupyterhub:
           - Seungjoon.Lee@csulb.edu
           - tyler.nakamura@csulb.edu
   singleuser:
+    image:
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
+      tag: 033dbc3795a2
     extraFiles:
       # DH-216
       remove-exporters:

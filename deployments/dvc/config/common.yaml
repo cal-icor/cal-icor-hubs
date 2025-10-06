@@ -73,6 +73,9 @@ jupyterhub:
         # groups:
         #   - course::1524699::group::all-admins
   singleuser:
+    image:
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
+      tag: 033dbc3795a2
     extraFiles:
       # DH-216
       remove-exporters:

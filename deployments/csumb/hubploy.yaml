@@ -1,7 +1,3 @@
-images:
-  images:
-    - name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image:afd6fa5944fb
-
 cluster:
   provider: gcloud
   gcloud:
