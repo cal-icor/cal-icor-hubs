@@ -104,3 +104,5 @@ jupyterhub-deployment:
   - 'deployments/usc/**'
 'hub: csufresno':
   - 'deployments/csufresno/**'
+'hub: csun':
+  - 'deployments/csun/**'
