@@ -11,7 +11,7 @@
 repos:
   # yaml linter
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.35.1
+    rev: v1.37.1
     hooks:
       - id: yamllint
         # TODO: remove --no-warnings eventually
@@ -20,7 +20,7 @@ repos:
   # Autoformat: Python code
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.6.9
+    rev: v0.14.0
     hooks:
       # Run the linter.
       - id: ruff
@@ -32,7 +32,7 @@ repos:
 
   # Autoformat: Python code, syntax patterns are modernized
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.21.0
     hooks:
       - id: pyupgrade
         args:
@@ -40,20 +40,20 @@ repos:
 
   # Autoformat: Python code
   - repo: https://github.com/pycqa/isort
-    rev: "5.13.2"
+    rev: "7.0.0"
     hooks:
       - id: isort
 
   # Autoformat: Python code
   - repo: https://github.com/psf/black
-    rev: "24.10.0"
+    rev: "25.9.0"
     hooks:
       - id: black
         # This is a `.py` file but is encrypted with sops
 
   # Lint: Python code
   - repo: https://github.com/pycqa/flake8
-    rev: "7.1.1"
+    rev: "7.3.0"
     hooks:
       - id: flake8
         # In case a `.py` file but is encrypted with sops
@@ -65,11 +65,11 @@ repos:
     hooks:
       - id: sops-encryption
         # Add files here if they contain the word 'secret' but should not be encrypted
-        # exclude:
+        exclude: deployments/template/{{cookiecutter\.hub_name}}/secrets/prod\.plain\.yaml|deployments/template/{{cookiecutter\.hub_name}}/secrets/staging\.plain\.yaml
 
   # Prevent known typos from being committed
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         args:
@@ -80,7 +80,7 @@ repos:
 
   # pre-commit.com provided hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     # ref: https://github.com/pre-commit/pre-commit-hooks#hooks-available
     hooks:
       # Autoformat: Makes sure files end in a newline and only a newline.
