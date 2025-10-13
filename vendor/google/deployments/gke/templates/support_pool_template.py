@@ -19,7 +19,7 @@ def GenerateConfig(context):
             "name": f"user-{pool_name}-{date_suffix}",
             "type": "gcp-types/container-v1:projects.locations.clusters.nodePools",
             "properties": {
-                "parent": f'projects/{context.env["project"]}/locations/{region}/clusters/{cluster_name}',
+                "parent": f"projects/{context.env['project']}/locations/{region}/clusters/{cluster_name}",
                 "nodePool": {
                     "name": f"{pool_name}-pool",
                     "initialNodeCount": initial_node_count,
