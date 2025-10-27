@@ -40,6 +40,7 @@ jupyterhub:
         manage_groups: false
         admin_users:
           # infrastructure
+          - jedwin321@berkeley.edu
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
