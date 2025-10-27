@@ -3,6 +3,10 @@ nfsPVC:
     shareName: shares/csumb/staging
 
 jupyterhub:
+  singleuser:
+    image:
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
+      tag: 8bc650528323
   scheduling:
     userScheduler:
       replicas: 1
