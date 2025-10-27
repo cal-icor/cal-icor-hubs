@@ -3,6 +3,12 @@ nfsPVC:
     shareName: shares/csumb/staging
 
 jupyterhub:
+  singleuser:
+    defaultUrl: "/rstudio"
+    image:
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
+      tag: 47e75477704b
+
   scheduling:
     userScheduler:
       replicas: 1
