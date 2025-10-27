@@ -49,6 +49,7 @@ jupyterhub:
       Authenticator:
         manage_groups: false
         admin_users:
+          - jedwin321@berkeley.edu
           - sknapp@berkeley.edu
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu

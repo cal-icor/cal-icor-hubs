@@ -41,6 +41,7 @@ jupyterhub:
         manage_groups: false
         admin_users:
           # infrastructure
+          - jedwin321@berkeley.edu
           - denero
           - denero@berkeley.edu
           - yijunge
