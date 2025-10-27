@@ -4,11 +4,9 @@ nfsPVC:
 
 jupyterhub:
   singleuser:
-    defaultUrl: "/rstudio"
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
-      tag: 47e75477704b
-
+      tag: 8bc650528323
   scheduling:
     userScheduler:
       replicas: 1
