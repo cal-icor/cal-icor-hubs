@@ -4,9 +4,9 @@ nfsPVC:
 
 jupyterhub:
   singleuser:
-    image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: 3dd516c42558
+    # image:
+    #   name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
+    #   tag: 3dd516c42558
   ingress:
     enabled: true
     hosts:
