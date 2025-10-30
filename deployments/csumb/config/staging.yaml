@@ -6,7 +6,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
-      tag: 84969f3ad9c5
+      tag: fdcc806fae36
   scheduling:
     userScheduler:
       replicas: 1
