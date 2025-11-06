@@ -88,8 +88,8 @@ jupyterhub:
       #     subPath: _shared
       #     readOnly: true
     memory:
-      guarantee: 512M
-      limit: 1G
+      guarantee: 1G
+      limit: 4G
 
 
   # This is under hub/config but got in the way when I 
