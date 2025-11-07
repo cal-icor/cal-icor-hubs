@@ -11,7 +11,7 @@ jupyterhub:
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
-          name: California State University, Long Beach
+          name: California State University, Northridge
           logo_url: https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/CSU_Northridge_logo.svg/420px-CSU_Northridge_logo.svg.png
           url: https://www.csun.edu/
   scheduling:
