@@ -1,0 +1,23 @@
+nfsPVC:
+  nfs:
+    shareName: shares/csuc/staging
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - csuc-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csuc-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      CILogonOAuthenticator:
+        oauth_callback_url: https://csuc-staging.jupyter.cal-icor.org/hub/oauth_callback
