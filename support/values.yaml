@@ -193,7 +193,8 @@ node-placeholder-scaler:
 
   cpuThreshold: 0.25
   memoryThreshold: 0.25
-
+  scalingStrategy: "mem" # Options: cpu, mem, balanced (default)
+  
   nodePools:
     # short name of the node pool, used in the calendar event description
     base:
