@@ -28,8 +28,8 @@ jupyterhub:
       hub.jupyter.org/pool-name: core-pool
     config:
       JupyterHub:
+        admin_access: true
         authenticator_class: dummy
-      CILogonOAuthenticator:
       Authenticator:
         manage_groups: false
         admin_users:
@@ -55,8 +55,8 @@ jupyterhub:
           - jonathanferrari
   singleuser:
     image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: d41ed883d708
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/sagemath-user-image
+      tag: PLACEHOLDER
     extraFiles:
       # DH-216
       remove-exporters:
