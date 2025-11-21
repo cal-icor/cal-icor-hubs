@@ -1,16 +1,16 @@
 nfsPVC:
   nfs:
-    shareName: shares/csuc/prod
+    shareName: shares/chicostate/prod
 
 jupyterhub:
   ingress:
     enabled: true
     hosts:
-      - csuc.jupyter.cal-icor.org
+      - chicostate.jupyter.cal-icor.org
     tls:
       - secretName: tls-cert
         hosts:
-          - csuc.jupyter.cal-icor.org
+          - chicostate.jupyter.cal-icor.org
   hub:
     db:
       pvc:
@@ -18,4 +18,4 @@ jupyterhub:
         storage: 4Gi
     config:
         CILogonOAuthenticator:
-          oauth_callback_url: https://csuc.jupyter.cal-icor.org/hub/oauth_callback
+          oauth_callback_url: https://chicostate.jupyter.cal-icor.org/hub/oauth_callback
