@@ -94,7 +94,8 @@ def create_label(hub_name: str, root_path: str) -> str:
     labeler_path = os.path.join(root_path, ".github", "labeler.yml")
     hub_label = f"""
 'hub: {hub_name}':
-  - 'deployments/{hub_name}/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/{hub_name}/**'
 """.strip()
     with open(labeler_path, "a") as f:
         print(hub_label, file=f)
