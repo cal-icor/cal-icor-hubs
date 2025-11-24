@@ -70,6 +70,8 @@ jupyterhub-deployment:
   - any-glob-to-any-file: 'hub/**'
 
 # add hub-specific labels for deployment changes
+# THIS SECTION IS AUTOMATICALLY MANAGED BY SCRIPTS/create_deployment.py
+# DO NOT EDIT MANUALLY BELOW THIS LINE
 'hub: cuesta':
 - changed-files:
   - any-glob-to-any-file: 'deployments/cuesta/**'
