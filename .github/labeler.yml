@@ -36,8 +36,12 @@ images:
 # add labels to docs
 documentation:
 - changed-files:
-  - any-glob-to-any-file: ['**/*.txt',  '**/*.md', 'LICENSE', '!**/apt.txt',
-      '!**/dev-requirements.txt', '!**/requirements.txt', '!**/runtime.txt']
+  - any-glob-to-any-file: ['**/*.txt',  '**/*.md', 'LICENSE']
+  - all-glob-to-any-file:
+    - '!**/apt.txt'
+    - '!**/dev-requirements.txt'
+    - '!**/requirements.txt'
+    - '!**/runtime.txt'
 
 # add build-infra label to any .github changes
 build-infra:
