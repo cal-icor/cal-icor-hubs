@@ -1,114 +1,135 @@
 # add labels for code changes
 python:
-  - '**/*.py'
+- changed-files:
+  - any-glob-to-any-file: '**/*.py'
 R-code:
-  - '**/*.R'
-  - '**/*.r'
+- changed-files:
+  - any-glob-to-any-file: ['**/*.R', '**/*.r']
 bash:
-  - '**/*.sh'
-  - '**/*.bash'
-  - '**/postBuild'
+- changed-files:
+  - any-glob-to-any-file: ['**/*.sh', '**/*.bash', '**/postBuild']
 dockerfile:
-  - '**/Dockerfile'
+- changed-files:
+  - any-glob-to-any-file: '**/Dockerfile'
 
 # add labels for non-singleuser image config changes
 configuration:
-  - 'configs/**'
-  - '**/requirements.in'
-  - '**/dev-requirements.txt'
-  - '**/requirements.txt'
-  - '**/runtime.txt'
-  - '**/*.json'
-  - '**/*.yml'
-  - '**/*.yaml'
+- changed-files:
+  - any-glob-to-any-file: ['configs/**', '**/requirements.in',
+      '**/dev-requirements.txt', '**/requirements.txt', '**/runtime.txt',
+      '**/*.json', '**/*.yml', '**/*.yaml']
 
 template:
-  - 'deployments/template/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/template/**'
 
 # changes to hub images
 hub-images:
-  - 'images/**'
+- changed-files:
+  - any-glob-to-any-file: 'images/**'
 
 # images
 images:
-  - '**/*.png'
-  - '**/*.svg'
+- changed-files:
+  - any-glob-to-any-file: ['**/*.png', '**/*.svg']
 
 # add labels to docs
 documentation:
-  - any: ['**/*.txt',  '!**/apt.txt', '!**/dev-requirements.txt', '!**/requirements.txt', '!**/runtime.txt']
-  - 'docs/**'
-  - '**/*.md'
-  - 'LICENSE'
+- changed-files:
+  - any-glob-to-any-file: ['**/*.txt',  '**/*.md', 'LICENSE', '!**/apt.txt',
+      '!**/dev-requirements.txt', '!**/requirements.txt', '!**/runtime.txt']
 
-# add build-infra label to any .github or circleci changes
+# add build-infra label to any .github changes
 build-infra:
-  - any: ['.github/**', '!.github/ISSUE_TEMPLATE/**']
-  - '.gitignore'
+- changed-files:
+  - any-glob-to-any-file: ['.github/**', '!.github/ISSUE_TEMPLATE/**', '.gitignore']
 
 issue-templates:
-  - '.github/ISSUE_TEMPLATE/**'
+- changed-files:
+  - any-glob-to-any-file: '.github/ISSUE_TEMPLATE/**'
 
 # helm chart infra
 helm-config:
-  - 'chartpress.yaml'
-  - '**/Chart.yaml'
-  - 'support/*.yaml'
-  - 'hub/*.yaml'
-  - '**/.helmignore'
+- changed-files:
+  - any-glob-to-any-file: ['chartpress.yaml', '**/Chart.yaml', 'support/*.yaml',
+      'hub/*.yaml', '**/.helmignore']
 
 # support systems
 support-deployment:
-  - 'support/**'
+- changed-files:
+  - any-glob-to-any-file: 'support/**'
 
 # grafana panel backups
 grafana:
-  - 'vendor/grafana/**'
+- changed-files:
+  - any-glob-to-any-file: 'vendor/grafana/**'
 
 # jupyterhub deployment
 jupyterhub-deployment:
-  - 'hub/**'
+- changed-files:
+  - any-glob-to-any-file: 'hub/**'
 
 # add hub-specific labels for deployment changes
 'hub: cuesta':
-  - 'deployments/cuesta/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/cuesta/**'
 'hub: dvc':
-  - 'deployments/dvc/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/dvc/**'
 'hub: jupyter':
-  - 'deployments/jupyter/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/jupyter/**'
 'hub: csuf':
-  - 'deployments/csuf/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csuf/**'
 'hub: csum':
-  - 'deployments/csum/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csum/**'
 'hub: csulb':
-  - 'deployments/csulb/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csulb/**'
 'hub: csueb':
-  - 'deployments/csueb/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csueb/**'
 'hub: csus':
-  - 'deployments/csus/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csus/**'
 'hub: csumb':
-  - 'deployments/csumb/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csumb/**'
 'hub: csula':
-  - 'deployments/csula/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csula/**'
 'hub: csusj':
-  - 'deployments/csusj/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csusj/**'
 'hub: folsomlake':
-  - 'deployments/folsomlake/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/folsomlake/**'
 'hub: fresno':
-  - 'deployments/fresno/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/fresno/**'
 'hub: csub':
-  - 'deployments/csub/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csub/**'
 'hub: ucsc':
-  - 'deployments/ucsc/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/ucsc/**'
 'hub: usc':
-  - 'deployments/usc/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/usc/**'
 'hub: csufresno':
-  - 'deployments/csufresno/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csufresno/**'
 'hub: csun':
-  - 'deployments/csun/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csun/**'
 'hub: chicostate':
-  - 'deployments/chicostate/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/chicostate/**'
 'hub: csusonoma':
-  - 'deployments/csusonoma/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/csusonoma/**'
 'hub: demo':
-  - 'deployments/demo/**'
+- changed-files:
+  - any-glob-to-any-file: 'deployments/demo/**'
