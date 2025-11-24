@@ -37,7 +37,7 @@ images:
 documentation:
 - changed-files:
   - any-glob-to-any-file: ['**/*.txt',  '**/*.md', 'LICENSE']
-  - any-glob-to-any-file:
+  - all-glob-to-all-file:
     - '!**/apt.txt'
     - '!**/dev-requirements.txt'
     - '!**/requirements.txt'
