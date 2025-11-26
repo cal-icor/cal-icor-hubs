@@ -7,7 +7,7 @@ Contains a fully reproducible configuration for JupyterHub for the Cal ICOR depl
 [Cal ICOR](https://cal-icor.org)
 
 In partnership with [UC Berkeley CDSS](https://cdss.berkeley.edu) and the
-[California Learning Lab](https://callearninglab.org/).
+[California Learning Lab](https://calearninglab.org/).
 
 This repository contains the Helm chart and configuration files for
 deploying JupyterHub on the Google Cloud Platform (GCP) using
