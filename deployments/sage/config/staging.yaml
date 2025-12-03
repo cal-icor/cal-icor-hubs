@@ -17,7 +17,3 @@ jupyterhub:
       - secretName: tls-cert
         hosts:
           - sage-staging.jupyter.cal-icor.org
-  hub:
-    config:
-      CILogonOAuthenticator:
-        oauth_callback_url: https://sage-staging.jupyter.cal-icor.org/hub/oauth_callback

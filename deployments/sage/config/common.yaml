@@ -28,8 +28,8 @@ jupyterhub:
       hub.jupyter.org/pool-name: core-pool
     config:
       JupyterHub:
+        admin_access: true
         authenticator_class: dummy
-      CILogonOAuthenticator:
       Authenticator:
         manage_groups: false
         admin_users:
