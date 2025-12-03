@@ -1,0 +1,21 @@
+nfsPVC:
+  nfs:
+    shareName: shares/sage/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - sage.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - sage.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+        CILogonOAuthenticator:
+          oauth_callback_url: https://sage.jupyter.cal-icor.org/hub/oauth_callback
