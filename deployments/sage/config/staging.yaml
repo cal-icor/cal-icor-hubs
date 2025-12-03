@@ -1,0 +1,19 @@
+nfsPVC:
+  nfs:
+    shareName: shares/sage/staging
+
+jupyterhub:
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - sage-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - sage-staging.jupyter.cal-icor.org

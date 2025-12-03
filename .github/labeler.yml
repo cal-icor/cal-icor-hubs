@@ -112,3 +112,5 @@ jupyterhub-deployment:
   - 'deployments/csusonoma/**'
 'hub: demo':
   - 'deployments/demo/**'
+'hub: sage':
+  - 'deployments/sage/**'
