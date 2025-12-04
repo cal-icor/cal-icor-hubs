@@ -55,7 +55,6 @@ spec:
             - /shared-volume
             - "100" # Use only 100 io operations per second at most
             - "10080" # Wait 7 days between runs
-            - --enable-detailed-processing-time-metric
             - --port=8000
           ports:
             - containerPort: 8000
