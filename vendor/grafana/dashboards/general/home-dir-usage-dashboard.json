@@ -1,0 +1,193 @@
+{
+   "editable": true,
+   "panels": [
+      {
+         "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+         },
+         "description": "Home directory usage by various users on the hub.\n\nRequires an installation of https://github.com/yuvipanda/prometheus-dirsize-exporter to work.\nIf this table is empty, your infrastructure administrator needs to deploy that exporter correctly.\n",
+         "fieldConfig": {
+            "overrides": [
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Size"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "bytes"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Last Modified"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "dateTimeFromNow"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Number of Entries"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "short"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "% of total space usage"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "percentunit"
+                     }
+                  ]
+               },
+               {
+                  "matcher": {
+                     "id": "byName",
+                     "options": "Processing Time"
+                  },
+                  "properties": [
+                     {
+                        "id": "unit",
+                        "value": "s"
+                     }
+                  ]
+               }
+            ]
+         },
+         "gridPos": {
+            "h": 24,
+            "w": 24,
+            "x": 0,
+            "y": 0
+         },
+         "id": 1,
+         "pluginVersion": "v11.1.0",
+         "targets": [
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$PROMETHEUS_DS"
+               },
+               "expr": "min(dirsize_latest_mtime{namespace=~\"$hub\"}) by (directory) * 1000\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$PROMETHEUS_DS"
+               },
+               "expr": "max(dirsize_total_size_bytes{namespace=~\"$hub\"}) by (directory)\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$PROMETHEUS_DS"
+               },
+               "expr": "max(dirsize_total_size_bytes{namespace=~\"$hub\"}) by (directory)\n/\nignoring (directory) group_left sum(dirsize_total_size_bytes{namespace=~\"$hub\"})\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$PROMETHEUS_DS"
+               },
+               "expr": "max(dirsize_entries_count{namespace=~\"$hub\"}) by (directory)\n",
+               "format": "table",
+               "instant": true
+            },
+            {
+               "datasource": {
+                  "type": "prometheus",
+                  "uid": "$PROMETHEUS_DS"
+               },
+               "expr": "max(dirsize_processing_time{namespace=~\"$hub\"}) by (directory)\n",
+               "format": "table",
+               "instant": true
+            }
+         ],
+         "title": "Home directory usage",
+         "transformations": [
+            {
+               "id": "joinByField",
+               "options": {
+                  "byField": "directory",
+                  "mode": "outer"
+               }
+            },
+            {
+               "id": "organize",
+               "options": {
+                  "excludeByName": {
+                     "Time 1": true,
+                     "Time 2": true,
+                     "Time 3": true,
+                     "Time 4": true,
+                     "Time 5": true
+                  },
+                  "renameByName": {
+                     "Value #A": "Last Modified",
+                     "Value #B": "Size",
+                     "Value #C": "% of total space usage",
+                     "Value #D": "Number of Entries",
+                     "Value #E": "Processing Time (s)"
+                  }
+               }
+            }
+         ],
+         "type": "table"
+      }
+   ],
+   "schemaVersion": 39,
+   "tags": [
+      "jupyterhub"
+   ],
+   "templating": {
+      "list": [
+         {
+            "hide": 1,
+            "name": "PROMETHEUS_DS",
+            "query": "prometheus",
+            "type": "datasource"
+         },
+         {
+            "allValue": ".*",
+            "datasource": {
+               "type": "prometheus",
+               "uid": "${PROMETHEUS_DS}"
+            },
+            "includeAll": true,
+            "multi": true,
+            "name": "hub",
+            "query": "label_values(kube_service_labels{service=\"hub\"}, namespace)",
+            "type": "query"
+         }
+      ]
+   },
+   "time": {
+      "from": "now-6h",
+      "to": "now"
+   },
+   "timezone": "utc",
+   "title": "Home Directory Usage Dashboard"
+}
