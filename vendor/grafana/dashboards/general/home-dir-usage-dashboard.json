@@ -179,7 +179,7 @@
             "includeAll": true,
             "multi": true,
             "name": "hub",
-            "query": "label_values(kube_service_labels{service=\"hub\"}, namespace)",
+            "query": "label_values(kube_namespace_status_phase, namespace)",
             "type": "query"
          }
       ]
