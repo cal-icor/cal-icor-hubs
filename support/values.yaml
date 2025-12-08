@@ -192,7 +192,7 @@ node-placeholder-scaler:
   calendarTimezone: "America/Los_Angeles"
 
   cpuThreshold: 0.25
-  memoryThreshold: 0.30
+  memoryThreshold: 0.35
   scalingStrategy: "mem" # Options: cpu, mem, balanced (default)
   
   nodePools:
