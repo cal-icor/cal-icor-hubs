@@ -55,8 +55,8 @@ jupyterhub:
           - jonathanferrari
   singleuser:
     image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/sagemath-user-image
-      tag: ed34dfc52efc
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/java-user-image
+      tag: b5705bed8914
     extraFiles:
       # DH-216
       remove-exporters:
@@ -66,6 +66,9 @@ jupyterhub:
           c.QtPNGExporter.enabled = False
           c.WebPDFExporter.enabled = False
     extraEnv:
+      # Tell code where to display GUIs
+      # The VNC /desktop link must be opened already for this to work
+      DISPLAY: ":1.0"
       # Unset NotebookApp from hub/values. Necessary for recent lab versions.
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
     nodeSelector:
@@ -81,8 +84,8 @@ jupyterhub:
       #     subPath: _shared
       #     readOnly: true
     memory:
-      guarantee: 512M
-      limit: 1G
+      guarantee: 2G
+      limit: 2G
 
 
   # This is under hub/config but got in the way when I 
