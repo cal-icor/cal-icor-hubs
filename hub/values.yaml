@@ -485,19 +485,14 @@ jupyterhub:
             volume_mounts = self.volume_mounts.copy()
 
             if self.user.admin:
-              for v in self.volume_mounts:
-                if self.volume_mounts[v]['mountPath'] == '/home/jovyan/shared':
+              for name, v in list(self.volume_mounts.items()):
+                if v.get('mountPath') == '/home/jovyan/shared':
                   self.log.info(f'Giving {self.user.name} read/write access to shared folder')
-                  rw = self.volume_mounts[v].copy()
-                  mount_num = int(v.split('-')[0]) + 1
-                  mount_name = f'{mount_num}-home'
+                  rw = v.copy()
                   rw['readOnly'] = False
                   rw['mountPath'] = '/home/jovyan/shared_readwrite'
-                  volume_mounts[mount_name] = rw
-
-            if volume_mounts != self.volume_mounts:
-              self.log.info('volume_mounts changed, updating self.volume_mounts')
-              self.volume_mounts = volume_mounts
+                  rw_name = f'{name}-readwrite'
+                  self.volume_mounts[rw_name] = rw
 
             # custom.memory
             custom_memory = z2jh.get_config('custom.memory', {})
