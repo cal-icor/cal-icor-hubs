@@ -56,7 +56,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/sagemath-user-image
-      tag: ed34dfc52efc
+      tag: 6abf6e4ad087
     extraFiles:
       # DH-216
       remove-exporters:
