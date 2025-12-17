@@ -482,8 +482,6 @@ jupyterhub:
               await asyncio.sleep(self.spawn_launcher_delay)
 
             # give admins read/write access to the shared folder
-            volume_mounts = self.volume_mounts.copy()
-
             if self.user.admin:
               for name, v in list(self.volume_mounts.items()):
                 if v.get('mountPath') == '/home/jovyan/shared':
