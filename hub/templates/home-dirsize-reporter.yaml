@@ -33,7 +33,7 @@ spec:
         component: shared-dirsize-metrics
     spec:
       nodeSelector:
-        hub.jupyter.org/pool-name: support-pool 
+        hub.jupyter.org/pool-name: support-pool-2025-12-22 
         
       containers:
         - name: dirsize-exporter
