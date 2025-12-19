@@ -21,14 +21,6 @@ jupyterhub:
     chp:
       nodeSelector:
         hub.jupyter.org/pool-name: core-pool
-      resources:
-        requests:
-          # FIXME: We want no guarantees here!!!
-          # This is lowest possible value
-          cpu: 0.001
-          memory: 3Gi
-        limits:
-          memory: 3Gi
 
   hub:
     nodeSelector:
@@ -108,7 +100,7 @@ jupyterhub:
       #     subPath: _shared
       #     readOnly: true
     memory:
-      guarantee: 1G
+      guarantee: 2G
       limit: 2G
 
   #custom:
