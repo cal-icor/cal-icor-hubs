@@ -1,12 +1,12 @@
 cert-manager:
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool
+    hub.jupyter.org/pool-name: support-pool-2025-12-22
   cainjector:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool
+      hub.jupyter.org/pool-name: support-pool-2025-12-22
   webhook:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool
+      hub.jupyter.org/pool-name: support-pool-2025-12-22
   # # Our cluster-internal DNS seems to cache aggressively in
   # # some cases. The cache is also more likely to be warm,
   # # causing issues when cert-manager tries to verify
@@ -32,7 +32,7 @@ ingress-nginx:
     # Best effort guess on resource needs
     # We overprovision a little - issues here cause a full cluster outage
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool
+      hub.jupyter.org/pool-name: core-pool-2025-12-22
     replicaCount: 3
     resources:
       limits:
@@ -77,13 +77,13 @@ prometheus:
   # make sure we collect metrics on pods by app/component at least
   kube-state-metrics:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool
+      hub.jupyter.org/pool-name: support-pool-2025-12-22
     metricLabelsAllowlist:
       - pods=[app,component,hub.jupyter.org/username,app.kubernetes.io/component]
       - nodes=[*]
   server:
     nodeSelector:
-      hub.jupyter.org/pool-name: prometheus-pool
+      hub.jupyter.org/pool-name: prometheus-pool-2025-12-22
     resources:
       # Without this, prometheus can easily starve users
       requests:
@@ -109,7 +109,7 @@ prometheus:
 grafana:
   assertNoLeakedSecrets: false
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool
+    hub.jupyter.org/pool-name: support-pool-2025-12-22
   deploymentStrategy:
     type: Recreate
 
@@ -171,7 +171,7 @@ grafana:
 
 prometheus-statsd-exporter:
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool
+    hub.jupyter.org/pool-name: support-pool-2025-12-22
   service:
     annotations:
       prometheus.io/scrape: "true"
