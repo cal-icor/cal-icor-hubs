@@ -12,7 +12,7 @@ jupyterhub:
       templateVars:
         org:
           name: California State University, Maritime Academy
-          logo_url: https://www.csum.edu/_resources/images/cal-maritime-logo.svg
+          logo_url: https://maritime-archive.calpoly.edu/_resources/images/cal-maritime-logo.svg
           url: https://www.csum.edu/
   scheduling:
     userScheduler:
