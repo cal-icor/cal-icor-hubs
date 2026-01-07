@@ -32,23 +32,24 @@ body:
       label: Hub URL
       description: Hub that you are currently using for teaching/research
       options:
+        - chicostate.jupyter.cal-icor.org
         - csub.jupyter.cal-icor.org
         - csueb.jupyter.cal-icor.org
         - csuf.jupyter.cal-icor.org
+        - csufresno.jupyter.cal-icor.org
         - csula.jupyter.cal-icor.org
         - csulb.jupyter.cal-icor.org
         - csum.jupyter.cal-icor.org
         - csumb.jupyter.cal-icor.org
+        - csun.jupyter.cal-icor.org
         - csus.jupyter.cal-icor.org
         - csusj.jupyter.cal-icor.org
-        - cuesta.jupyter.cal-icor.org
+        - csusonoma.jupyter.cal-icor.org
         - dvc.jupyter.cal-icor.org
-        - evc.jupyter.cal-icor.org
         - folsomlake.jupyter.cal-icor.org
         - fresno.jupyter.cal-icor.org
         - jupyter.jupyter.cal-icor.org
         - lacc.jupyter.cal-icor.org
-        - ucla.jupyter.cal-icor.org
         - ucsc.jupyter.cal-icor.org
         - usc.jupyter.cal-icor.org
     validations:
