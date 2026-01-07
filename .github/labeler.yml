@@ -70,8 +70,6 @@ jupyterhub-deployment:
   - 'hub/**'
 
 # add hub-specific labels for deployment changes
-'hub: cuesta':
-  - 'deployments/cuesta/**'
 'hub: dvc':
   - 'deployments/dvc/**'
 'hub: jupyter':
