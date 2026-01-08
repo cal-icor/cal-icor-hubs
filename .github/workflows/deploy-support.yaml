@@ -1,5 +1,7 @@
 name: Deploy support helm chart
 # use echo ${VAR##*: } to get the value of a variable that is a string with a colon in it
+permissions:
+  contents: read
 on:
   workflow_dispatch:
   push:

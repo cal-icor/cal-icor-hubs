@@ -2,6 +2,9 @@
 # image for any or all hubs has has changed, and if so, deploy accordingly.
 #
 name: Deploy staging and prod hubs
+permissions:
+  contents: read
+  pull-requests: read
 on:
   workflow_dispatch:
   push:
