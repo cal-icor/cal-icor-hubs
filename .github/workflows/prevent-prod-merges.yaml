@@ -1,5 +1,8 @@
 name: Only allow staging -> prod & !prod -> staging merges
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches:
