@@ -47,6 +47,7 @@ jupyterhub:
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
+          - mary.combs@csueastbay.edu
           - mikahl.banwarthkuhn@csueastbay.edu
   singleuser:
     image:
