@@ -3,7 +3,7 @@ chardet==5.2.0
 chartpress==2.2.0
 cookiecutter==2.6.0
 git+https://github.com/berkeley-dsep-infra/hubploy.git
-jupyter-repo2docker==2024.07.0
+jupyter-repo2docker==2025.12.0
 myst-parser==4.0.0
 niquests==3.7.2
 pre-commit==4.0.1
