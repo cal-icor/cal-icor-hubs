@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Get PR labels
         id: pr-labels
-        uses: irby/get-labels-on-push@v1.0.1
+        uses: irby/get-labels-on-push@v1.0.2-rc.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
