@@ -6,6 +6,12 @@ nfsPVC:
     enabled: true
 
 jupyterhub:
+  cull:
+    # Cull after 30min of inactivity
+    every: 300
+    timeout: 1800
+    # No pods over 12h long
+    maxAge: 43200
   prePuller:
     hook:
       pullOnlyOnChanges: true
