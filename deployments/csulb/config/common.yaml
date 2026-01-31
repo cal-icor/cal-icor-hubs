@@ -58,6 +58,7 @@ jupyterhub:
           - Florence.Newberger@csulb.edu
           - Seungjoon.Lee@csulb.edu
           - tyler.nakamura@csulb.edu
+          - Rebecca.Le@csulb.edu
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
