@@ -58,10 +58,11 @@ jupyterhub:
           - Florence.Newberger@csulb.edu
           - Seungjoon.Lee@csulb.edu
           - tyler.nakamura@csulb.edu
+          - Rebecca.Le@csulb.edu
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: 19c5ccc4b106
+      tag: 6d61d3c15d47
     extraFiles:
       # DH-216
       remove-exporters:
