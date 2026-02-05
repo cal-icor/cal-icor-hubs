@@ -193,7 +193,7 @@ node-placeholder-scaler:
   calendarTimezone: "America/Los_Angeles"
 
   cpuThreshold: 0.25
-  memoryThreshold: 0.30 # set this pretty high to avoid overloading nodes and get new ones spun up earlier
+  memoryThreshold: 0.35 # set this pretty high to avoid overloading nodes and get new ones spun up earlier
   scalingStrategy: "mem" # Options: cpu, mem, balanced (default)
   
   nodePools:
