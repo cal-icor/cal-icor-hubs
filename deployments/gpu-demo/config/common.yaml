@@ -52,6 +52,12 @@ jupyterhub:
           - sean.smorris
           - jedwin321@berkeley.edu
   singleuser:
+    profileList:
+    - display_name: "GPU Server"
+      description: "Spawns a notebook server with access to a GPU"
+      kubespawner_override:
+        extra_resource_limits:
+          nvidia.com/gpu: "1"
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/gpu-user-image
       tag: 854fda5e3afe
