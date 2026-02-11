@@ -1,0 +1,21 @@
+nfsPVC:
+  nfs:
+    shareName: shares/gpu-demo/prod
+
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - gpu-demo.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - gpu-demo.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+  scheduling:
+    userPlaceholder:
+      enabled: false
