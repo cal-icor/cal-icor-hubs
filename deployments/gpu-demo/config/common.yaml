@@ -1,0 +1,78 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.183.114.2
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Cal-ICOR GPU Hub
+          logo_url: https://www.cal-icor.org/images/logos/cal-icor.png
+          url: https://cal-icor.org
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: gpu-pool-2025-11-02
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: gpu-pool-2025-11-02
+
+  hub:
+    nodeSelector:
+      hub.jupyter.org/pool-name: gpu-pool-2025-11-02
+    config:
+      JupyterHub:
+        authenticator_class: dummy
+      CILogonOAuthenticator:
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - jedwin321@berkeley.edu
+          - denero
+          - denero@berkeley.edu
+          - yijunge
+          - rylo
+          - sknapp
+          - felder
+          - balajialwar
+          - gmerritt
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - jedwin321@berkeley.edu
+  singleuser:
+    image:
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/gpu-user-image
+      tag: PLACEHOLDER
+    extraFiles:
+      # DH-216
+      remove-exporters:
+        mountPath: /etc/jupyter/jupyter_notebook_config.py
+        stringData: |
+          c.QtPDFExporter.enabled = False
+          c.QtPNGExporter.enabled = False
+          c.WebPDFExporter.enabled = False
+    extraEnv:
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+    nodeSelector:
+      hub.jupyter.org/pool-name: base-pool
+    storage:
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+    memory:
+      guarantee: 2G
+      limit: 2G
