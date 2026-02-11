@@ -112,3 +112,5 @@ jupyterhub-deployment:
   - 'deployments/demo/**'
 'hub: sage':
   - 'deployments/sage/**'
+'hub: gpu-demo':
+  - 'deployments/gpu-demo/**'
