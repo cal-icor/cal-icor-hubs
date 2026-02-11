@@ -6,26 +6,25 @@ nfsPVC:
 jupyterhub:
   custom:
     homepage:
-      # gitRepoBranch: "username-and-password-homepage"
-      gitRepoBranch: "main"
+      gitRepoBranch: "username-and-password-homepage"
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
-          name: Cal-ICOR
+          name: Cal-ICOR GPU Hub
           logo_url: https://www.cal-icor.org/images/logos/cal-icor.png
           url: https://cal-icor.org
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-pool-2025-12-22
+        hub.jupyter.org/pool-name: gpu-pool-2025-11-02
   proxy:
     chp:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-pool-2025-12-22
+        hub.jupyter.org/pool-name: gpu-pool-2025-11-02
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool-2025-12-22
+      hub.jupyter.org/pool-name: gpu-pool-2025-11-02
     config:
       JupyterHub:
         authenticator_class: dummy
@@ -54,8 +53,8 @@ jupyterhub:
           - jedwin321@berkeley.edu
   singleuser:
     image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: 15799e4424e6
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/gpu-user-image
+      tag: PLACEHOLDER
     extraFiles:
       # DH-216
       remove-exporters:
@@ -75,5 +74,5 @@ jupyterhub:
         pvcName: home-nfs-v3
         subPath: "{username}"
     memory:
-      guarantee: 512M
-      limit: 1G
+      guarantee: 2G
+      limit: 2G

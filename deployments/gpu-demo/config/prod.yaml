@@ -16,6 +16,6 @@ jupyterhub:
       pvc:
         # This also holds logs
         storage: 4Gi
-    config:
-        CILogonOAuthenticator:
-          oauth_callback_url: https://gpu-demo.jupyter.cal-icor.org/hub/oauth_callback
+  scheduling:
+    userPlaceholder:
+      enabled: false
