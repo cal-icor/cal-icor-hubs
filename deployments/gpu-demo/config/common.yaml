@@ -54,7 +54,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/gpu-user-image
-      tag: PLACEHOLDER
+      tag: 854fda5e3afe
     extraFiles:
       # DH-216
       remove-exporters:
