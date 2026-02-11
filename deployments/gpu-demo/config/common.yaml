@@ -16,19 +16,19 @@ jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: gpu-pool-2025-11-02
+        hub.jupyter.org/pool-name: core-pool-2025-12-22
   proxy:
     chp:
       nodeSelector:
-        hub.jupyter.org/pool-name: gpu-pool-2025-11-02
+        hub.jupyter.org/pool-name: core-pool-2025-12-22
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: gpu-pool-2025-11-02
+      hub.jupyter.org/pool-name: core-pool-2025-12-22
     config:
       JupyterHub:
+        admin_access: true
         authenticator_class: dummy
-      CILogonOAuthenticator:
       Authenticator:
         manage_groups: false
         admin_users:
@@ -67,7 +67,7 @@ jupyterhub:
       # Unset NotebookApp from hub/values. Necessary for recent lab versions.
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
     nodeSelector:
-      hub.jupyter.org/pool-name: base-pool
+      hub.jupyter.org/pool-name: gpu-pool-2026-11-02
     storage:
       type: static
       static:
