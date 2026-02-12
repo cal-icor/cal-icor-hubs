@@ -170,7 +170,8 @@ def create_pr(github_user: str, hub_name: str, branch_name: str, github_label: s
     Args:
         github_user (str): The GitHub username of the user creating the pull request.
         hub_name (str): The name of the hub.
-        root_path (str): The path to the root directory of the repository.
+        branch_name (str): The name of the branch to push the changes to.
+        github_label (str): The GitHub label to be added to the pull request.
     """
     body = f"Add `{hub_name}` deployment, brought to you by `create_deployment.py`."
     title = f"Add `{hub_name}` deployment."
