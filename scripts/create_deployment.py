@@ -170,7 +170,8 @@ def create_pr(github_user: str, hub_name: str, branch_name: str, github_label: s
     Args:
         github_user (str): The GitHub username of the user creating the pull request.
         hub_name (str): The name of the hub.
-        root_path (str): The path to the root directory of the repository.
+        branch_name (str): The name of the branch to push the changes to.
+        github_label (str): The GitHub label to be added to the pull request.
     """
     body = f"Add `{hub_name}` deployment, brought to you by `create_deployment.py`."
     title = f"Add `{hub_name}` deployment."
@@ -280,19 +281,13 @@ def populate_deployment_config(
         handle_secrets(config["hub_name"], env)
 
 
-def create_deployment(
-    config: dict, github_user: str, root_path: str, manual_config: bool = False
-):
+def create_remote_dirs(config: dict):
     """
-    Create a new deployment for an institution using the provided configuration.
+    Create the prod and staging directories on filestore for the new hub.
+
     Args:
         config (dict): The configuration dictionary containing deployment details.
-        github_user (str): The GitHub username of the user creating the pull request.
-        root_path (str): The parent path where the deployment will be created.
-        manual_config (bool): If True, the script will ask for confirmation for each step.
     """
-    # create the prod and staging directories on filestore for the new hub
-    print(f"Creating directories for {config['hub_name']} on filestore.")
     dirs = [
         f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod",
         f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod/_shared",
@@ -316,10 +311,26 @@ def create_deployment(
         print(f"Error creating directories for {config['hub_name']}: {e}")
         exit(1)
 
+
+def create_deployment(
+    config: dict, github_user: str, root_path: str, manual_config: bool = False
+):
+    """
+    Create a new deployment for an institution using the provided configuration.
+    Args:
+        config (dict): The configuration dictionary containing deployment details.
+        github_user (str): The GitHub username of the user creating the pull request.
+        root_path (str): The parent path where the deployment will be created.
+        manual_config (bool): If True, the script will ask for confirmation for each step.
+    """
     # Create a feature branch
     branch_name = f"add-{config['hub_name']}-deployment"
     print(f"Creating feature branch {branch_name}.")
     create_branch(branch_name, root_path)
+
+    # create the prod and staging directories on filestore for the new hub
+    print(f"Creating directories for {config['hub_name']} on filestore.")
+    create_remote_dirs(config)
 
     # Populate the deployment configuration
     print(f"Populating deployment config for {config['hub_name']}.")
@@ -329,8 +340,8 @@ def create_deployment(
     print(f"Creating repo and github labels for {config['hub_name']}.")
     github_label = create_label(config["hub_name"], root_path)
 
-    # Stage the new deployment files
-    print(f"Staging new deployment files for {config['hub_name']}.")
+    # Stage and push the new deployment files
+    print(f"Staging and pushing the new deployment files for {config['hub_name']}.")
     stage_and_push(config["hub_name"], root_path, branch_name)
 
     # Create a pull request for the new hub
@@ -362,7 +373,7 @@ def main():
         "--github_user",
         "-g",
         type=str,
-        help="The GitHub username of the user creating the pull request.",
+        help="The GitHub username of the user creating the pull request (required).",
         required=True,
     )
     parser.add_argument(

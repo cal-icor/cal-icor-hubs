@@ -53,7 +53,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/workshop-user-image
-      tag: e5e9e3020e78
+      tag: 65e0be529912
     extraFiles:
       # DH-216
       remove-exporters:
