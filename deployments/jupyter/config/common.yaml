@@ -49,7 +49,6 @@ jupyterhub:
           - jonathanferrari@berkeley.edu
           - jonathanferrari
           - fraser@berkeley.edu
-          - incomplete@gmail.com
 
   singleuser:
     image:
