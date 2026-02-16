@@ -50,8 +50,8 @@ jupyterhub:
           - rdonatello@csuchico.edu
   singleuser:
     image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: ea7960107f5b
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
+      tag: PLACEHOLDER
     extraFiles:
       # DH-216
       remove-exporters:
