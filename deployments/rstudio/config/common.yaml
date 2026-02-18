@@ -1,0 +1,79 @@
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: 10.183.114.2
+
+jupyterhub:
+  custom:
+    homepage:
+      # gitRepoBranch: "username-and-password-homepage"
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Cal-ICOR
+          logo_url: https://www.cal-icor.org/images/logos/cal-icor.png
+          url: https://cal-icor.org
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2025-12-22
+  proxy:
+    chp:
+      nodeSelector:
+        hub.jupyter.org/pool-name: core-pool-2025-12-22
+
+  hub:
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool-2025-12-22
+    config:
+      JupyterHub:
+        authenticator_class: dummy
+      CILogonOAuthenticator:
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - jedwin321@berkeley.edu
+          - denero
+          - denero@berkeley.edu
+          - yijunge
+          - rylo
+          - sknapp
+          - felder
+          - balajialwar
+          - gmerritt
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - jedwin321@berkeley.edu
+  singleuser:
+    image:
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
+      tag: d82e4db15d0e
+    extraFiles:
+      # DH-216
+      remove-exporters:
+        mountPath: /etc/jupyter/jupyter_notebook_config.py
+        stringData: |
+          c.QtPDFExporter.enabled = False
+          c.QtPNGExporter.enabled = False
+          c.WebPDFExporter.enabled = False
+    extraEnv:
+      # Unset NotebookApp from hub/values. Necessary for recent lab versions.
+      JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+    nodeSelector:
+      hub.jupyter.org/pool-name: base-pool
+    storage:
+      type: static
+      static:
+        pvcName: home-nfs-v3
+        subPath: "{username}"
+    memory:
+      guarantee: 512M
+      limit: 1G
