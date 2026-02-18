@@ -11,7 +11,7 @@ jupyterhub:
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
-          name: Cal-ICOR
+          name: Cal-ICOR Rstudio Workshop
           logo_url: https://www.cal-icor.org/images/logos/cal-icor.png
           url: https://cal-icor.org
   scheduling:
