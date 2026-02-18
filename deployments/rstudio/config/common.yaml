@@ -29,7 +29,6 @@ jupyterhub:
     config:
       JupyterHub:
         authenticator_class: dummy
-      CILogonOAuthenticator:
       Authenticator:
         manage_groups: false
         admin_users:
@@ -54,8 +53,9 @@ jupyterhub:
           - jedwin321@berkeley.edu
   singleuser:
     image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: d82e4db15d0e
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/rstudio-user-image
+      tag: placeholder
+    defaultUrl: "/rstudio"
     extraFiles:
       # DH-216
       remove-exporters:

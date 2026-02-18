@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/rstudio/staging
+    shareName: shares/jupyter/staging
 
 jupyterhub:
   scheduling:
@@ -12,12 +12,8 @@ jupyterhub:
   ingress:
     enabled: true
     hosts:
-      - rstudio-staging.jupyter.cal-icor.org
+      - rstudio-staging.workshop.jupyter.cal-icor.org
     tls:
       - secretName: tls-cert
         hosts:
-          - rstudio-staging.jupyter.cal-icor.org
-  hub:
-    config:
-      CILogonOAuthenticator:
-        oauth_callback_url: https://rstudio-staging.jupyter.cal-icor.org/hub/oauth_callback
+          - rstudio-staging.workshop.jupyter.cal-icor.org

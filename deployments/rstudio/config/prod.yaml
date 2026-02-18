@@ -1,21 +1,18 @@
 nfsPVC:
   nfs:
-    shareName: shares/rstudio/prod
+    shareName: shares/jupyter/prod
 
 jupyterhub:
   ingress:
     enabled: true
     hosts:
-      - rstudio.jupyter.cal-icor.org
+      - rstudio.workshop.jupyter.cal-icor.org
     tls:
       - secretName: tls-cert
         hosts:
-          - rstudio.jupyter.cal-icor.org
+          - rstudio.workshop.jupyter.cal-icor.org
   hub:
     db:
       pvc:
         # This also holds logs
         storage: 4Gi
-    config:
-        CILogonOAuthenticator:
-          oauth_callback_url: https://rstudio.jupyter.cal-icor.org/hub/oauth_callback
