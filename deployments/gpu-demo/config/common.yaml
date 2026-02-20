@@ -60,7 +60,7 @@ jupyterhub:
           nvidia.com/gpu: "1"
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/gpu-user-image
-      tag: 854fda5e3afe
+      tag: 584202c74592
     extraFiles:
       # DH-216
       remove-exporters:
