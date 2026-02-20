@@ -3,6 +3,10 @@ nfsPVC:
     shareName: shares/dvc/staging
 
 jupyterhub:
+  singleuser:
+    image:
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
+      tag: 6d61d3c15d47
   scheduling:
     userScheduler:
       replicas: 1
