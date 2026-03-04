@@ -1,4 +1,6 @@
 git@github.com:cal-icor/base-user-image.git
+git@github.com:cal-icor/cloudbank-etsu-image.git
+git@github.com:cal-icor/cloudbank-umd-image.git
 git@github.com:cal-icor/csumb-user-image.git
 git@github.com:cal-icor/gpu-demo.git
 git@github.com:cal-icor/java-user-image.git
