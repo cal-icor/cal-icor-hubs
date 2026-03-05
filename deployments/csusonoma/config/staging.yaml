@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: shares/csusonoma/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   scheduling:

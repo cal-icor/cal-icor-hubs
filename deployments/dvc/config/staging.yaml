@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: shares/dvc/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   singleuser:

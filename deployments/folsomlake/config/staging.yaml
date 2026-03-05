@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: shares/folsomlake/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   scheduling:

@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: shares/csumb/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   # singleuser:
