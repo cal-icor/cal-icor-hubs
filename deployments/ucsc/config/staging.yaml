@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: shares/ucsc/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   scheduling:

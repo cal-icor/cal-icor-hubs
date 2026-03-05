@@ -2,6 +2,8 @@ nfsPVC:
   enabled: true
   nfs:
     serverIP: 10.183.114.2
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   custom:

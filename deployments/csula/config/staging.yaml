@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: shares/csula/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   scheduling:
