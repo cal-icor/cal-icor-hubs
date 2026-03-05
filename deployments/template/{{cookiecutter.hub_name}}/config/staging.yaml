@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: {{cookiecutter.hub_filestore_share}}/{{cookiecutter.hub_name}}/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   scheduling:
