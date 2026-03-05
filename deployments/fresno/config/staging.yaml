@@ -1,6 +1,8 @@
 nfsPVC:
   nfs:
     shareName: shares/fresno/staging
+  dirsizeReporter:
+    enabled: false
 
 jupyterhub:
   scheduling:
