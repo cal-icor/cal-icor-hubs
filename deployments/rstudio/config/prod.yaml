@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/rstudio/prod
+    shareName: shares/jupyter/prod
 
 jupyterhub:
   ingress:
