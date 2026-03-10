@@ -55,7 +55,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/rstudio-user-image
-      tag: cb6d3c3d3098
+      tag: 41736a10a2cb
     defaultUrl: "/rstudio"
     extraFiles:
       # DH-216
@@ -65,6 +65,10 @@ jupyterhub:
           c.QtPDFExporter.enabled = False
           c.QtPNGExporter.enabled = False
           c.WebPDFExporter.enabled = False
+      jupyter-shiny-proxy:
+        mountPath: /etc/jupyter/jupyter_server_config.py
+        stringData: |
+          c.JupyterShinyProxy.site_dir = "ShinyApps"
     extraEnv:
       # Unset NotebookApp from hub/values. Necessary for recent lab versions.
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
@@ -75,6 +79,13 @@ jupyterhub:
       static:
         pvcName: home-nfs-v3
         subPath: "{username}"
+      extraVolumeMounts:
+        # RStudio can't write session files to anywhere except ~/.rstudio -
+        # only way to change that is by setting $HOME. So instead, we just
+        # bind mount a fresh directory on top of ~/.rstudio!
+        - name: home
+          mountPath: /home/jovyan/.rstudio
+          subPath: '{username}/.r-hub-rstudio'
     memory:
       guarantee: 512M
       limit: 1G
