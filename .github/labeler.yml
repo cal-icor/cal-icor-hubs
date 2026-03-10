@@ -114,5 +114,3 @@ jupyterhub-deployment:
   - 'deployments/sage/**'
 'hub: gpu-demo':
   - 'deployments/gpu-demo/**'
-'hub: rstudio':
-  - 'deployments/rstudio/**'
