@@ -245,6 +245,25 @@ def populate_deployment_config(
     """
     # Run the cookiecutter to generate the deployment files
     print(f"Generating {config['hub_name']} cookiecutter template.")
+
+    # check for overridden hub_filestore_mount_path in the config, if not found, set it to hub_name
+    if "hub_filestore_mount_path" not in config:
+        print(
+            f"No hub_filestore_mount_path specified in the config file for {config['hub_name']}. "
+            + "Using hub_name as the default hub_filestore_mount_path."
+        )
+        config["hub_filestore_mount_path"] = config["hub_name"]
+    elif config["hub_filestore_mount_path"] != config["hub_name"]:
+        print(
+            f"Overriding hub_filestore_mount_path to {config['hub_filestore_mount_path']} "
+            + f"as specified in the config file for {config['hub_name']}."
+        )
+    else:
+        print(
+            f"Using hub_filestore_mount_path of {config['hub_filestore_mount_path']} "
+            + f"as specified in the config file for {config['hub_name']}."
+        )
+
     cookiecutter(
         template=f"{root_path}/deployments/template",
         output_dir=f"{root_path}/deployments",
@@ -253,6 +272,7 @@ def populate_deployment_config(
             "hub_name": config["hub_name"],
             "hub_filestore_instance": config["hub_filestore_instance"],
             "hub_filestore_ip": config["hub_filestore_ip"],
+            "hub_filestore_mount_path": config["hub_filestore_mount_path"],
             "institution": config["institution"],
             "institution_url": config["institution_url"],
             "institution_logo_url": config["institution_logo_url"],
@@ -285,14 +305,18 @@ def create_remote_dirs(config: dict):
     """
     Create the prod and staging directories on filestore for the new hub.
 
+    Sometimes we want to mount multiple hubs to an existing mount point to
+    share existing user homedirs.  If these shares already exist in Filestore,
+    this command will do nothing.
+
     Args:
         config (dict): The configuration dictionary containing deployment details.
     """
     dirs = [
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod/_shared",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging/_shared",
+        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod",
+        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod/_shared",
+        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging",
+        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging/_shared",
     ]
     try:
         subprocess.check_call(
@@ -304,7 +328,10 @@ def create_remote_dirs(config: dict):
                 "--tunnel-through-iap",
                 "--zone=us-central1-b",
                 "--command",
-                "sudo -u ubuntu install -d -o 1000 -g 1000 " + " ".join(dirs),
+                "[ ! -d '/export/{}/{}' ] && sudo -u ubuntu install -d -o 1000 -g 1000 ".format(
+                    config["hub_filestore_instance"], config["hub_filestore_mount_path"]
+                )
+                + " ".join(dirs),
             ]
         )
     except subprocess.CalledProcessError as e:
