@@ -247,7 +247,10 @@ def populate_deployment_config(
     print(f"Generating {config['hub_name']} cookiecutter template.")
 
     # check for overridden hub_filestore_mount_path in the config, if not found, set it to hub_name
-    if "hub_filestore_mount_path" not in config:
+    if (
+        "hub_filestore_mount_path" not in config
+        or not config["hub_filestore_mount_path"]
+    ):
         print(
             f"No hub_filestore_mount_path specified in the config file for {config['hub_name']}. "
             + "Using hub_name as the default hub_filestore_mount_path."
