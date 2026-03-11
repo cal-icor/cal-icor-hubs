@@ -267,11 +267,14 @@ def populate_deployment_config(
             + f"as specified in the config file for {config['hub_name']}."
         )
 
+    # Check for overridden image_name and image_tag in the config, if not found, don't set them.
     cookiecutter(
         template=f"{root_path}/deployments/template",
         output_dir=f"{root_path}/deployments",
         no_input=manual_config,
         extra_context={
+            "image_name": config.get("image_name", None),
+            "image_tag": config.get("image_tag", None),
             "hub_name": config["hub_name"],
             "hub_filestore_instance": config["hub_filestore_instance"],
             "hub_filestore_ip": config["hub_filestore_ip"],

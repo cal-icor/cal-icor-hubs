@@ -68,8 +68,13 @@ jupyterhub:
           {%- endfor %}
   singleuser:
     image:
+      {%- if cookiecutter.image_name and cookiecutter.image_name != "" %}
+      name: {{cookiecutter.image_name}}
+      tag: {{cookiecutter.image_tag}}
+      {%- else %}
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
       tag: 7509a8e7435f
+      {%- endif %}
     extraFiles:
       # DH-216
       remove-exporters:
