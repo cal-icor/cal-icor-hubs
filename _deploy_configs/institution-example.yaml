@@ -18,11 +18,7 @@ staging:
   client: 
   secret: 
 admin_emails:
-  - jedwin321@berkeley.edu
-  - ericvd@berkeley.edu
-  - sean.smorris@berkeley.edu
-  - sknapp@berkeley.edu
-
+  - 
 authenticator_class: cilogon # This is either cilogon or github
 authenticator_class_instance: "CILogonOAuthenticator" # This is either "CILogonOAuthenticator" or "GitHubOAuthenticator"
 idp_url: "" # cilogon only e.g.  http://login.microsoftonline.com/common/oauth2/v2.0/authorize
