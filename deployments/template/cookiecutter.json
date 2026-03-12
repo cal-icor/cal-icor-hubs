@@ -17,7 +17,6 @@
     "authenticator_class": "valid-auth-class",
     "authenticator_class_instance": "valid-auth-instance",
     "idp_url": "https://idp.example.edu",
-    "idp": "example.edu",
     "admin_emails": "",
     "client_id_staging": "valid-client-id-staging",
     "client_secret_staging": "valid-client-secret-staging",
