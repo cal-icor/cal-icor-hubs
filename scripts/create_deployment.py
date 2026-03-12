@@ -251,19 +251,16 @@ def populate_deployment_config(
         "hub_filestore_mount_path" not in config
         or not config["hub_filestore_mount_path"]
     ):
-        print(
-            f"No hub_filestore_mount_path specified in the config file for {config['hub_name']}. "
-            + "Using hub_name as the default hub_filestore_mount_path."
-        )
+        print("Using hub_name as the default hub_filestore_mount_path.")
         config["hub_filestore_mount_path"] = config["hub_name"]
     elif config["hub_filestore_mount_path"] != config["hub_name"]:
         print(
-            f"Overriding hub_filestore_mount_path to {config['hub_filestore_mount_path']} "
+            f"Overriding hub_filestore_mount_path to '{config['hub_filestore_mount_path']}' "
             + f"as specified in the config file for {config['hub_name']}."
         )
     else:
         print(
-            f"Using hub_filestore_mount_path of {config['hub_filestore_mount_path']} "
+            f"Using hub_filestore_mount_path of '{config['hub_filestore_mount_path']}' "
             + f"as specified in the config file for {config['hub_name']}."
         )
 
@@ -273,8 +270,8 @@ def populate_deployment_config(
         output_dir=f"{root_path}/deployments",
         no_input=manual_config,
         extra_context={
-            "image_name": config.get("image_name", None),
-            "image_tag": config.get("image_tag", None),
+            "image_name": config["image_name"],
+            "image_tag": config["image_tag"],
             "hub_name": config["hub_name"],
             "hub_filestore_instance": config["hub_filestore_instance"],
             "hub_filestore_ip": config["hub_filestore_ip"],
@@ -346,7 +343,12 @@ def create_remote_dirs(config: dict):
 
 
 def create_deployment(
-    config: dict, github_user: str, root_path: str, manual_config: bool = False
+    config: dict,
+    github_user: str,
+    root_path: str,
+    deploy: bool = False,
+    manual_config: bool = False,
+    dry_run: bool = False,
 ):
     """
     Create a new deployment for an institution using the provided configuration.
@@ -354,46 +356,131 @@ def create_deployment(
         config (dict): The configuration dictionary containing deployment details.
         github_user (str): The GitHub username of the user creating the pull request.
         root_path (str): The parent path where the deployment will be created.
+        deploy (bool): If True, the script will deploy the hub to staging after creating the pull request.
         manual_config (bool): If True, the script will ask for confirmation for each step.
+        dry_run (bool): If True, the script will go through all the steps but not actually make any changes.
     """
+    # The following steps will not be run if the dry_run flag is set, but we
+    # will print out what would have been done.
+
     # Create a feature branch
     branch_name = f"add-{config['hub_name']}-deployment"
-    print(f"Creating feature branch {branch_name}.")
-    create_branch(branch_name, root_path)
+    if dry_run:
+        print(f"Dry run enabled. Would create feature branch {branch_name}.")
+    else:
+        print(f"Creating feature branch {branch_name}.")
+        create_branch(branch_name, root_path)
 
     # create the prod and staging directories on filestore for the new hub
-    print(f"Creating directories for {config['hub_name']} on filestore.")
-    create_remote_dirs(config)
+    if dry_run:
+        print(
+            f"Dry run enabled. Would create directories for {config['hub_name']} on filestore."
+        )
+    else:
+        print(f"Creating directories for {config['hub_name']} on filestore.")
+        create_remote_dirs(config)
 
     # Populate the deployment configuration
     print(f"Populating deployment config for {config['hub_name']}.")
     populate_deployment_config(config, root_path, manual_config)
 
     # Create labels for the new hub
-    print(f"Creating repo and github labels for {config['hub_name']}.")
-    github_label = create_label(config["hub_name"], root_path)
+    if dry_run:
+        print(f"Dry run enabled. Would create GitHub label for {config['hub_name']}.")
+    else:
+        print(f"Creating repo and github labels for {config['hub_name']}.")
+        github_label = create_label(config["hub_name"], root_path)
 
     # Stage and push the new deployment files
-    print(f"Staging and pushing the new deployment files for {config['hub_name']}.")
-    stage_and_push(config["hub_name"], root_path, branch_name)
+    if dry_run:
+        print(
+            f"Dry run enabled. Would stage and push the new deployment files for {config['hub_name']} to branch {branch_name}."
+        )
+    else:
+        print(f"Staging and pushing the new deployment files for {config['hub_name']}.")
+        stage_and_push(config["hub_name"], root_path, branch_name)
 
     # Create a pull request for the new hub
-    print(f"Creating pull request for {config['hub_name']}.")
-    create_pr(github_user, config["hub_name"], branch_name, github_label)
+    if dry_run:
+        print(f"Dry run enabled. Not creating pull request for {config['hub_name']}.")
+    else:
+        print(f"Creating pull request for {config['hub_name']}.")
+        create_pr(github_user, config["hub_name"], branch_name, github_label)
+
+    if deploy:
+        if dry_run:
+            print(
+                f"Dry run enabled. Would deploy the hub to {config['hub_name']}-staging."
+            )
+        else:
+            print(f"Deploying the hub to {config['hub_name']}-staging.")
+            helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
+            print(f"Deployment to {config['hub_name']}-staging complete.")
 
 
-def main():
+def main(args):
     """
     Main function to parse arguments and create a new deployment for an institution.
     This script should be run from the root cal-icor-hubs directory.
     """
+    # Check if the script is run from the correct directory
+    if Path.cwd() != Path(__file__).resolve().parents[1]:
+        print("Error: This script must be run from the root cal-icor-hubs directory.")
+        exit(1)
 
+    # Check if the _deploy_configs directory exists
+    if not Path(__file__).resolve().parents[1].joinpath("_deploy_configs").exists():
+        print("Error: The _deploy_configs directory does not exist. Please create it.")
+        exit(1)
+
+    # Check if the config file exists
+    if (
+        not Path(__file__)
+        .resolve()
+        .parents[1]
+        .joinpath(f"_deploy_configs/{args.institution_name}.yaml")
+        .exists()
+    ):
+        print(f"Error: The config file {args.institution_name}.yaml does not exist.")
+        exit(1)
+
+    root_path = Path(__file__).resolve().parents[1]
+    file_path = f"{root_path}/_deploy_configs/{args.institution_name}.yaml"
+    with open(file_path) as f:
+        config = yaml.safe_load(f)
+    if not config:
+        print(f"Error loading config for {args.institution_name}.")
+        exit(1)
+
+    if args.dry_run:
+        print(
+            "Performing a dry-run, only the config changes in your repo will be performed, but no remote actions taken."
+        )
+
+    create_deployment(
+        config,
+        args.github_user,
+        root_path,
+        args.deploy,
+        args.manual_config,
+        args.dry_run,
+    )
+
+    print(
+        f"\nDeployment for {config['hub_name']} created."
+        + "\nDo not forget to create the alerts for the new hub after merging "
+        + "the PR to prod. The instructions for that are found here: "
+        + "https://docs.cal-icor.org/new-hub/#create-the-alerts-for-the-new-hub"
+    )
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Create a new deployment for an institution.  This should "
         + "be run from the root cal-icor-hubs directory."
         + "\n\n"
         + "You will also need to fill out the cookiecutter template config "
-        + "in the _deploy_configs/<hubname>.yaml dir in the root of the repo.",
+        + "in the _deploy_configs/<institution_name>.yaml dir in the root of the repo.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -424,51 +511,14 @@ def main():
         + "allowing you to manually configure the deployment (eg: custom "
         + "filestore IP, node pool deployment, etc).",
     )
+    parser.add_argument(
+        "--dry-run",
+        "-D",
+        action="store_true",
+        help="If set, the script will go through all the steps but not actually "
+        + "make any changes (eg: not actually creating branches, pushing to "
+        + "GitHub, creating remoter directories or deploying to staging).",
+    )
     args = parser.parse_args()
 
-    # Check if the script is run from the correct directory
-    if Path.cwd() != Path(__file__).resolve().parents[1]:
-        print("Error: This script must be run from the root cal-icor-hubs directory.")
-        exit(1)
-
-    # Check if the _deploy_configs directory exists
-    if not Path(__file__).resolve().parents[1].joinpath("_deploy_configs").exists():
-        print("Error: The _deploy_configs directory does not exist. Please create it.")
-        exit(1)
-
-    # Check if the config file exists
-    if (
-        not Path(__file__)
-        .resolve()
-        .parents[1]
-        .joinpath(f"_deploy_configs/{args.institution_name}.yaml")
-        .exists()
-    ):
-        print(f"Error: The config file {args.institution_name}.yaml does not exist.")
-        exit(1)
-
-    root_path = Path(__file__).resolve().parents[1]
-    file_path = f"{root_path}/_deploy_configs/{args.institution_name}.yaml"
-    with open(file_path) as f:
-        config = yaml.safe_load(f)
-    if not config:
-        print(f"Error loading config for {args.institution_name}.")
-        exit(1)
-
-    create_deployment(config, args.github_user, root_path, args.manual_config)
-
-    if args.deploy:
-        print(f"Deploying the hub to {config['hub_name']}-staging.")
-        helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
-        print(f"Deployment to {config['hub_name']}-staging complete.")
-
-    print(
-        f"\nDeployment for {config['hub_name']} created."
-        + "\nDo not forget to create the alerts for the new hub after merging "
-        + "the PR to prod. The instructions for that are found here: "
-        + "https://docs.cal-icor.org/content/admin/new_hub.html#create-the-alerts-for-the-new-hub"
-    )
-
-
-if __name__ == "__main__":
-    main()
+    main(args)

@@ -1,4 +1,6 @@
 {
+    "image_name": "/path/to/image",
+    "image_tag": "image-tag",
     "hub_name": "dns-valid-hub-name",
     "institution": "full-name-of-institution",
     "institution_url": "https://example.edu",
@@ -9,6 +11,7 @@
     "pool_name": "base-pool",
     "hub_filestore_instance": "shared-filestore",
     "hub_filestore_ip": "10.183.114.2",
+    "hub_filestore_mount_path": "institution-shared-filestore",
     "hub_filestore_share": "shares",
     "hub_filestore_capacity": "1T",
     "authenticator_class": "valid-auth-class",
