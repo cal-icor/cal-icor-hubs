@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import os
 import re
 import subprocess
 import sys
@@ -11,12 +10,12 @@ from cookiecutter.main import cookiecutter
 from hubploy import helm
 
 
-def delete_file(filepath: str):
+def delete_file(filepath: Path):
     """
     Deletes a file from the filesystem.
 
     Args:
-        filepath (str): The path to the file to be deleted.
+        filepath (Path): The path to the file to be deleted.
 
     Raises:
         FileNotFoundError: If the file does not exist.
@@ -24,7 +23,7 @@ def delete_file(filepath: str):
         Exception: For any other errors during file deletion.
     """
     try:
-        os.remove(filepath)
+        filepath.unlink()
         print(f"Deleted file: {filepath}")
     except FileNotFoundError:
         print(f"File not found: {filepath}")
@@ -34,24 +33,25 @@ def delete_file(filepath: str):
         print(f"Error deleting file: {e}")
 
 
-def encrypt_file(input_file: str, output_file: str):
+def encrypt_file(input_file: Path, output_file: Path):
     """
     Encrypts a file using the `sops` command-line tool.
 
     Args:
-        input_file (str): The path to the input file to be encrypted.
-        output_file (str): The path where the encrypted file will be saved.
+        input_file (Path): The path to the input file to be encrypted.
+        output_file (Path): The path where the encrypted file will be saved.
 
     Raises:
         SystemExit: If the input file does not exist or encryption fails.
     """
-    if not os.path.isfile(input_file):
+    if not input_file.is_file():
         print(f"Error: Input file '{input_file}' does not exist.")
         sys.exit(1)
 
     try:
         subprocess.run(
-            ["sops", "--output", output_file, "--encrypt", input_file], check=True
+            ["sops", "--output", str(output_file), "--encrypt", str(input_file)],
+            check=True,
         )
         print(f"Encrypted file saved as: {output_file}")
     except subprocess.CalledProcessError as e:
@@ -73,12 +73,10 @@ def handle_secrets(school_arg: str, env_arg: str):
     """
     print("Secret file generation and encryption beginning.")
     encrypt_file(
-        os.path.join("deployments", school_arg, "secrets", f"{env_arg}.plain.yaml"),
-        os.path.join("deployments", school_arg, "secrets", f"{env_arg}.yaml"),
+        Path(f"deployments/{school_arg}/secrets/{env_arg}.plain.yaml"),
+        Path(f"deployments/{school_arg}/secrets/{env_arg}.yaml"),
     )
-    delete_file(
-        os.path.join("deployments", school_arg, "secrets", f"{env_arg}.plain.yaml")
-    )
+    delete_file(Path(f"deployments/{school_arg}/secrets/{env_arg}.plain.yaml"))
 
 
 def create_label(hub_name: str, root_path: str) -> str:
@@ -91,13 +89,12 @@ def create_label(hub_name: str, root_path: str) -> str:
     Returns:
         str: The GitHub label created for the new hub.
     """
-    labeler_path = os.path.join(root_path, ".github", "labeler.yml")
+    labeler_path = Path(root_path) / ".github" / "labeler.yml"
     hub_label = f"""
 'hub: {hub_name}':
   - 'deployments/{hub_name}/**'
 """.strip()
-    with open(labeler_path, "a") as f:
-        print(hub_label, file=f)
+    labeler_path.write_text(hub_label, append=True)
     print(f"Added {hub_name} to the labeler.yml file.")
 
     # create the github label for the new hub
@@ -446,9 +443,10 @@ def main(args):
         exit(1)
 
     root_path = Path(__file__).resolve().parents[1]
-    file_path = f"{root_path}/_deploy_configs/{args.institution_name}.yaml"
-    with open(file_path) as f:
-        config = yaml.safe_load(f)
+    deployment_config = (
+        Path(root_path) / "_deploy_configs" / f"{args.institution_name}.yaml"
+    )
+    config = yaml.safe_load(deployment_config.read_text())
     if not config:
         print(f"Error loading config for {args.institution_name}.")
         exit(1)
