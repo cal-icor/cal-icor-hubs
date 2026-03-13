@@ -121,7 +121,7 @@ def create_label(hub_name: str, root_path: str) -> str:
     return github_label
 
 
-def stage_and_push(hub_name: str, root_path: str, branch_name: str):
+def stage_and_push(hub_name: str, root_path: Path, branch_name: str):
     """
     Stage the new deployment files for the hub.
 
@@ -131,22 +131,22 @@ def stage_and_push(hub_name: str, root_path: str, branch_name: str):
         branch_name (str): The name of the branch to push the changes to.
     """
     files_to_add = [
-        f"deployments/{hub_name}/",
-        ".github/labeler.yml",
+        Path(f"deployments/{hub_name}/"),
+        Path(".github/labeler.yml"),
     ]
     for file in files_to_add:
-        print(f"Adding {file} to staging.")
+        print(f"Adding {str(file)} to staging.")
         try:
-            subprocess.check_call(["git", "add", file], cwd=root_path)
+            subprocess.check_call(["git", "add", str(file)], cwd=str(root_path))
         except subprocess.CalledProcessError as e:
-            print(f"Error adding {file} to commit: {e}")
+            print(f"Error adding {str(file)} to commit: {e}")
             exit(1)
 
     commit_message = f"Add {hub_name} deployment."
     print(f"Committing changes for {hub_name} with message {commit_message}.")
     try:
         subprocess.check_call(
-            ["git", "commit", "-m", f"{commit_message}"], cwd=root_path
+            ["git", "commit", "-m", f"{commit_message}"], cwd=str(root_path)
         )
     except subprocess.CalledProcessError as e:
         print(f"Error committing {hub_name}: {e}")
@@ -155,7 +155,7 @@ def stage_and_push(hub_name: str, root_path: str, branch_name: str):
     remote = "origin"
     print(f"Pushing {branch_name} to {remote}")
     try:
-        subprocess.check_call(["git", "push", remote, branch_name], cwd=root_path)
+        subprocess.check_call(["git", "push", remote, branch_name], cwd=str(root_path))
     except subprocess.CalledProcessError as e:
         print(f"Error pushing {branch_name} to {remote}: {e}")
         exit(1)
@@ -196,18 +196,20 @@ def create_pr(github_user: str, hub_name: str, branch_name: str, github_label: s
         exit(1)
 
 
-def create_branch(branch_name: str, root_path: str):
+def create_branch(branch_name: str, root_path: Path):
     """
     Create a new branch in the Git repository.
 
     Args:
         branch_name (str): The name of the new branch to be created.
-        root_path (str): The path to the root directory of the repository.
+        root_path (Path): The path to the root directory of the repository.
     """
     try:
         branch = (
             subprocess.run(
-                ["git", "branch", "--show-current"], cwd=root_path, capture_output=True
+                ["git", "branch", "--show-current"],
+                cwd=str(root_path),
+                capture_output=True,
             )
             .stdout.decode("utf-8")
             .strip()
@@ -223,21 +225,21 @@ def create_branch(branch_name: str, root_path: str):
         )
         exit(1)
     try:
-        subprocess.check_call(["git", "switch", "-c", branch_name], cwd=root_path)
+        subprocess.check_call(["git", "switch", "-c", branch_name], cwd=str(root_path))
     except subprocess.CalledProcessError as e:
         print(f"Error creating branch {branch_name}: {e}")
         exit(1)
 
 
 def populate_deployment_config(
-    config: dict, root_path: str, manual_config: bool = False
+    config: dict, root_path: Path, manual_config: bool = False
 ):
     """
     Populate the deployment configuration file with the provided configuration.
 
     Args:
         config (dict): The configuration dictionary containing deployment details.
-        root_path (str): The path to the root directory of the repository.
+        root_path (Path): The path to the root directory of the repository.
         manual_config (bool): If True, the script will ask for confirmation for each step.
     """
     # Run the cookiecutter to generate the deployment files
@@ -314,10 +316,18 @@ def create_remote_dirs(config: dict):
         config (dict): The configuration dictionary containing deployment details.
     """
     dirs = [
-        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod/_shared",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging/_shared",
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod"
+        ),
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod/_shared"
+        ),
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging"
+        ),
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging/_shared"
+        ),
     ]
     try:
         subprocess.check_call(
@@ -332,7 +342,7 @@ def create_remote_dirs(config: dict):
                 "[ ! -d '/export/{}/{}' ] && sudo -u ubuntu install -d -o 1000 -g 1000 ".format(
                     config["hub_filestore_instance"], config["hub_filestore_mount_path"]
                 )
-                + " ".join(dirs),
+                + " ".join(str(d) for d in dirs),
             ]
         )
     except subprocess.CalledProcessError as e:
@@ -343,7 +353,7 @@ def create_remote_dirs(config: dict):
 def create_deployment(
     config: dict,
     github_user: str,
-    root_path: str,
+    root_path: Path,
     deploy: bool = False,
     manual_config: bool = False,
     dry_run: bool = False,
