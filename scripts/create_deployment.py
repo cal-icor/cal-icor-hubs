@@ -272,6 +272,7 @@ def populate_deployment_config(
         extra_context={
             "image_name": config["image_name"],
             "image_tag": config["image_tag"],
+            "hub_type": config["hub_type"],
             "hub_name": config["hub_name"],
             "hub_filestore_instance": config["hub_filestore_instance"],
             "hub_filestore_ip": config["hub_filestore_ip"],

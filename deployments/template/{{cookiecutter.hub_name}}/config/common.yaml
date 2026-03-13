@@ -2,7 +2,7 @@ nfsPVC:
   enabled: true
   nfs:
     serverIP: {{cookiecutter.hub_filestore_ip}}
-  {% if cookiecutter.deployment_type == "rstudio-base" %}
+  {% if cookiecutter.hub_type == "rstudio-base" %}
   dirsizeReporter:
     enabled: false
   {% endif %}
@@ -78,7 +78,7 @@ jupyterhub:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
       tag: 7509a8e7435f
       {%- endif %}
-    {% if cookiecutter.deployment_type == "rstudio-base" %}
+    {% if cookiecutter.hub_type == "rstudio-base" %}
     defaultUrl: "/rstudio"
     {% endif %}
     extraFiles:
@@ -89,7 +89,7 @@ jupyterhub:
           c.QtPDFExporter.enabled = False
           c.QtPNGExporter.enabled = False
           c.WebPDFExporter.enabled = False
-        {% if cookiecutter.deployment_type == "rstudio-base" %}
+        {% if cookiecutter.hub_type == "rstudio-base" %}
         jupyter-shiny-proxy:
           mountPath: /etc/jupyter/jupyter_server_config.py
           stringData: |
@@ -105,7 +105,7 @@ jupyterhub:
       static:
         pvcName: home-nfs-v3
         subPath: "{username}"
-      {% if cookiecutter.deployment_type == "rstudio-base" %}
+      {% if cookiecutter.hub_type == "rstudio-base" %}
       extraVolumeMounts:
         # RStudio can't write session files to anywhere except ~/.rstudio -
         # only way to change that is by setting $HOME. So instead, we just

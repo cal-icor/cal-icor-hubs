@@ -1,7 +1,7 @@
 {
     "image_name": "/path/to/image",
     "image_tag": "image-tag",
-    "deployment_type": "",
+    "hub_type": "python-base",
     "hub_name": "dns-valid-hub-name",
     "institution": "full-name-of-institution",
     "institution_url": "https://example.edu",
