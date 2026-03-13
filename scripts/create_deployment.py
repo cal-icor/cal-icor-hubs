@@ -463,7 +463,7 @@ def main(args):
 
     if args.dry_run:
         print(
-            "Performing a dry-run, only the config changes in your repo will be performed, but no remote actions taken."
+            "Performing a dry-run, only the config changes in your repo will be performed, but no remote actions taken.\n"
         )
 
     create_deployment(
@@ -478,7 +478,7 @@ def main(args):
     print(
         f"\nDeployment for {config['hub_name']} created."
         + "\nDo not forget to create the alerts for the new hub after merging "
-        + "the PR to prod. The instructions for that are found here: "
+        + "the PR to prod. The instructions for that are found here: \n"
         + "https://docs.cal-icor.org/new-hub/#create-the-alerts-for-the-new-hub"
     )
 
