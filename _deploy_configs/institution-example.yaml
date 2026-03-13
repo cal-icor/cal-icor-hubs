@@ -4,6 +4,7 @@
 image_name: # leave blank for base user image. full image path e.g. us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
 image_tag: # leave blank for base user image.  this is the short image tag created by repo2docker, e.g. 7509a8e7435f
 deployment_type: python-base # if not included, defaults to python-base.  other options are rstudio-base
+hub_name: dns-valid-hub-name
 hub_filestore_instance: shared-filestore
 hub_filestore_ip: 10.183.114.2
 hub_filestore_mount_path: # leave blank to use hub_name as the default mount path on the filestore, otherwise specify the shared mount path for this hub on the filestore, e.g. csumb
