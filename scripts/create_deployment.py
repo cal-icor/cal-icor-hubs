@@ -269,9 +269,21 @@ def populate_deployment_config(
         output_dir=f"{root_path}/deployments",
         no_input=manual_config,
         extra_context={
-            "image_name": config["image_name"],
-            "image_tag": config["image_tag"],
-            "hub_type": config["hub_type"],
+            "image_name": (
+                config["image_name"]
+                if "image_name" in config and config["image_name"]
+                else None
+            ),
+            "image_tag": (
+                config["image_tag"]
+                if "image_tag" in config and config["image_tag"]
+                else None
+            ),
+            "hub_type": (
+                config["hub_type"]
+                if "hub_type" in config and config["hub_type"]
+                else "python-base"
+            ),
             "hub_name": config["hub_name"],
             "hub_filestore_instance": config["hub_filestore_instance"],
             "hub_filestore_ip": config["hub_filestore_ip"],
