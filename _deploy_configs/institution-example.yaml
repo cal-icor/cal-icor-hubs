@@ -1,8 +1,8 @@
 # This is an example of a configuration file for a JupyterHub deployment.
 # This file should be copied to <name of deployment>.yaml and kept in the
 # _deploy_configs directory.
-image_name: # leave blank for base user image. full image path e.g. us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-image_tag: # leave blank for base user image.  this is the short image tag created by repo2docker, e.g. 7509a8e7435f
+image_name: # remove or leave blank for base user image. full image path e.g. us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
+image_tag: # remove or leave blank for base user image.  this is the short image tag created by repo2docker, e.g. 7509a8e7435f
 deployment_type: python-base # if not included, defaults to python-base.  other options are rstudio-base
 hub_name: dns-valid-hub-name
 hub_filestore_instance: shared-filestore
