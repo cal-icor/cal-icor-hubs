@@ -55,7 +55,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/rstudio-user-image
-      tag: 41736a10a2cb
+      tag: ee405bcab486
     defaultUrl: "/rstudio"
     extraFiles:
       # DH-216
