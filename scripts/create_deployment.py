@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import os
 import re
 import subprocess
 import sys
@@ -11,12 +10,12 @@ from cookiecutter.main import cookiecutter
 from hubploy import helm
 
 
-def delete_file(filepath: str):
+def delete_file(filepath: Path):
     """
     Deletes a file from the filesystem.
 
     Args:
-        filepath (str): The path to the file to be deleted.
+        filepath (Path): The path to the file to be deleted.
 
     Raises:
         FileNotFoundError: If the file does not exist.
@@ -24,7 +23,7 @@ def delete_file(filepath: str):
         Exception: For any other errors during file deletion.
     """
     try:
-        os.remove(filepath)
+        filepath.unlink()
         print(f"Deleted file: {filepath}")
     except FileNotFoundError:
         print(f"File not found: {filepath}")
@@ -34,24 +33,25 @@ def delete_file(filepath: str):
         print(f"Error deleting file: {e}")
 
 
-def encrypt_file(input_file: str, output_file: str):
+def encrypt_file(input_file: Path, output_file: Path):
     """
     Encrypts a file using the `sops` command-line tool.
 
     Args:
-        input_file (str): The path to the input file to be encrypted.
-        output_file (str): The path where the encrypted file will be saved.
+        input_file (Path): The path to the input file to be encrypted.
+        output_file (Path): The path where the encrypted file will be saved.
 
     Raises:
         SystemExit: If the input file does not exist or encryption fails.
     """
-    if not os.path.isfile(input_file):
+    if not input_file.is_file():
         print(f"Error: Input file '{input_file}' does not exist.")
         sys.exit(1)
 
     try:
         subprocess.run(
-            ["sops", "--output", output_file, "--encrypt", input_file], check=True
+            ["sops", "--output", str(output_file), "--encrypt", str(input_file)],
+            check=True,
         )
         print(f"Encrypted file saved as: {output_file}")
     except subprocess.CalledProcessError as e:
@@ -73,12 +73,10 @@ def handle_secrets(school_arg: str, env_arg: str):
     """
     print("Secret file generation and encryption beginning.")
     encrypt_file(
-        os.path.join("deployments", school_arg, "secrets", f"{env_arg}.plain.yaml"),
-        os.path.join("deployments", school_arg, "secrets", f"{env_arg}.yaml"),
+        Path(f"deployments/{school_arg}/secrets/{env_arg}.plain.yaml"),
+        Path(f"deployments/{school_arg}/secrets/{env_arg}.yaml"),
     )
-    delete_file(
-        os.path.join("deployments", school_arg, "secrets", f"{env_arg}.plain.yaml")
-    )
+    delete_file(Path(f"deployments/{school_arg}/secrets/{env_arg}.plain.yaml"))
 
 
 def create_label(hub_name: str, root_path: str) -> str:
@@ -91,13 +89,12 @@ def create_label(hub_name: str, root_path: str) -> str:
     Returns:
         str: The GitHub label created for the new hub.
     """
-    labeler_path = os.path.join(root_path, ".github", "labeler.yml")
+    labeler_path = Path(root_path) / ".github" / "labeler.yml"
     hub_label = f"""
 'hub: {hub_name}':
   - 'deployments/{hub_name}/**'
 """.strip()
-    with open(labeler_path, "a") as f:
-        print(hub_label, file=f)
+    labeler_path.write_text(hub_label, append=True)
     print(f"Added {hub_name} to the labeler.yml file.")
 
     # create the github label for the new hub
@@ -124,7 +121,7 @@ def create_label(hub_name: str, root_path: str) -> str:
     return github_label
 
 
-def stage_and_push(hub_name: str, root_path: str, branch_name: str):
+def stage_and_push(hub_name: str, root_path: Path, branch_name: str):
     """
     Stage the new deployment files for the hub.
 
@@ -134,22 +131,22 @@ def stage_and_push(hub_name: str, root_path: str, branch_name: str):
         branch_name (str): The name of the branch to push the changes to.
     """
     files_to_add = [
-        f"deployments/{hub_name}/",
-        ".github/labeler.yml",
+        Path(f"deployments/{hub_name}/"),
+        Path(".github/labeler.yml"),
     ]
     for file in files_to_add:
-        print(f"Adding {file} to staging.")
+        print(f"Adding {str(file)} to staging.")
         try:
-            subprocess.check_call(["git", "add", file], cwd=root_path)
+            subprocess.check_call(["git", "add", str(file)], cwd=str(root_path))
         except subprocess.CalledProcessError as e:
-            print(f"Error adding {file} to commit: {e}")
+            print(f"Error adding {str(file)} to commit: {e}")
             exit(1)
 
     commit_message = f"Add {hub_name} deployment."
     print(f"Committing changes for {hub_name} with message {commit_message}.")
     try:
         subprocess.check_call(
-            ["git", "commit", "-m", f"{commit_message}"], cwd=root_path
+            ["git", "commit", "-m", f"{commit_message}"], cwd=str(root_path)
         )
     except subprocess.CalledProcessError as e:
         print(f"Error committing {hub_name}: {e}")
@@ -158,7 +155,7 @@ def stage_and_push(hub_name: str, root_path: str, branch_name: str):
     remote = "origin"
     print(f"Pushing {branch_name} to {remote}")
     try:
-        subprocess.check_call(["git", "push", remote, branch_name], cwd=root_path)
+        subprocess.check_call(["git", "push", remote, branch_name], cwd=str(root_path))
     except subprocess.CalledProcessError as e:
         print(f"Error pushing {branch_name} to {remote}: {e}")
         exit(1)
@@ -199,18 +196,20 @@ def create_pr(github_user: str, hub_name: str, branch_name: str, github_label: s
         exit(1)
 
 
-def create_branch(branch_name: str, root_path: str):
+def create_branch(branch_name: str, root_path: Path):
     """
     Create a new branch in the Git repository.
 
     Args:
         branch_name (str): The name of the new branch to be created.
-        root_path (str): The path to the root directory of the repository.
+        root_path (Path): The path to the root directory of the repository.
     """
     try:
         branch = (
             subprocess.run(
-                ["git", "branch", "--show-current"], cwd=root_path, capture_output=True
+                ["git", "branch", "--show-current"],
+                cwd=str(root_path),
+                capture_output=True,
             )
             .stdout.decode("utf-8")
             .strip()
@@ -226,33 +225,69 @@ def create_branch(branch_name: str, root_path: str):
         )
         exit(1)
     try:
-        subprocess.check_call(["git", "switch", "-c", branch_name], cwd=root_path)
+        subprocess.check_call(["git", "switch", "-c", branch_name], cwd=str(root_path))
     except subprocess.CalledProcessError as e:
         print(f"Error creating branch {branch_name}: {e}")
         exit(1)
 
 
 def populate_deployment_config(
-    config: dict, root_path: str, manual_config: bool = False
+    config: dict, root_path: Path, manual_config: bool = False
 ):
     """
     Populate the deployment configuration file with the provided configuration.
 
     Args:
         config (dict): The configuration dictionary containing deployment details.
-        root_path (str): The path to the root directory of the repository.
+        root_path (Path): The path to the root directory of the repository.
         manual_config (bool): If True, the script will ask for confirmation for each step.
     """
     # Run the cookiecutter to generate the deployment files
     print(f"Generating {config['hub_name']} cookiecutter template.")
+
+    # check for overridden hub_filestore_mount_path in the config, if not found, set it to hub_name
+    if (
+        "hub_filestore_mount_path" not in config
+        or not config["hub_filestore_mount_path"]
+    ):
+        print("Using hub_name as the default hub_filestore_mount_path.")
+        config["hub_filestore_mount_path"] = config["hub_name"]
+    elif config["hub_filestore_mount_path"] != config["hub_name"]:
+        print(
+            f"Overriding hub_filestore_mount_path to '{config['hub_filestore_mount_path']}' "
+            + f"as specified in the config file for {config['hub_name']}."
+        )
+    else:
+        print(
+            f"Using hub_filestore_mount_path of '{config['hub_filestore_mount_path']}' "
+            + f"as specified in the config file for {config['hub_name']}."
+        )
+
+    # Check for overridden image_name and image_tag in the config, if not found, don't set them.
     cookiecutter(
         template=f"{root_path}/deployments/template",
         output_dir=f"{root_path}/deployments",
         no_input=manual_config,
         extra_context={
+            "image_name": (
+                config["image_name"]
+                if "image_name" in config and config["image_name"]
+                else None
+            ),
+            "image_tag": (
+                config["image_tag"]
+                if "image_tag" in config and config["image_tag"]
+                else None
+            ),
+            "hub_type": (
+                config["hub_type"]
+                if "hub_type" in config and config["hub_type"]
+                else "python-base"
+            ),
             "hub_name": config["hub_name"],
             "hub_filestore_instance": config["hub_filestore_instance"],
             "hub_filestore_ip": config["hub_filestore_ip"],
+            "hub_filestore_mount_path": config["hub_filestore_mount_path"],
             "institution": config["institution"],
             "institution_url": config["institution_url"],
             "institution_logo_url": config["institution_logo_url"],
@@ -285,14 +320,26 @@ def create_remote_dirs(config: dict):
     """
     Create the prod and staging directories on filestore for the new hub.
 
+    Sometimes we want to mount multiple hubs to an existing mount point to
+    share existing user homedirs.  If these shares already exist in Filestore,
+    this command will do nothing.
+
     Args:
         config (dict): The configuration dictionary containing deployment details.
     """
     dirs = [
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/prod/_shared",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging",
-        f"/export/{config['hub_filestore_instance']}/{config['hub_name']}/staging/_shared",
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod"
+        ),
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod/_shared"
+        ),
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging"
+        ),
+        Path(
+            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging/_shared"
+        ),
     ]
     try:
         subprocess.check_call(
@@ -304,7 +351,10 @@ def create_remote_dirs(config: dict):
                 "--tunnel-through-iap",
                 "--zone=us-central1-b",
                 "--command",
-                "sudo -u ubuntu install -d -o 1000 -g 1000 " + " ".join(dirs),
+                "[ ! -d '/export/{}/{}' ] && sudo -u ubuntu install -d -o 1000 -g 1000 ".format(
+                    config["hub_filestore_instance"], config["hub_filestore_mount_path"]
+                )
+                + " ".join(str(d) for d in dirs),
             ]
         )
     except subprocess.CalledProcessError as e:
@@ -313,7 +363,12 @@ def create_remote_dirs(config: dict):
 
 
 def create_deployment(
-    config: dict, github_user: str, root_path: str, manual_config: bool = False
+    config: dict,
+    github_user: str,
+    root_path: Path,
+    deploy: bool = False,
+    manual_config: bool = False,
+    dry_run: bool = False,
 ):
     """
     Create a new deployment for an institution using the provided configuration.
@@ -321,46 +376,132 @@ def create_deployment(
         config (dict): The configuration dictionary containing deployment details.
         github_user (str): The GitHub username of the user creating the pull request.
         root_path (str): The parent path where the deployment will be created.
+        deploy (bool): If True, the script will deploy the hub to staging after creating the pull request.
         manual_config (bool): If True, the script will ask for confirmation for each step.
+        dry_run (bool): If True, the script will go through all the steps but not actually make any changes.
     """
+    # The following steps will not be run if the dry_run flag is set, but we
+    # will print out what would have been done.
+
     # Create a feature branch
     branch_name = f"add-{config['hub_name']}-deployment"
-    print(f"Creating feature branch {branch_name}.")
-    create_branch(branch_name, root_path)
+    if dry_run:
+        print(f"Dry run enabled. Would create feature branch {branch_name}.")
+    else:
+        print(f"Creating feature branch {branch_name}.")
+        create_branch(branch_name, root_path)
 
     # create the prod and staging directories on filestore for the new hub
-    print(f"Creating directories for {config['hub_name']} on filestore.")
-    create_remote_dirs(config)
+    if dry_run:
+        print(
+            f"Dry run enabled. Would create directories for {config['hub_name']} on filestore."
+        )
+    else:
+        print(f"Creating directories for {config['hub_name']} on filestore.")
+        create_remote_dirs(config)
 
     # Populate the deployment configuration
     print(f"Populating deployment config for {config['hub_name']}.")
     populate_deployment_config(config, root_path, manual_config)
 
     # Create labels for the new hub
-    print(f"Creating repo and github labels for {config['hub_name']}.")
-    github_label = create_label(config["hub_name"], root_path)
+    if dry_run:
+        print(f"Dry run enabled. Would create GitHub label for {config['hub_name']}.")
+    else:
+        print(f"Creating repo and github labels for {config['hub_name']}.")
+        github_label = create_label(config["hub_name"], root_path)
 
     # Stage and push the new deployment files
-    print(f"Staging and pushing the new deployment files for {config['hub_name']}.")
-    stage_and_push(config["hub_name"], root_path, branch_name)
+    if dry_run:
+        print(
+            f"Dry run enabled. Would stage and push the new deployment files for {config['hub_name']} to branch {branch_name}."
+        )
+    else:
+        print(f"Staging and pushing the new deployment files for {config['hub_name']}.")
+        stage_and_push(config["hub_name"], root_path, branch_name)
 
     # Create a pull request for the new hub
-    print(f"Creating pull request for {config['hub_name']}.")
-    create_pr(github_user, config["hub_name"], branch_name, github_label)
+    if dry_run:
+        print(f"Dry run enabled. Not creating pull request for {config['hub_name']}.")
+    else:
+        print(f"Creating pull request for {config['hub_name']}.")
+        create_pr(github_user, config["hub_name"], branch_name, github_label)
+
+    if deploy:
+        if dry_run:
+            print(
+                f"Dry run enabled. Would deploy the hub to {config['hub_name']}-staging."
+            )
+        else:
+            print(f"Deploying the hub to {config['hub_name']}-staging.")
+            helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
+            print(f"Deployment to {config['hub_name']}-staging complete.")
 
 
-def main():
+def main(args):
     """
     Main function to parse arguments and create a new deployment for an institution.
     This script should be run from the root cal-icor-hubs directory.
     """
+    # Check if the script is run from the correct directory
+    if Path.cwd() != Path(__file__).resolve().parents[1]:
+        print("Error: This script must be run from the root cal-icor-hubs directory.")
+        exit(1)
 
+    # Check if the _deploy_configs directory exists
+    if not Path(__file__).resolve().parents[1].joinpath("_deploy_configs").exists():
+        print("Error: The _deploy_configs directory does not exist. Please create it.")
+        exit(1)
+
+    # Check if the config file exists
+    if (
+        not Path(__file__)
+        .resolve()
+        .parents[1]
+        .joinpath(f"_deploy_configs/{args.institution_name}.yaml")
+        .exists()
+    ):
+        print(f"Error: The config file {args.institution_name}.yaml does not exist.")
+        exit(1)
+
+    root_path = Path(__file__).resolve().parents[1]
+    deployment_config = (
+        Path(root_path) / "_deploy_configs" / f"{args.institution_name}.yaml"
+    )
+    config = yaml.safe_load(deployment_config.read_text())
+    if not config:
+        print(f"Error loading config for {args.institution_name}.")
+        exit(1)
+
+    if args.dry_run:
+        print(
+            "Performing a dry-run, only the config changes in your repo will be performed, but no remote actions taken.\n"
+        )
+
+    create_deployment(
+        config,
+        args.github_user,
+        root_path,
+        args.deploy,
+        args.manual_config,
+        args.dry_run,
+    )
+
+    print(
+        f"\nDeployment for {config['hub_name']} created."
+        + "\nDo not forget to create the alerts for the new hub after merging "
+        + "the PR to prod. The instructions for that are found here: \n"
+        + "https://docs.cal-icor.org/new-hub/#create-the-alerts-for-the-new-hub"
+    )
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Create a new deployment for an institution.  This should "
         + "be run from the root cal-icor-hubs directory."
         + "\n\n"
         + "You will also need to fill out the cookiecutter template config "
-        + "in the _deploy_configs/<hubname>.yaml dir in the root of the repo.",
+        + "in the _deploy_configs/<institution_name>.yaml dir in the root of the repo.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -391,51 +532,14 @@ def main():
         + "allowing you to manually configure the deployment (eg: custom "
         + "filestore IP, node pool deployment, etc).",
     )
+    parser.add_argument(
+        "--dry-run",
+        "-D",
+        action="store_true",
+        help="If set, the script will go through all the steps but not actually "
+        + "make any changes (eg: not actually creating branches, pushing to "
+        + "GitHub, creating remoter directories or deploying to staging).",
+    )
     args = parser.parse_args()
 
-    # Check if the script is run from the correct directory
-    if Path.cwd() != Path(__file__).resolve().parents[1]:
-        print("Error: This script must be run from the root cal-icor-hubs directory.")
-        exit(1)
-
-    # Check if the _deploy_configs directory exists
-    if not Path(__file__).resolve().parents[1].joinpath("_deploy_configs").exists():
-        print("Error: The _deploy_configs directory does not exist. Please create it.")
-        exit(1)
-
-    # Check if the config file exists
-    if (
-        not Path(__file__)
-        .resolve()
-        .parents[1]
-        .joinpath(f"_deploy_configs/{args.institution_name}.yaml")
-        .exists()
-    ):
-        print(f"Error: The config file {args.institution_name}.yaml does not exist.")
-        exit(1)
-
-    root_path = Path(__file__).resolve().parents[1]
-    file_path = f"{root_path}/_deploy_configs/{args.institution_name}.yaml"
-    with open(file_path) as f:
-        config = yaml.safe_load(f)
-    if not config:
-        print(f"Error loading config for {args.institution_name}.")
-        exit(1)
-
-    create_deployment(config, args.github_user, root_path, args.manual_config)
-
-    if args.deploy:
-        print(f"Deploying the hub to {config['hub_name']}-staging.")
-        helm.deploy(hub=config["hub_name"], chart="hub", environment="staging")
-        print(f"Deployment to {config['hub_name']}-staging complete.")
-
-    print(
-        f"\nDeployment for {config['hub_name']} created."
-        + "\nDo not forget to create the alerts for the new hub after merging "
-        + "the PR to prod. The instructions for that are found here: "
-        + "https://docs.cal-icor.org/content/admin/new_hub.html#create-the-alerts-for-the-new-hub"
-    )
-
-
-if __name__ == "__main__":
-    main()
+    main(args)

@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: {{cookiecutter.hub_filestore_share}}/{{cookiecutter.hub_name}}/staging
+    shareName: {{cookiecutter.hub_filestore_share}}/{{cookiecutter.hub_filestore_mount_path}}/staging
   dirsizeReporter:
     enabled: false
 
