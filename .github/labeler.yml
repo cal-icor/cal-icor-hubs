@@ -108,9 +108,9 @@ jupyterhub-deployment:
   - 'deployments/chicostate/**'
 'hub: csusonoma':
   - 'deployments/csusonoma/**'
-'hub: demo':
-  - 'deployments/demo/**'
-'hub: sage':
-  - 'deployments/sage/**'
-'hub: gpu-demo':
-  - 'deployments/gpu-demo/**'
+# 'hub: demo':
+#   - 'deployments/demo/**'
+# 'hub: sage':
+#   - 'deployments/sage/**'
+# 'hub: gpu-demo':
+#   - 'deployments/gpu-demo/**'
