@@ -47,6 +47,7 @@ jupyterhub:
           - ericvd@berkeley.edu
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
+          - abrsvn@ucsc.edu
           - jusimons@ucsc.edu
   singleuser:
     image:
