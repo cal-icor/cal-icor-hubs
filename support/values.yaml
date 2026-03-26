@@ -32,7 +32,7 @@ ingress-nginx:
     # Best effort guess on resource needs
     # We overprovision a little - issues here cause a full cluster outage
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool-2025-12-22
+      hub.jupyter.org/pool-name: core-pool-2026-03-05
     replicaCount: 3
     resources:
       limits:

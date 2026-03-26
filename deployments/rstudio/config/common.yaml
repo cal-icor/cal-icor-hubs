@@ -18,15 +18,15 @@ jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-pool-2025-12-22
+        hub.jupyter.org/pool-name: core-pool-2026-03-05
   proxy:
     chp:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-pool-2025-12-22
+        hub.jupyter.org/pool-name: core-pool-2026-03-05
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool-2025-12-22
+      hub.jupyter.org/pool-name: core-pool-2026-03-05
     config:
       JupyterHub:
         authenticator_class: dummy
