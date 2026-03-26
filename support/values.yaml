@@ -191,6 +191,7 @@ node-placeholder-scaler:
     https://calendar.google.com/calendar/ical/c_35d90f50598c1472a4154c538bb49a21eabd8be93831d7de345d53fea8e19390%40group.calendar.google.com/public/basic.ics
 
   calendarTimezone: "America/Los_Angeles"
+  calendarOverrideEnabled: True
 
   cpuThreshold: 0.25
   memoryThreshold: 0.40 # set this pretty high to avoid overloading nodes and get new ones spun up earlier
