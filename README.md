@@ -1,6 +1,6 @@
 # Cal-ICOR JupyterHubs
 
-![Cal-ICOR Logo](https://cal-icor.org/assets/logo-trans.png)
+![Cal-ICOR Logo](https://www.cal-icor.org/images/logos/cal-icor.png)
 
 Contains a fully reproducible configuration for JupyterHub for the Cal ICOR deployments.
 

@@ -12,7 +12,7 @@ jupyterhub:
       templateVars:
         org:
           name: Cal-ICOR Demo Hub
-          logo_url: https://cal-icor.org/assets/logo-trans.png
+          logo_url: https://www.cal-icor.org/images/logos/cal-icor.png
           url: https://cal-icor.org
   scheduling:
     userScheduler:
