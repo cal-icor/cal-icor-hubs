@@ -1,4 +1,7 @@
 dependencies:
+  - name: jupyterhub-home-nfs
+    version: 1.2.1-0.dev.git.1.h1c81b4b
+    repository: oci://ghcr.io/2i2c-org/jupyterhub-home-nfs/jupyterhub-home-nfs
   - name: node-placeholder-scaler
     version: 0.0.1-0.dev.git.1.h3d7ed14
     repository: oci://us-central1-docker.pkg.dev/cal-icor-hubs/helm-charts
