@@ -214,6 +214,6 @@ jupyterhub-home-nfs:
     hub.jupyter.org/pool-name: support-pool-2026-02-12
   gke:
     enabled: true
-    volumeId: projects/example-project/zones/europe-west2-b/disks/hub-nfs-homedirs
+    volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/jupyterhub-homedirs
   quotaEnforcer:
     hardQuota: "10"
