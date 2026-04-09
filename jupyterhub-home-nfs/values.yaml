@@ -1,0 +1,7 @@
+gke:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool-2026-02-12
+  enabled: true
+  volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/jupyterhub-homedirs-2026-04-08
+quotaEnforcer:
+  hardQuota: "10"

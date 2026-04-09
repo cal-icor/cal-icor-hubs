@@ -1,7 +1,7 @@
 etcGitConfig:
   enabled: false
 nfsPVC:
-  enabled: true
+  enabled: false
   dirsizeReporter:
     enabled: true
 

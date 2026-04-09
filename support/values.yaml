@@ -208,12 +208,3 @@ node-placeholder-scaler:
           # This is an example using a GCP n2-highmem-8 node with 64G of RAM allocatable
           memory: 60929654784
       replicas: 1
-
-jupyterhub-home-nfs:
-  nodeSelector:
-    hub.jupyter.org/pool-name: support-pool-2026-02-12
-  gke:
-    enabled: true
-    volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/jupyterhub-homedirs
-  quotaEnforcer:
-    hardQuota: "10"
