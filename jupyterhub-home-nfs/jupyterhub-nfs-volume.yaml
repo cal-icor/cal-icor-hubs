@@ -6,12 +6,12 @@ metadata:
   namespace: jupyterhub-home-nfs
 spec:
   capacity:
-    storage: 1Mi
+    storage: 35Gi
   accessModes:
     - ReadWriteMany
   nfs:
     # TODO: Replace this with the address of the in-cluster NFS server created by JupyterHub-Home-NFS
-    server: 34.118.229.36
+    server: home-nfs.jupyterhub-home-nfs.svc.cluster.local
     path: /
   mountOptions:
     - rsize=1048576
@@ -34,4 +34,4 @@ spec:
   storageClassName: "standard"
   resources:
     requests:
-      storage: 1Mi
+      storage: 35Gi

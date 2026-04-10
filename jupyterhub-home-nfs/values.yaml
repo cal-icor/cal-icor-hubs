@@ -16,7 +16,7 @@ persistentVolume:
   # Not setting this to the actual size of the pre-provisioned disk doesn't affect the
   # functionality of the chart; only the labels on the PV and PVC will be incorrect.
   # The pre-provisioned disk ID is specified below in the cloud provider specific configuration
-  size: 35G
+  size: 35Gi
   storageClass: "standard"
   accessModes:
     - ReadWriteMany
