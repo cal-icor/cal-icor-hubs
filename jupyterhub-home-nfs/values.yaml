@@ -4,8 +4,24 @@ gke:
   enabled: true
   volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/jupyterhub-homedirs-2026-04-08
 quotaEnforcer:
-  hardQuota: "10"
+  resources:
+    requests:
+      cpu: 0.001
+      memory: 256M
+    limits:
+      cpu: 0.2
+      memory: 1G
+  config:
+    QuotaManager:
+      hard_quota: 10 # in GiB
 nfsServer:
+  resources:
+    requests:
+      cpu: 0.02
+      memory: 512M
+    limits:
+      cpu: 0.1
+      memory: 1.5G
   allowedClients:
     - "10.92.*.1"
 persistentVolume:
