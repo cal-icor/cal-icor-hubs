@@ -65,7 +65,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
-      tag: 5f6679ec3271
+      tag: e30e2f013495
     extraFiles:
       # DH-216
       remove-exporters:
@@ -86,4 +86,4 @@ jupyterhub:
         subPath: "{username}"
     memory:
       guarantee: 512M
-      limit: 1G
+      limit: 2G
