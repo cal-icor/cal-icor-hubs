@@ -1,9 +1,12 @@
+nameOverride: ""
+fullnameOverride: ""
+
 gke:
-  nodeSelector:
-    hub.jupyter.org/pool-name: support-pool-2026-02-12
   enabled: true
   volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/jupyterhub-homedirs-2026-04-08
+
 quotaEnforcer:
+  enabled: true
   resources:
     requests:
       cpu: 0.001
@@ -13,7 +16,15 @@ quotaEnforcer:
       memory: 1G
   config:
     QuotaManager:
-      hard_quota: 10 # in GiB
+      paths: ["/export"]
+      hard_quota: 10
+      wait_time: 30
+      min_projid: 1000
+      exclude: []
+      quota_overrides: {}
+      uid: 1000
+      gid: 1000
+
 nfsServer:
   resources:
     requests:
@@ -22,8 +33,26 @@ nfsServer:
     limits:
       cpu: 0.1
       memory: 1.5G
+  enableClientAllowlist: true
   allowedClients:
     - "10.92.*.1"
+
+# Automatic filesystem resizer, so increases in underlying disk size
+# are immediately reflected in available file system
+autoResizer:
+  enabled: true
+  resources: {}
+
+# Prometheus node exporter configuration
+# We expose disk total usage + some other disk metrics with prometheus
+# node exporter
+nodeExporter:
+  enabled: true
+  image:
+    repository: quay.io/prometheus/node-exporter
+    tag: v1.8.2
+  resources: {}
+
 persistentVolume:
   addStandardLabels: false
   # Setting this to 1M to make it obvious that this is not the real size.
@@ -32,8 +61,40 @@ persistentVolume:
   # Not setting this to the actual size of the pre-provisioned disk doesn't affect the
   # functionality of the chart; only the labels on the PV and PVC will be incorrect.
   # The pre-provisioned disk ID is specified below in the cloud provider specific configuration
-  size: 35Gi
+  size: 1M
   storageClass: "standard"
   accessModes:
     - ReadWriteMany
   annotations: {}
+
+# wtf it's creating a PVC even tho it's not specified.  but it doesn't create either the PV or the PVC if I try to create one.
+# also the template for the PVC is immutable after creation, so i tried to create it here.
+# persistentVolumeClaim:
+#   accessModes:
+#     - ReadWriteMany
+#   storageClass: "standard"
+#   volumeMode: Filesystem
+#   resources:
+#     requests:
+#       storage: 1M
+
+service:
+  type: ClusterIP
+
+# Additional containers for the deployment
+# `tpl` is applied when rendering these, so you can include {{ .Release.Name }}
+# or references to the jupyterhub-home-nfs chart's configured values.
+extraContainers: []
+
+# Annotations for the deployment
+annotations: {}
+
+# Node selector for the deployment
+nodeSelector:
+  hub.jupyter.org/pool-name: support-pool-2026-02-12
+
+# Affinity for the deployment
+affinity: {}
+
+# Tolerations for the deployment
+tolerations: []
