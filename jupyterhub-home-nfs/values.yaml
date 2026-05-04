@@ -33,9 +33,9 @@ nfsServer:
     limits:
       cpu: 0.1
       memory: 1.5G
-  enableClientAllowlist: true
-  allowedClients:
-    - "10.92.*.1"
+  enableClientAllowlist: false
+  # allowedClients:
+  #   - "10.92.*.1"
 
 # Automatic filesystem resizer, so increases in underlying disk size
 # are immediately reflected in available file system
@@ -62,9 +62,9 @@ persistentVolume:
   # functionality of the chart; only the labels on the PV and PVC will be incorrect.
   # The pre-provisioned disk ID is specified below in the cloud provider specific configuration
   size: 1M
-  storageClass: "standard"
+  storageClass: standard
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   annotations: {}
 
 # wtf it's creating a PVC even tho it's not specified.  but it doesn't create either the PV or the PVC if I try to create one.
