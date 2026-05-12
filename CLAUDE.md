@@ -49,7 +49,7 @@ sops --output deployments/<hub>/secrets/prod.yaml --encrypt deployments/<hub>/se
 Merging to `staging` or `prod` triggers `.github/workflows/deploy-hubs.yaml`. Which hubs deploy is controlled by **PR labels**:
 - Label `hub-images` or `jupyterhub-deployment` → redeploy **all** hubs
 - Label `hub: <name>` (e.g. `hub: jupyter`) → deploy only that hub
-- Label `support-deployment` → deploys the support chart (only on `staging`)
+- Label `support-deployment` → deploys the support chart when merged to `staging` (there is no separate staging environment for support; this is the only CI-triggered support deploy)
 
 The script `.github/scripts/determine-hub-deployments.py` reads `GITHUB_PR_LABEL_HUB_*` env vars set by the labeler to determine which hubs to deploy.
 
