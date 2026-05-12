@@ -1,7 +1,7 @@
 
 nfsPVC:
  nfs:
-   shareName: jupyter/prod
+   shareName: export/jupyter/prod
 
 jupyterhub:
   ingress:
