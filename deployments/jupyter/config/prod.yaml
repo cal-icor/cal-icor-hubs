@@ -1,4 +1,8 @@
 
+nfsPVC:
+ nfs:
+   shareName: jupyter/prod
+
 jupyterhub:
   ingress:
     enabled: true

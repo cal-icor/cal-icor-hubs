@@ -1,7 +1,7 @@
 nfsPVC:
-  enabled: false
-  # nfs:
-  #   shareName: shares/jupyter/staging
+  enabled: true
+  nfs:
+    shareName: jupyter/staging
   dirsizeReporter:
     enabled: false
 
