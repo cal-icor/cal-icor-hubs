@@ -11,7 +11,7 @@ spec:
     - ReadWriteMany
   nfs:
     # TODO: Replace this with the address of the in-cluster NFS server created by JupyterHub-Home-NFS
-    server: 34.118.225.212
+    server: 34.118.238.48
     path: /
   mountOptions:
     - rsize=1048576
@@ -29,9 +29,9 @@ metadata:
   namespace: jupyterhub-home-nfs
 spec:
   accessModes:
-    - ReadWriteMany
-  volumeName: jupyterhub-home-nfs
-  storageClassName: "standard"
+    - ReadWriteOnce
+  volumeName: jupyterhub-home-nfs-home-nfs
+  storageClassName: ""
   resources:
     requests:
       storage: 1M
