@@ -18,6 +18,10 @@ hub/charts
 **/.DS_Store
 **/*.bak
 
+# deployment configs
 _deploy_configs/*.yaml
 !_deploy_configs/institution-example.yaml
 git-manage.sh
+
+# ignore local claude files
+.claude/**
