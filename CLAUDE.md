@@ -6,6 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Cal-ICOR JupyterHub infrastructure — Helm charts and deployment configs for running JupyterHub on GKE (Google Kubernetes Engine) for California community colleges and universities. Based on [UC Berkeley DataHub](https://github.com/berkeley-dsep/datahub). Deployments are managed via [hubploy](https://github.com/berkeley-dsep-infra/hubploy).
 
+This is a [Zero to Jupyterhub](https://github.com/jupyterhub/zero-to-jupyterhub-k8s/) deployment of [Jupyterhub](https://github.com/jupyterhub/jupyterhub).  The API references for the two are here:
+
+- [z2jh](https://z2jh.jupyter.org/en/stable/resources/reference.html)
+- [jupyterhub](https://jupyterhub.readthedocs.io/en/stable/reference/api/index.html)
+
 ## Setup
 
 ```bash

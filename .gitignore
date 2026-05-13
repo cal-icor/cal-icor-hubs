@@ -23,5 +23,5 @@ _deploy_configs/*.yaml
 !_deploy_configs/institution-example.yaml
 git-manage.sh
 
-# ignore local claude files
+# ignore all local claude files
 .claude/**
