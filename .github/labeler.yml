@@ -62,7 +62,7 @@ support-deployment:
   - 'support/**'
 
 # jupyterhub-home-nfs chart
-jupyterhub-home-nfs:
+jupyterhub-home-nfs-deployment:
   - 'jupyterhub-home-nfs/**'
 
 # grafana panel backups
