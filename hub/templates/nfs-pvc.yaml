@@ -11,7 +11,7 @@ spec:
   mountOptions:
     - soft
     - noatime
-    - vers=3
+    - vers=4
   nfs:
     server: {{ .Values.nfsPVC.nfs.serverIP | quote}}
     path: "/{{ .Values.nfsPVC.nfs.shareName }}"

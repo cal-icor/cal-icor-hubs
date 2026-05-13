@@ -1,0 +1,99 @@
+jupyterhub-home-nfs:
+  nameOverride: ""
+  fullnameOverride: ""
+
+  gke:
+    enabled: true
+    volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/jupyterhub-homedirs-2026-04-08
+
+  quotaEnforcer:
+    enabled: true
+    resources:
+      requests:
+        cpu: 0.001
+        memory: 256M
+      limits:
+        cpu: 0.2
+        memory: 1G
+    config:
+      QuotaManager:
+        paths: ["/export/jupyter/staging", "/export/jupyter/prod"]
+        hard_quota: 10
+        wait_time: 30
+        min_projid: 1000
+        exclude: []
+        quota_overrides: {}
+        uid: 1000
+        gid: 1000
+
+  nfsServer:
+    resources:
+      requests:
+        cpu: 0.02
+        memory: 512M
+      limits:
+        cpu: 0.1
+        memory: 1.5G
+    enableClientAllowlist: false
+    # allowedClients:
+    #   - "10.92.*.1"
+
+  # Automatic filesystem resizer, so increases in underlying disk size
+  # are immediately reflected in available file system
+  autoResizer:
+    enabled: true
+    resources: {}
+
+  # Prometheus node exporter configuration
+  # We expose disk total usage + some other disk metrics with prometheus
+  # node exporter
+  nodeExporter:
+    enabled: true
+    image:
+      repository: quay.io/prometheus/node-exporter
+      tag: v1.8.2
+    resources: {}
+
+  persistentVolume:
+    addStandardLabels: false
+    # Setting this to 1M to make it obvious that this is not the real size.
+    # The value can be changed to the actual size of the pre-provisioned disk to correctly
+    # label the PV and PVC with the underlying disk size.
+    # Not setting this to the actual size of the pre-provisioned disk doesn't affect the
+    # functionality of the chart; only the labels on the PV and PVC will be incorrect.
+    # The pre-provisioned disk ID is specified below in the cloud provider specific configuration
+    size: 1M
+    # Must be "" to match the PV's hardcoded storageClassName: "" in the upstream chart template
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    annotations: {}
+
+  service:
+    type: ClusterIP
+
+  # Additional containers for the deployment
+  # `tpl` is applied when rendering these, so you can include {{ .Release.Name }}
+  # or references to the jupyterhub-home-nfs chart's configured values.
+  extraContainers: []
+
+  # Annotations for the deployment
+  annotations: {}
+
+  # Node selector for the deployment
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool-2026-02-12
+
+  # Affinity for the deployment - required to pin the pod to us-central1-b where the GKE disk lives
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                  - us-central1-b
+
+  # Tolerations for the deployment
+  tolerations: []
