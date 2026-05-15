@@ -81,7 +81,7 @@ jobs:
         run: |
           helm dep up jupyterhub-home-nfs
           helm upgrade --install \
-          --namespace jupyterhub-home-nfs \
-          --create-namespace jupyterhub-home-nfs \
-          --values jupyterhub-home-nfs/values.yaml \
-          jupyterhub-home-nfs
+            --namespace jupyterhub-home-nfs \
+            --create-namespace jupyterhub-home-nfs \
+            --values jupyterhub-home-nfs/values.yaml \
+            jupyterhub-home-nfs
