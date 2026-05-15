@@ -32,7 +32,7 @@ jobs:
           for label in $(echo -e "${{ steps.pr-labels.outputs.labels }}"); do
             if [[ "$label" == jupyterhub-home-nfs-deployment ]]; then
               echo "Deploying jupyterhub-home-nfs charts!"
-              echo "DEPLOY=1" >> $GITHUB_ENV
+              echo "DEPLOY=1" >> "$GITHUB_ENV"
             fi
           done
 
@@ -52,18 +52,18 @@ jobs:
       - name: Install SOPS
         if: ${{ env.DEPLOY }}
         run: |
-          mkdir -p ${HOME}/bin
-          curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 -o ${HOME}/bin/sops
-          chmod 755 ${HOME}/bin/sops
-          echo "${HOME}/bin" >> $GITHUB_PATH
+          mkdir -p "${HOME}/bin"
+          curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 -o "${HOME}/bin/sops"
+          chmod 755 "${HOME}/bin/sops"
+          echo "${HOME}/bin" >> "$GITHUB_PATH"
 
       - name: Store SOPS secret in a file
         if: ${{ env.DEPLOY }}
         run: |
-          cat << EOF > ${HOME}/sops.key
+          cat << EOF > "${HOME}/sops.key"
           ${{ secrets.SOPS_KEY }}
           EOF
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> $GITHUB_ENV
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> "$GITHUB_ENV"
 
       - name: Activate credentials for cluster
         if: ${{ env.DEPLOY }}
