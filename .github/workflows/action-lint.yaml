@@ -1,8 +1,7 @@
 name: "Lint workflow files on pull requests"
 on:
   pull_request:
-    types:
-      - opened
+    types: [opened, synchronize]
     paths:
       - ".github/workflows/*.yaml"
 
