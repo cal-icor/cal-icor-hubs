@@ -34,6 +34,13 @@ pre-commit run yamllint --all-files
 
 Hooks enforce: yamllint, ruff (Python linting + formatting), pyupgrade, isort, black, flake8, sops-encryption (blocks unencrypted secrets), codespell, end-of-file-fixer.
 
+## GitHub Actions Conventions
+
+- Pin actions using version tags (e.g., @v4), NOT SHA hashes
+- Use `vars.IMAGE` for image references, not `github.repository`
+- Do NOT bump the labeler action version (known globbing pattern regression in v6) unless you fix the globbing found in cal-icor-hubs/.github/labeler.yml
+- Always run actionlint after modifying workflow files
+
 ## Secrets: SOPS encryption
 
 All files matching `deployments/*/secrets/*` and `support/secrets.yaml` **must be encrypted** with SOPS before committing. The pre-commit hook will block unencrypted secrets. Encryption uses GCP KMS key `projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops`.
