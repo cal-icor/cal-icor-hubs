@@ -36,6 +36,7 @@ jupyterhub-home-nfs:
         memory: 1.5G
     enableClientAllowlist: true
     allowedClients:
+      - "10.7.199.*"
       - "10.92.*.1"
       - "10.93.*.1"
       - "10.94.*.1"

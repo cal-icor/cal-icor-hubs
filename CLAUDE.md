@@ -122,7 +122,7 @@ This directory is a wrapper Helm chart around the upstream `2i2c-org/jupyterhub-
 | `gke.volumeId` | Pre-provisioned GKE disk ID backing the NFS server |
 | `quotaEnforcer.config.QuotaManager.paths` | List of all hub paths subject to quota enforcement; add `/export/<hub>/staging` and `/export/<hub>/prod` when onboarding a hub |
 | `quotaEnforcer.config.QuotaManager.hard_quota` | Per-user hard quota in GiB |
-| `nfsServer.enableClientAllowlist` / `allowedClients` | Restrict which pod CIDRs can mount (recommended for production) |
+| `nfsServer.enableClientAllowlist` / `allowedClients` | Restrict which IPs can mount. **Important:** NFS mounts originate from the node's primary IP (e.g. `10.7.199.*`), not the pod CIDR — despite upstream docs suggesting pod CIDR `.1` addresses. Always include the node subnet (check with `kubectl get nodes -o wide`) in addition to pod CIDR ranges. |
 | `nodeSelector` / `affinity` | Pin the pod to the zone where the GKE disk lives |
 
 Deployed via `.github/workflows/deploy-jupyterhub-home-nfs.yaml`, triggered by the `jupyterhub-home-nfs-deployment` PR label on merge to `staging`.
