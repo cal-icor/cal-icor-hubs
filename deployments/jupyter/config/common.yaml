@@ -49,6 +49,7 @@ jupyterhub:
           - jonathanferrari@berkeley.edu
           - jonathanferrari
           - fraser@berkeley.edu
+          - yanglisa@berkeley.edu
 
   singleuser:
     image:
