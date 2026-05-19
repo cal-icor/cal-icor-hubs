@@ -1,7 +1,7 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: {{cookiecutter.hub_filestore_ip}}
+    serverIP: 34.118.238.48
   {% if cookiecutter.hub_type == "rstudio-base" %}
   dirsizeReporter:
     enabled: false
@@ -103,7 +103,7 @@ jupyterhub:
     storage:
       type: static
       static:
-        pvcName: home-nfs-v3
+        pvcName: home-nfs
         subPath: "{username}"
       {% if cookiecutter.hub_type == "rstudio-base" %}
       extraVolumeMounts:
