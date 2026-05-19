@@ -34,9 +34,12 @@ jupyterhub-home-nfs:
       limits:
         cpu: 0.1
         memory: 1.5G
-    enableClientAllowlist: false
-    # allowedClients:
-    #   - "10.92.*.1"
+    enableClientAllowlist: true
+    allowedClients:
+      - "10.92.*.1"
+      - "10.93.*.1"
+      - "10.94.*.1"
+      - "10.95.*.1"
 
   # Automatic filesystem resizer, so increases in underlying disk size
   # are immediately reflected in available file system
