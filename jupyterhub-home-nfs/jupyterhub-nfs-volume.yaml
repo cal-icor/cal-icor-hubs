@@ -1,4 +1,7 @@
 # Volume definition to set up a NFS volume for JupyterHub to store users' home directories.
+# this is only used when deploying this chart for the first time, and is not used when the chart is upgraded.
+# This is because PVs cannot be modified after they are created, so any changes to this file after the first
+# deployment will not be reflected in the PV that was created by the first deployment.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
