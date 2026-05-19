@@ -268,6 +268,7 @@ def populate_deployment_config(
             ),
             "hub_name": config["hub_name"],
             "hub_nfs_mount_path": config["hub_nfs_mount_path"],
+            "hub_nfs_server_ip": config["hub_nfs_server_ip"],
             "institution": config["institution"],
             "institution_url": config["institution_url"],
             "institution_logo_url": config["institution_logo_url"],

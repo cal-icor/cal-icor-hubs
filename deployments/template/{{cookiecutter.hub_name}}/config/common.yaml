@@ -1,7 +1,7 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: 34.118.238.48
+    serverIP: {{cookiecutter.hub_nfs_server_ip}}
   {% if cookiecutter.hub_type == "rstudio-base" %}
   dirsizeReporter:
     enabled: false
