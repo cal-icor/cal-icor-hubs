@@ -35,12 +35,15 @@ jupyterhub-home-nfs:
         cpu: 0.1
         memory: 1.5G
     enableClientAllowlist: true
+    # note: these are private IP ranges that should cover all of our GKE nodes,
+    # but will need to be updated if we create a new cluster or node pools with
+    # different IP ranges.
     allowedClients:
-      - "10.7.199.*"
-      - "10.92.*.1"
-      - "10.93.*.1"
-      - "10.94.*.1"
-      - "10.95.*.1"
+      - "10.7.199.*"   # node primary IPs (all pools share this subnet)
+      - "10.92.*.1"    # pod CIDR kubelet addresses (10.92.0.0/14 covers 10.92-10.95)
+      - "10.93.*.1"    # pod CIDR kubelet addresses (cont.)
+      - "10.94.*.1"    # pod CIDR kubelet addresses (cont.)
+      - "10.95.*.1"    # pod CIDR kubelet addresses (cont.)
 
   # Automatic filesystem resizer, so increases in underlying disk size
   # are immediately reflected in available file system
