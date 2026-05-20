@@ -1,7 +1,7 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: 10.183.114.2
+    serverIP: 34.118.238.48
 
 jupyterhub:
   custom:
@@ -12,7 +12,7 @@ jupyterhub:
       templateVars:
         org:
           name: California State University, Chico
-          logo_url: https://www.csuchico.edu/style-guide/visual/_images/institutional-wildcat.jpg
+          logo_url: https://www.csuchico.edu/_assets/images/brand/logomark-seal.jpg
           url: https://www.csuchico.edu/
   scheduling:
     userScheduler:
@@ -68,7 +68,7 @@ jupyterhub:
     storage:
       type: static
       static:
-        pvcName: home-nfs-v3
+        pvcName: home-nfs
         subPath: "{username}"
     memory:
       guarantee: 1G

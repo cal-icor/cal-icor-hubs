@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/chicostate/staging
+    shareName: chicostate/staging
   dirsizeReporter:
     enabled: false
 

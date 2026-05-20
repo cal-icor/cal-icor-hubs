@@ -17,7 +17,7 @@ jupyterhub-home-nfs:
         memory: 1G
     config:
       QuotaManager:
-        paths: ["/export/jupyter/staging", "/export/jupyter/prod", "/export/csueb/staging", "/export/csueb/prod", "/export/csun/staging", "/export/csun/prod", "/export/csub/staging", "/export/csub/prod"]
+        paths: ["/export/jupyter/staging", "/export/jupyter/prod", "/export/csueb/staging", "/export/csueb/prod", "/export/csun/staging", "/export/csun/prod", "/export/csub/staging", "/export/csub/prod", "/export/chicostate/staging", "/export/chicostate/prod"]
         hard_quota: 10
         wait_time: 30
         min_projid: 1000
