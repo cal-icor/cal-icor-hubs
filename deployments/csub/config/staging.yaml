@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/csub/staging
+    shareName: csub/staging
   dirsizeReporter:
     enabled: false
 
