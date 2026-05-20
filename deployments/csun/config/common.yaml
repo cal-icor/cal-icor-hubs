@@ -1,7 +1,7 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: 10.183.114.2
+    serverIP: 34.118.238.48
 
 jupyterhub:
   custom:
@@ -12,7 +12,7 @@ jupyterhub:
       templateVars:
         org:
           name: California State University, Northridge
-          logo_url: https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/CSU_Northridge_logo.svg/420px-CSU_Northridge_logo.svg.png
+          logo_url: https://upload.wikimedia.org/wikipedia/en/8/8c/CSUNS.svg
           url: https://www.csun.edu/
   scheduling:
     userScheduler:
@@ -68,7 +68,7 @@ jupyterhub:
     storage:
       type: static
       static:
-        pvcName: home-nfs-v3
+        pvcName: home-nfs
         subPath: "{username}"
     memory:
       guarantee: 512M
