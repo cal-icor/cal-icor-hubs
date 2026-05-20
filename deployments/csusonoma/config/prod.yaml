@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/csusonoma/prod
+    shareName: csusonoma/prod
 
 jupyterhub:
   ingress:
