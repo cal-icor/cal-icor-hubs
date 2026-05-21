@@ -121,7 +121,9 @@ def create_label(hub_name: str, root_path: str) -> str:
     return github_label
 
 
-def stage_and_push(hub_name: str, root_path: Path, branch_name: str):
+def stage_and_push(
+    hub_name: str, root_path: Path, branch_name: str, extra_files: list = None
+):
     """
     Stage the new deployment files for the hub.
 
@@ -129,11 +131,14 @@ def stage_and_push(hub_name: str, root_path: Path, branch_name: str):
         hub_name (str): The name of the hub.
         root_path (str): The path to the root directory of the repository.
         branch_name (str): The name of the branch to push the changes to.
+        extra_files (list): Additional files to stage alongside the deployment files.
     """
     files_to_add = [
         Path(f"deployments/{hub_name}/"),
         Path(".github/labeler.yml"),
     ]
+    if extra_files:
+        files_to_add.extend(extra_files)
     for file in files_to_add:
         print(f"Adding {str(file)} to staging.")
         try:
@@ -297,6 +302,85 @@ def populate_deployment_config(
         handle_secrets(config["hub_name"], env)
 
 
+def update_nfs_quota_paths(
+    hub_name: str, mount_path: str, root_path: Path, dry_run: bool = False
+):
+    """
+    Add the new hub's NFS export paths to jupyterhub-home-nfs/values.yaml in alphabetical order.
+
+    Skips if mount_path != hub_name, which means the hub shares another hub's NFS directory
+    (e.g. rstudio shares the jupyter path) and should not get its own quota entries.
+
+    Args:
+        hub_name (str): The name of the hub.
+        mount_path (str): The NFS mount path for the hub (usually the same as hub_name).
+        root_path (Path): The path to the root directory of the repository.
+        dry_run (bool): If True, print what would be done without making changes.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If jupyterhub-home-nfs/values.yaml does not exist.
+        ValueError: If the QuotaManager paths block cannot be found in values.yaml.
+    """
+    if mount_path != hub_name:
+        print(
+            f"Hub '{hub_name}' uses shared NFS path '{mount_path}', skipping quota path update."
+        )
+        return
+
+    values_path = root_path / "jupyterhub-home-nfs" / "values.yaml"
+    if not values_path.is_file():
+        raise FileNotFoundError(
+            f"Could not find jupyterhub-home-nfs/values.yaml at {values_path}"
+        )
+    content = values_path.read_text()
+
+    match = re.search(r"(paths: \[)(.*?)(\n\s+\])", content, re.DOTALL)
+    if not match:
+        raise ValueError(
+            "Could not find QuotaManager paths block in jupyterhub-home-nfs/values.yaml"
+        )
+
+    existing_paths = re.findall(r'"(/export/[^"]+)"', match.group(2))
+    pairs = list(zip(existing_paths[::2], existing_paths[1::2]))
+
+    new_staging = f"/export/{mount_path}/staging"
+    new_prod = f"/export/{mount_path}/prod"
+
+    if new_staging in existing_paths:
+        print(f"Paths for '{hub_name}' already exist in quota paths, skipping.")
+        return
+
+    pairs.append((new_staging, new_prod))
+    pairs.sort(key=lambda p: p[0])
+
+    indent = "          "
+    lines = []
+    for i, (staging, prod) in enumerate(pairs):
+        comma = "," if i < len(pairs) - 1 else ""
+        lines.append(f'{indent}"{staging}", "{prod}"{comma}')
+
+    new_inner = "\n" + "\n".join(lines)
+    new_content = (
+        content[: match.start()]
+        + match.group(1)
+        + new_inner
+        + match.group(3)
+        + content[match.end() :]
+    )
+
+    if dry_run:
+        print(
+            f"Dry run: Would add '{new_staging}' and '{new_prod}' to quota paths in alphabetical order."
+        )
+        return
+
+    values_path.write_text(new_content)
+    print(f"Added NFS quota paths for '{hub_name}' in alphabetical order.")
+
+
 def create_remote_dirs(config: dict):
     """
     Create the prod and staging directories on the in-cluster NFS server for the new hub.
@@ -420,6 +504,20 @@ def create_deployment(
     print(f"Populating deployment config for {config['hub_name']}.")
     populate_deployment_config(config, root_path, manual_config)
 
+    # Update NFS quota paths in jupyterhub-home-nfs/values.yaml
+    if dry_run:
+        print(
+            f"Dry run enabled. Would update NFS quota paths for {config['hub_name']}."
+        )
+        update_nfs_quota_paths(
+            config["hub_name"], config["hub_nfs_mount_path"], root_path, dry_run=True
+        )
+    else:
+        print(f"Updating NFS quota paths for {config['hub_name']}.")
+        update_nfs_quota_paths(
+            config["hub_name"], config["hub_nfs_mount_path"], root_path
+        )
+
     # Create labels for the new hub
     if dry_run:
         print(f"Dry run enabled. Would create GitHub label for {config['hub_name']}.")
@@ -434,7 +532,12 @@ def create_deployment(
         )
     else:
         print(f"Staging and pushing the new deployment files for {config['hub_name']}.")
-        stage_and_push(config["hub_name"], root_path, branch_name)
+        stage_and_push(
+            config["hub_name"],
+            root_path,
+            branch_name,
+            extra_files=[Path("jupyterhub-home-nfs/values.yaml")],
+        )
 
     # Create a pull request for the new hub
     if dry_run:
