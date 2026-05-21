@@ -26,7 +26,8 @@ jupyterhub-home-nfs:
           "/export/csusj/staging", "/export/csusj/prod",
           "/export/folsomlake/staging", "/export/folsomlake/prod",
           "/export/csusonoma/staging", "/export/csusonoma/prod",
-          "/export/csumb/staging", "/export/csumb/prod"
+          "/export/csumb/staging", "/export/csumb/prod",
+          "/export/csulb/staging", "/export/csulb/prod"
           ]
         hard_quota: 10
         wait_time: 30
