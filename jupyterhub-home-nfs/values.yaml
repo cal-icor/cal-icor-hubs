@@ -37,7 +37,8 @@ jupyterhub-home-nfs:
           "/export/gpu-demo/staging", "/export/gpu-demo/prod",
           "/export/demo/staging", "/export/demo/prod",
           "/export/sage/staging", "/export/sage/prod",
-          "/export/csus/staging", "/export/csus/prod"
+          "/export/csus/staging", "/export/csus/prod",
+          "/export/ucsc/staging", "/export/ucsc/prod"
           ]
         hard_quota: 10
         wait_time: 30
