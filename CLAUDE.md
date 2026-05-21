@@ -150,11 +150,12 @@ nfsPVC:
 
 ### Onboarding a new hub
 
-1. Create the hub's directories on the NFS server: `/export/<hub-name>/staging` and `/export/<hub-name>/prod`.
-2. Add `/export/<hub-name>/staging` and `/export/<hub-name>/prod` to `quotaEnforcer.config.QuotaManager.paths` in `jupyterhub-home-nfs/values.yaml`.
-2. Deploy the `jupyterhub-home-nfs` chart using the `jupyterhub-home-nfs-deployment` PR label.
-3. Set `nfsPVC.nfs.serverIP` in the hub's `config/common.yaml` (use the ClusterIP or DNS name of the NFS service).
-4. Set `nfsPVC.nfs.shareName` to `<hub-name>/staging` and `<hub-name>/prod` in the hub's staging/prod config files.
+1. Copy `_deploy_configs/institution-example.yaml` to `_deploy_configs/<institution_name>.yaml` and fill in the variables.
+2. From the repo root (on the `staging` branch), run:
+   ```bash
+   ./create_deployment.sh --github_user <your-github-username> <institution_name>
+   ```
+   This handles everything: creating NFS directories on the server, generating the deployment config via cookiecutter, encrypting secrets with SOPS, updating `jupyterhub-home-nfs/values.yaml` with the new quota paths, creating the GitHub label, committing, pushing a feature branch, and opening a PR.
 
 ## Creating a new hub deployment
 
