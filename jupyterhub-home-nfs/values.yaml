@@ -18,28 +18,28 @@ jupyterhub-home-nfs:
     config:
       QuotaManager:
         paths: [
-          "/export/jupyter/staging", "/export/jupyter/prod",
-          "/export/csueb/staging", "/export/csueb/prod",
-          "/export/csun/staging", "/export/csun/prod",
-          "/export/csub/staging", "/export/csub/prod",
           "/export/chicostate/staging", "/export/chicostate/prod",
-          "/export/csusj/staging", "/export/csusj/prod",
-          "/export/folsomlake/staging", "/export/folsomlake/prod",
-          "/export/csusonoma/staging", "/export/csusonoma/prod",
-          "/export/csumb/staging", "/export/csumb/prod",
-          "/export/csulb/staging", "/export/csulb/prod",
-          "/export/fresno/staging", "/export/fresno/prod",
-          "/export/csufresno/staging", "/export/csufresno/prod",
-          "/export/csum/staging", "/export/csum/prod",
-          "/export/usc/staging", "/export/usc/prod",
+          "/export/csub/staging", "/export/csub/prod",
+          "/export/csueb/staging", "/export/csueb/prod",
           "/export/csuf/staging", "/export/csuf/prod",
+          "/export/csufresno/staging", "/export/csufresno/prod",
           "/export/csula/staging", "/export/csula/prod",
-          "/export/gpu-demo/staging", "/export/gpu-demo/prod",
-          "/export/demo/staging", "/export/demo/prod",
-          "/export/sage/staging", "/export/sage/prod",
+          "/export/csulb/staging", "/export/csulb/prod",
+          "/export/csum/staging", "/export/csum/prod",
+          "/export/csumb/staging", "/export/csumb/prod",
+          "/export/csun/staging", "/export/csun/prod",
           "/export/csus/staging", "/export/csus/prod",
+          "/export/csusj/staging", "/export/csusj/prod",
+          "/export/csusonoma/staging", "/export/csusonoma/prod",
+          "/export/demo/staging", "/export/demo/prod",
+          "/export/dvc/staging", "/export/dvc/prod",
+          "/export/folsomlake/staging", "/export/folsomlake/prod",
+          "/export/fresno/staging", "/export/fresno/prod",
+          "/export/gpu-demo/staging", "/export/gpu-demo/prod",
+          "/export/jupyter/staging", "/export/jupyter/prod",
+          "/export/sage/staging", "/export/sage/prod",
           "/export/ucsc/staging", "/export/ucsc/prod",
-          "/export/dvc/staging", "/export/dvc/prod"
+          "/export/usc/staging", "/export/usc/prod"
           ]
         hard_quota: 10
         wait_time: 30
