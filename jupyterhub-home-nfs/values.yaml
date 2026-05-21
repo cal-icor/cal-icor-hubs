@@ -25,7 +25,8 @@ jupyterhub-home-nfs:
           "/export/chicostate/staging", "/export/chicostate/prod",
           "/export/csusj/staging", "/export/csusj/prod",
           "/export/folsomlake/staging", "/export/folsomlake/prod",
-          "/export/csusonoma/staging", "/export/csusonoma/prod"
+          "/export/csusonoma/staging", "/export/csusonoma/prod",
+          "/export/csumb/staging", "/export/csumb/prod"
           ]
         hard_quota: 10
         wait_time: 30
@@ -48,6 +49,7 @@ jupyterhub-home-nfs:
     # but will need to be updated if we create a new cluster or node pools with
     # different IP ranges.
     allowedClients:
+      - "10.7.196.*"   # node primary IPs (autoscaled nodes may land in this subnet)
       - "10.7.199.*"   # node primary IPs (all pools share this subnet)
       - "10.92.*.1"    # pod CIDR kubelet addresses (10.92.0.0/14 covers 10.92-10.95)
       - "10.93.*.1"    # pod CIDR kubelet addresses (cont.)
