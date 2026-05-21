@@ -25,6 +25,7 @@ jobs:
           sparse-checkout: |
             jupyterhub-home-nfs/
             deployments/jupyter/secrets/
+            .sops.yaml
 
       - name: Check if the jupyterhub-home-nfs helm chart needs to be deployed
         run: |
@@ -76,6 +77,11 @@ jobs:
             --region=us-central1 --project=cal-icor-hubs \
             get-credentials spring-2025
 
+      - name: Decrypt jupyterhub-home-nfs secrets
+        if: ${{ env.DEPLOY }}
+        run: |
+          sops -d -i jupyterhub-home-nfs/secrets/quota-overrides.yaml
+
       - name: Deploy jupyterhub-home-nfs helm chart
         if: ${{ env.DEPLOY }}
         run: |
@@ -84,4 +90,5 @@ jobs:
             --namespace jupyterhub-home-nfs \
             --create-namespace jupyterhub-home-nfs \
             --values jupyterhub-home-nfs/values.yaml \
+            --values jupyterhub-home-nfs/secrets/quota-overrides.yaml \
             jupyterhub-home-nfs

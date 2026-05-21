@@ -3,3 +3,5 @@ creation_rules:
     gcp_kms: projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops
   - path_regex: support/secrets.yaml
     gcp_kms: projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops
+  - path_regex: jupyterhub-home-nfs/secrets/.*
+    gcp_kms: projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops
