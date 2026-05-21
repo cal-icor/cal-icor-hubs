@@ -44,7 +44,7 @@ jupyterhub-home-nfs:
         hard_quota: 10
         wait_time: 30
         min_projid: 1000
-        exclude: []
+        exclude: ["_shared"]
         quota_overrides: {}
         uid: 1000
         gid: 1000
