@@ -33,7 +33,10 @@ jupyterhub-home-nfs:
           "/export/csum/staging", "/export/csum/prod",
           "/export/usc/staging", "/export/usc/prod",
           "/export/csuf/staging", "/export/csuf/prod",
-          "/export/csula/staging", "/export/csula/prod"
+          "/export/csula/staging", "/export/csula/prod",
+          "/export/gpu-demo/staging", "/export/gpu-demo/prod",
+          "/export/demo/staging", "/export/demo/prod",
+          "/export/sage/staging", "/export/sage/prod"
           ]
         hard_quota: 10
         wait_time: 30

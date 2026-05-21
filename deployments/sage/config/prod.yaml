@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/sage/prod
+    shareName: sage/prod
 
 jupyterhub:
   ingress:
