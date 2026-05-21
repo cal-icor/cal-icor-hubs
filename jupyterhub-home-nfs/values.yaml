@@ -31,7 +31,8 @@ jupyterhub-home-nfs:
           "/export/fresno/staging", "/export/fresno/prod",
           "/export/csufresno/staging", "/export/csufresno/prod",
           "/export/csum/staging", "/export/csum/prod",
-          "/export/usc/staging", "/export/usc/prod"
+          "/export/usc/staging", "/export/usc/prod",
+          "/export/csuf/staging", "/export/csuf/prod"
           ]
         hard_quota: 10
         wait_time: 30
