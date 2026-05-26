@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/gpu-demo/prod
+    shareName: gpu-demo/prod
 
 jupyterhub:
   ingress:

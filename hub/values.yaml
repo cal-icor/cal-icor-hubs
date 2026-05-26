@@ -41,18 +41,6 @@ jupyterhub:
     service:
       type: ClusterIP
     chp:
-      # testing out a potential fix for the chp leaking ports
-      # https://github.com/jupyterhub/configurable-http-proxy/issues/434
-      # https://github.com/jupyterhub/configurable-http-proxy/issues/434#issuecomment-1924261459
-      # https://github.com/http-party/node-http-proxy/pull/1559
-      # https://github.com/Jimbly/http-proxy-node16/commit/56283e33edfc7aad8c2605dd493da8a196b4371d
-      # https://github.com/consideRatio/configurable-http-proxy/commits/main/
-      # https://jira-secure.berkeley.edu/browse/DH-382 timeouts break stuff
-      #
-      # bump the default ip_local_port_range from "32768 60999" to "10000 65000"
-      # https://z2jh.jupyter.org/en/latest/resources/reference.html#proxy-chp-extrapodspec
-      # https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec
-      #
       extraPodSpec:
         securityContext:
           sysctls:
@@ -60,11 +48,6 @@ jupyterhub:
               value: "10000 65000"
       image:
         tag: 5.1.0
-      # extraCommandLineFlags:
-        # set the timeout and proxyTimeout to 5 seconds
-        # https://github.com/http-party/node-http-proxy?tab=readme-ov-file#options
-        # - "--timeout=5000"
-        # - "--proxy-timeout=5000"
       resources:
         requests:
           # FIXME: We want no guarantees here!!!

@@ -1,7 +1,7 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: {{cookiecutter.hub_filestore_ip}}
+    serverIP: {{cookiecutter.hub_nfs_server_ip}}
   {% if cookiecutter.hub_type == "rstudio-base" %}
   dirsizeReporter:
     enabled: false
@@ -76,7 +76,7 @@ jupyterhub:
       tag: {{cookiecutter.image_tag}}
       {%- else %}
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: c3fcafca0601
+      tag: b21c507835ba
       {%- endif %}
     {% if cookiecutter.hub_type == "rstudio-base" %}
     defaultUrl: "/rstudio"
@@ -103,7 +103,7 @@ jupyterhub:
     storage:
       type: static
       static:
-        pvcName: home-nfs-v3
+        pvcName: home-nfs
         subPath: "{username}"
       {% if cookiecutter.hub_type == "rstudio-base" %}
       extraVolumeMounts:

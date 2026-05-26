@@ -76,6 +76,6 @@ spec:
         # bound to a PV referencing a NFS server.
         - name: shared-volume
           persistentVolumeClaim:
-            claimName: home-nfs-v3
+            claimName: home-nfs
 {{- end }}
 {{- end }}

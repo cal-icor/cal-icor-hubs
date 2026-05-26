@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/gpu-demo/staging
+    shareName: gpu-demo/staging
 
 jupyterhub:
   scheduling:

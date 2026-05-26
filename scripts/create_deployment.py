@@ -121,7 +121,9 @@ def create_label(hub_name: str, root_path: str) -> str:
     return github_label
 
 
-def stage_and_push(hub_name: str, root_path: Path, branch_name: str):
+def stage_and_push(
+    hub_name: str, root_path: Path, branch_name: str, extra_files: list = None
+):
     """
     Stage the new deployment files for the hub.
 
@@ -129,11 +131,14 @@ def stage_and_push(hub_name: str, root_path: Path, branch_name: str):
         hub_name (str): The name of the hub.
         root_path (str): The path to the root directory of the repository.
         branch_name (str): The name of the branch to push the changes to.
+        extra_files (list): Additional files to stage alongside the deployment files.
     """
     files_to_add = [
         Path(f"deployments/{hub_name}/"),
         Path(".github/labeler.yml"),
     ]
+    if extra_files:
+        files_to_add.extend(extra_files)
     for file in files_to_add:
         print(f"Adding {str(file)} to staging.")
         try:
@@ -245,24 +250,6 @@ def populate_deployment_config(
     # Run the cookiecutter to generate the deployment files
     print(f"Generating {config['hub_name']} cookiecutter template.")
 
-    # check for overridden hub_filestore_mount_path in the config, if not found, set it to hub_name
-    if (
-        "hub_filestore_mount_path" not in config
-        or not config["hub_filestore_mount_path"]
-    ):
-        print("Using hub_name as the default hub_filestore_mount_path.")
-        config["hub_filestore_mount_path"] = config["hub_name"]
-    elif config["hub_filestore_mount_path"] != config["hub_name"]:
-        print(
-            f"Overriding hub_filestore_mount_path to '{config['hub_filestore_mount_path']}' "
-            + f"as specified in the config file for {config['hub_name']}."
-        )
-    else:
-        print(
-            f"Using hub_filestore_mount_path of '{config['hub_filestore_mount_path']}' "
-            + f"as specified in the config file for {config['hub_name']}."
-        )
-
     # Check for overridden image_name and image_tag in the config, if not found, don't set them.
     cookiecutter(
         template=f"{root_path}/deployments/template",
@@ -285,9 +272,8 @@ def populate_deployment_config(
                 else "python-base"
             ),
             "hub_name": config["hub_name"],
-            "hub_filestore_instance": config["hub_filestore_instance"],
-            "hub_filestore_ip": config["hub_filestore_ip"],
-            "hub_filestore_mount_path": config["hub_filestore_mount_path"],
+            "hub_nfs_mount_path": config["hub_nfs_mount_path"],
+            "hub_nfs_server_ip": config["hub_nfs_server_ip"],
             "institution": config["institution"],
             "institution_url": config["institution_url"],
             "institution_logo_url": config["institution_logo_url"],
@@ -316,49 +302,152 @@ def populate_deployment_config(
         handle_secrets(config["hub_name"], env)
 
 
+def update_nfs_quota_paths(
+    hub_name: str, mount_path: str, root_path: Path, dry_run: bool = False
+):
+    """
+    Add the new hub's NFS export paths to jupyterhub-home-nfs/values.yaml in alphabetical order.
+
+    Skips if mount_path != hub_name, which means the hub shares another hub's NFS directory
+    (e.g. rstudio shares the jupyter path) and should not get its own quota entries.
+
+    Args:
+        hub_name (str): The name of the hub.
+        mount_path (str): The NFS mount path for the hub (usually the same as hub_name).
+        root_path (Path): The path to the root directory of the repository.
+        dry_run (bool): If True, print what would be done without making changes.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If jupyterhub-home-nfs/values.yaml does not exist.
+        ValueError: If the QuotaManager paths block cannot be found in values.yaml.
+    """
+    if mount_path != hub_name:
+        print(
+            f"Hub '{hub_name}' uses shared NFS path '{mount_path}', skipping quota path update."
+        )
+        return
+
+    values_path = root_path / "jupyterhub-home-nfs" / "values.yaml"
+    if not values_path.is_file():
+        raise FileNotFoundError(
+            f"Could not find jupyterhub-home-nfs/values.yaml at {values_path}"
+        )
+    content = values_path.read_text()
+
+    match = re.search(r"(paths: \[)(.*?)(\n\s+\])", content, re.DOTALL)
+    if not match:
+        raise ValueError(
+            "Could not find QuotaManager paths block in jupyterhub-home-nfs/values.yaml"
+        )
+
+    existing_paths = re.findall(r'"(/export/[^"]+)"', match.group(2))
+    pairs = list(zip(existing_paths[::2], existing_paths[1::2]))
+
+    new_staging = f"/export/{mount_path}/staging"
+    new_prod = f"/export/{mount_path}/prod"
+
+    if new_staging in existing_paths:
+        print(f"Paths for '{hub_name}' already exist in quota paths, skipping.")
+        return
+
+    pairs.append((new_staging, new_prod))
+    pairs.sort(key=lambda p: p[0])
+
+    indent = "          "
+    lines = []
+    for i, (staging, prod) in enumerate(pairs):
+        comma = "," if i < len(pairs) - 1 else ""
+        lines.append(f'{indent}"{staging}", "{prod}"{comma}')
+
+    new_inner = "\n" + "\n".join(lines)
+    new_content = (
+        content[: match.start()]
+        + match.group(1)
+        + new_inner
+        + match.group(3)
+        + content[match.end() :]
+    )
+
+    if dry_run:
+        print(
+            f"Dry run: Would add '{new_staging}' and '{new_prod}' to quota paths in alphabetical order."
+        )
+        return
+
+    values_path.write_text(new_content)
+    print(f"Added NFS quota paths for '{hub_name}' in alphabetical order.")
+
+
 def create_remote_dirs(config: dict):
     """
-    Create the prod and staging directories on filestore for the new hub.
+    Create the prod and staging directories on the in-cluster NFS server for the new hub.
 
-    Sometimes we want to mount multiple hubs to an existing mount point to
-    share existing user homedirs.  If these shares already exist in Filestore,
-    this command will do nothing.
+    Execs into the nfs-server pod in the jupyterhub-home-nfs namespace to create
+    /export/<hub>/staging, /export/<hub>/staging/_shared, /export/<hub>/prod,
+    and /export/<hub>/prod/_shared, owned by uid/gid 1000.
 
     Args:
         config (dict): The configuration dictionary containing deployment details.
     """
+    hub_name = config["hub_name"]
+    mount_path = config["hub_nfs_mount_path"]
     dirs = [
-        Path(
-            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod"
-        ),
-        Path(
-            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/prod/_shared"
-        ),
-        Path(
-            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging"
-        ),
-        Path(
-            f"/export/{config['hub_filestore_instance']}/{config['hub_filestore_mount_path']}/staging/_shared"
-        ),
+        f"/export/{mount_path}/staging",
+        f"/export/{mount_path}/staging/_shared",
+        f"/export/{mount_path}/prod",
+        f"/export/{mount_path}/prod/_shared",
     ]
+
+    try:
+        pod_name = (
+            subprocess.run(
+                [
+                    "kubectl",
+                    "get",
+                    "pod",
+                    "-n",
+                    "jupyterhub-home-nfs",
+                    "-l",
+                    "app.kubernetes.io/component=nfs-server",
+                    "-o",
+                    "jsonpath={.items[0].metadata.name}",
+                ],
+                capture_output=True,
+                check=True,
+            )
+            .stdout.decode("utf-8")
+            .strip()
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error getting NFS server pod: {e}")
+        exit(1)
+
+    if not pod_name:
+        print("Error: No NFS server pod found in jupyterhub-home-nfs namespace.")
+        exit(1)
+
+    print(f"Creating directories on NFS server pod {pod_name}.")
+    mkdir_cmd = "mkdir -p " + " ".join(dirs)
+    chown_cmd = f"chown -R 1000:1000 /export/{mount_path}"
     try:
         subprocess.check_call(
             [
-                "gcloud",
-                "compute",
-                "ssh",
-                "nfsserver",
-                "--tunnel-through-iap",
-                "--zone=us-central1-b",
-                "--command",
-                "[ ! -d '/export/{}/{}' ] && sudo -u ubuntu install -d -o 1000 -g 1000 ".format(
-                    config["hub_filestore_instance"], config["hub_filestore_mount_path"]
-                )
-                + " ".join(str(d) for d in dirs),
+                "kubectl",
+                "exec",
+                "-n",
+                "jupyterhub-home-nfs",
+                pod_name,
+                "--",
+                "sh",
+                "-c",
+                f"{mkdir_cmd} && {chown_cmd}",
             ]
         )
     except subprocess.CalledProcessError as e:
-        print(f"Error creating directories for {config['hub_name']}: {e}")
+        print(f"Error creating directories for {hub_name}: {e}")
         exit(1)
 
 
@@ -380,6 +469,17 @@ def create_deployment(
         manual_config (bool): If True, the script will ask for confirmation for each step.
         dry_run (bool): If True, the script will go through all the steps but not actually make any changes.
     """
+    # Resolve hub_nfs_mount_path: defaults to hub_name when not set, allowing two or
+    # more hubs to share the same NFS staging/prod directories by pointing at the same path.
+    if "hub_nfs_mount_path" not in config or not config["hub_nfs_mount_path"]:
+        print(f"Using hub_name '{config['hub_name']}' as hub_nfs_mount_path.")
+        config["hub_nfs_mount_path"] = config["hub_name"]
+    else:
+        print(
+            f"Using hub_nfs_mount_path '{config['hub_nfs_mount_path']}' "
+            f"for {config['hub_name']}."
+        )
+
     # The following steps will not be run if the dry_run flag is set, but we
     # will print out what would have been done.
 
@@ -391,18 +491,32 @@ def create_deployment(
         print(f"Creating feature branch {branch_name}.")
         create_branch(branch_name, root_path)
 
-    # create the prod and staging directories on filestore for the new hub
+    # create the prod and staging directories on the NFS server for the new hub
     if dry_run:
         print(
-            f"Dry run enabled. Would create directories for {config['hub_name']} on filestore."
+            f"Dry run enabled. Would create directories for {config['hub_name']} on the NFS server."
         )
     else:
-        print(f"Creating directories for {config['hub_name']} on filestore.")
+        print(f"Creating directories for {config['hub_name']} on the NFS server.")
         create_remote_dirs(config)
 
     # Populate the deployment configuration
     print(f"Populating deployment config for {config['hub_name']}.")
     populate_deployment_config(config, root_path, manual_config)
+
+    # Update NFS quota paths in jupyterhub-home-nfs/values.yaml
+    if dry_run:
+        print(
+            f"Dry run enabled. Would update NFS quota paths for {config['hub_name']}."
+        )
+        update_nfs_quota_paths(
+            config["hub_name"], config["hub_nfs_mount_path"], root_path, dry_run=True
+        )
+    else:
+        print(f"Updating NFS quota paths for {config['hub_name']}.")
+        update_nfs_quota_paths(
+            config["hub_name"], config["hub_nfs_mount_path"], root_path
+        )
 
     # Create labels for the new hub
     if dry_run:
@@ -418,7 +532,12 @@ def create_deployment(
         )
     else:
         print(f"Staging and pushing the new deployment files for {config['hub_name']}.")
-        stage_and_push(config["hub_name"], root_path, branch_name)
+        stage_and_push(
+            config["hub_name"],
+            root_path,
+            branch_name,
+            extra_files=[Path("jupyterhub-home-nfs/values.yaml")],
+        )
 
     # Create a pull request for the new hub
     if dry_run:
@@ -530,7 +649,7 @@ if __name__ == "__main__":
         action="store_false",
         help="If set, the script will ask for confirmation for each step, "
         + "allowing you to manually configure the deployment (eg: custom "
-        + "filestore IP, node pool deployment, etc).",
+        + "node pool deployment, etc).",
     )
     parser.add_argument(
         "--dry-run",

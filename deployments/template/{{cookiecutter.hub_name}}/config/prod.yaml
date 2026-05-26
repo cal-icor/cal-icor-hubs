@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: {{cookiecutter.hub_filestore_share}}/{{cookiecutter.hub_filestore_mount_path}}/prod
+    shareName: {{cookiecutter.hub_nfs_mount_path}}/prod
 
 jupyterhub:
   ingress:

@@ -1,7 +1,7 @@
 nfsPVC:
   enabled: true
   nfs:
-    serverIP: 10.183.114.2
+    serverIP: 34.118.238.48
   dirsizeReporter:
     enabled: false
 
@@ -77,7 +77,7 @@ jupyterhub:
     storage:
       type: static
       static:
-        pvcName: home-nfs-v3
+        pvcName: home-nfs
         subPath: "{username}"
       extraVolumeMounts:
         # RStudio can't write session files to anywhere except ~/.rstudio -

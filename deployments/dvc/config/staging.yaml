@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/dvc/staging
+    shareName: dvc/staging
   dirsizeReporter:
     enabled: false
 

@@ -1,6 +1,7 @@
 nfsPVC:
+  enabled: true
   nfs:
-    shareName: shares/jupyter/staging
+    shareName: jupyter/staging
   dirsizeReporter:
     enabled: false
 
@@ -24,3 +25,7 @@ jupyterhub:
       - hosts:
         - staging.jupyter.cal-icor.org
         secretName: tls-cert
+  singleuser:
+    memory:
+      guarantee: 512M
+      limit: 512M

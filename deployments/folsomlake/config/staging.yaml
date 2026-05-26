@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/folsomlake/staging
+    shareName: folsomlake/staging
   dirsizeReporter:
     enabled: false
 

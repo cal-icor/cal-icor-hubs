@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/fresno/prod
+    shareName: fresno/prod
 
 jupyterhub:
   ingress:

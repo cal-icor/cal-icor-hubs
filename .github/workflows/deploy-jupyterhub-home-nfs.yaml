@@ -1,4 +1,4 @@
-name: Deploy support helm chart
+name: Deploy jupyterhub-home-nfs helm chart
 # use echo ${VAR##*: } to get the value of a variable that is a string with a colon in it
 permissions:
   contents: read
@@ -18,17 +18,21 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check out the image repo
+      - name: Check out the hub repo
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+          fetch-depth: 1  # OR "2" -> To retrieve the preceding commit.
+          sparse-checkout: |
+            jupyterhub-home-nfs/
+            deployments/jupyter/secrets/
+            .sops.yaml
 
-      - name: Check if the support helm chart needs to be deployed
+      - name: Check if the jupyterhub-home-nfs helm chart needs to be deployed
         run: |
           echo "PR labels: ${{ steps.pr-labels.outputs.labels }}"
           for label in $(echo -e "${{ steps.pr-labels.outputs.labels }}"); do
-            if [[ "$label" == support-deployment ]]; then
-              echo "Deploying support charts!"
+            if [[ "$label" == jupyterhub-home-nfs-deployment ]]; then
+              echo "Deploying jupyterhub-home-nfs charts!"
               echo "DEPLOY=1" >> "$GITHUB_ENV"
             fi
           done
@@ -65,23 +69,18 @@ jobs:
             --region=us-central1 --project=cal-icor-hubs \
             get-credentials spring-2025
 
-      - name: Login to GAR
+      - name: Decrypt jupyterhub-home-nfs secrets
         if: ${{ env.DEPLOY }}
         run: |
-          helm registry login \
-            -u _json_key --password-stdin https://us-central1-docker.pkg.dev \
-            < deployments/jupyter/secrets/gke-key.json
+          sops -d -i jupyterhub-home-nfs/secrets/quota-overrides.yaml
 
-      - name: Deploy support helm chart
+      - name: Deploy jupyterhub-home-nfs helm chart
         if: ${{ env.DEPLOY }}
         run: |
-          sops -d -i support/secrets.yaml
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo update
-          helm dep up support
-          helm upgrade \
-            --install --wait --create-namespace \
-            --namespace=support \
-            support support/ \
-            -f support/secrets.yaml \
-            --set installCRDs=true
+          helm dep up jupyterhub-home-nfs
+          helm upgrade --install \
+            --namespace jupyterhub-home-nfs \
+            --create-namespace jupyterhub-home-nfs \
+            --values jupyterhub-home-nfs/values.yaml \
+            --values jupyterhub-home-nfs/secrets/quota-overrides.yaml \
+            jupyterhub-home-nfs

@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/fresno/staging
+    shareName: fresno/staging
   dirsizeReporter:
     enabled: false
 

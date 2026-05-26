@@ -92,7 +92,6 @@ deployments/<hub-name>/
     common.yaml             # Hub-specific overrides (auth, image, NFS IP, node pools)
     prod.yaml               # Prod-only overrides (hostname, TLS)
     staging.yaml            # Staging-only overrides
-    filestore/              # NFS filestore config
   secrets/
     gke-key.json            # Encrypted GKE service account key
     prod.yaml               # Encrypted OAuth client secrets
@@ -109,19 +108,75 @@ A custom KubeSpawner subclass that supports per-user and per-group resource over
 
 The hub Docker image lives in `images/hub/Dockerfile`. It extends the z2jh hub image (version must match `hub/requirements.yaml`) and adds `jupyterhub-ltiauthenticator` and `oauthenticator`. Built and pushed via `chartpress` (config in `chartpress.yaml`); the resulting image tag is stored in `hub/values.yaml` under `jupyterhub.hub.image`.
 
+## NFS home directory system
+
+Cal-ICOR uses [jupyterhub-home-nfs](https://github.com/2i2c-org/jupyterhub-home-nfs) to provide persistent, quota-enforced home directories for all hubs. This replaces the previous Google Filestore setup and will be applied to every hub deployment.
+
+### Architecture
+
+- A single pre-provisioned GKE persistent disk (XFS-formatted) is mounted by an in-cluster NFS server (NFS Ganesha), running in the `jupyterhub-home-nfs` namespace.
+- Each hub gets two subdirectories on that disk: `/export/<hub-name>/staging` and `/export/<hub-name>/prod`.
+- JupyterHub mounts user home directories via a PersistentVolume/PersistentVolumeClaim that points at the in-cluster NFS service (`home-nfs.jupyterhub-home-nfs.svc.cluster.local`).
+- NFSv4 is required — do not revert to v3 (v3 causes portmapper/UDP connectivity issues on GKE).
+- A quota enforcer sidecar uses `xfs_quota` to apply per-user hard quotas on the XFS filesystem.
+
+### The `jupyterhub-home-nfs/` chart
+
+This directory is a wrapper Helm chart around the upstream `2i2c-org/jupyterhub-home-nfs` chart. Key values in `jupyterhub-home-nfs/values.yaml`:
+
+| Key | Purpose |
+|-----|---------|
+| `gke.volumeId` | Pre-provisioned GKE disk ID backing the NFS server |
+| `quotaEnforcer.config.QuotaManager.paths` | List of all hub paths subject to quota enforcement; add `/export/<hub>/staging` and `/export/<hub>/prod` when onboarding a hub |
+| `quotaEnforcer.config.QuotaManager.hard_quota` | Per-user hard quota in GiB |
+| `nfsServer.enableClientAllowlist` / `allowedClients` | Restrict which IPs can mount. **Important:** NFS mounts originate from the node's primary IP (e.g. `10.7.199.*`), not the pod CIDR — despite upstream docs suggesting pod CIDR `.1` addresses. Always include the node subnet (check with `kubectl get nodes -o wide`) in addition to pod CIDR ranges. |
+| `nodeSelector` / `affinity` | Pin the pod to the zone where the GKE disk lives |
+
+Deployed via `.github/workflows/deploy-jupyterhub-home-nfs.yaml`, triggered by the `jupyterhub-home-nfs-deployment` PR label on merge to `staging`.
+
+### Hub-side config
+
+Each hub's `config/common.yaml` points at the in-cluster NFS service:
+
+```yaml
+nfsPVC:
+  enabled: true
+  nfs:
+    serverIP: <ClusterIP of home-nfs.jupyterhub-home-nfs.svc.cluster.local>
+```
+
+And the per-environment share path in `config/prod.yaml` / `config/staging.yaml`:
+
+```yaml
+nfsPVC:
+  nfs:
+    shareName: <hub-name>/prod   # e.g. jupyter/prod
+```
+
+`hub/templates/nfs-pvc.yaml` renders the PV (named `<release>-home-nfs`) and PVC (named `home-nfs`) using NFSv4.
+
+### Onboarding a new hub
+
+1. Copy `_deploy_configs/institution-example.yaml` to `_deploy_configs/<institution_name>.yaml` and fill in the variables.
+2. From the repo root (on the `staging` branch), run:
+   ```bash
+   ./create_deployment.sh --github_user <your-github-username> <institution_name>
+   ```
+   This handles everything: creating NFS directories on the server, generating the deployment config via cookiecutter, encrypting secrets with SOPS, updating `jupyterhub-home-nfs/values.yaml` with the new quota paths, creating the GitHub label, committing, pushing a feature branch, and opening a PR.
+
 ## Creating a new hub deployment
 
-Use the automated script (run from repo root, must be on `staging` branch):
+Use the shell wrapper script (run from repo root, must be on `staging` branch):
 
 ```bash
 # First create _deploy_configs/<institution>.yaml (see _deploy_configs/*.yaml for examples)
-python scripts/create_deployment.py --github_user <your-github-username> <institution_name>
+./create_deployment.sh --github_user <your-github-username> <institution_name>
 
 # Dry run to preview without side effects
-python scripts/create_deployment.py --github_user <user> --dry-run <institution_name>
+./create_deployment.sh --github_user <user> --dry-run <institution_name>
 ```
 
-This uses cookiecutter (`deployments/template/`) to generate the deployment directory, encrypts secrets with SOPS, creates a GitHub label, commits and pushes a feature branch, and opens a PR.
+`create_deployment.sh` is a thin wrapper around `scripts/create_deployment.py`. It uses cookiecutter (`deployments/template/`) to generate the deployment directory, encrypts secrets with SOPS, execs into the NFS server pod to create the hub's directories, creates a GitHub label, commits and pushes a feature branch, and opens a PR.
 
 ## Manual hubploy deploy (for local testing)
 

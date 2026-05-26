@@ -1,0 +1,130 @@
+jupyterhub-home-nfs:
+  nameOverride: ""
+  fullnameOverride: ""
+
+  gke:
+    enabled: true
+    volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/jupyterhub-homedirs-2026-04-08
+
+  quotaEnforcer:
+    enabled: true
+    resources:
+      requests:
+        cpu: 0.001
+        memory: 256M
+      limits:
+        cpu: 0.2
+        memory: 1G
+    config:
+      QuotaManager:
+        paths: [
+          "/export/chicostate/staging", "/export/chicostate/prod",
+          "/export/csub/staging", "/export/csub/prod",
+          "/export/csueb/staging", "/export/csueb/prod",
+          "/export/csuf/staging", "/export/csuf/prod",
+          "/export/csufresno/staging", "/export/csufresno/prod",
+          "/export/csula/staging", "/export/csula/prod",
+          "/export/csulb/staging", "/export/csulb/prod",
+          "/export/csum/staging", "/export/csum/prod",
+          "/export/csumb/staging", "/export/csumb/prod",
+          "/export/csun/staging", "/export/csun/prod",
+          "/export/csus/staging", "/export/csus/prod",
+          "/export/csusj/staging", "/export/csusj/prod",
+          "/export/csusonoma/staging", "/export/csusonoma/prod",
+          "/export/demo/staging", "/export/demo/prod",
+          "/export/dvc/staging", "/export/dvc/prod",
+          "/export/folsomlake/staging", "/export/folsomlake/prod",
+          "/export/fresno/staging", "/export/fresno/prod",
+          "/export/gpu-demo/staging", "/export/gpu-demo/prod",
+          "/export/jupyter/staging", "/export/jupyter/prod",
+          "/export/sage/staging", "/export/sage/prod",
+          "/export/ucsc/staging", "/export/ucsc/prod",
+          "/export/usc/staging", "/export/usc/prod"
+          ]
+        hard_quota: 10
+        wait_time: 30
+        min_projid: 1000
+        exclude: ["_shared"]
+        quota_overrides: {}
+        uid: 1000
+        gid: 1000
+
+  nfsServer:
+    resources:
+      requests:
+        cpu: 0.02
+        memory: 512M
+      limits:
+        cpu: 0.1
+        memory: 1.5G
+    enableClientAllowlist: true
+    # note: these are private IP ranges that should cover all of our GKE nodes,
+    # but will need to be updated if we create a new cluster or node pools with
+    # different IP ranges.
+    allowedClients:
+      - "10.7.196.*"   # node primary IPs (autoscaled nodes may land in this subnet)
+      - "10.7.199.*"   # node primary IPs (all pools share this subnet)
+      - "10.92.*.1"    # pod CIDR kubelet addresses (10.92.0.0/14 covers 10.92-10.95)
+      - "10.93.*.1"    # pod CIDR kubelet addresses (cont.)
+      - "10.94.*.1"    # pod CIDR kubelet addresses (cont.)
+      - "10.95.*.1"    # pod CIDR kubelet addresses (cont.)
+
+  # Automatic filesystem resizer, so increases in underlying disk size
+  # are immediately reflected in available file system
+  autoResizer:
+    enabled: true
+    resources: {}
+
+  # Prometheus node exporter configuration
+  # We expose disk total usage + some other disk metrics with prometheus
+  # node exporter
+  nodeExporter:
+    enabled: true
+    image:
+      repository: quay.io/prometheus/node-exporter
+      tag: v1.8.2
+    resources: {}
+
+  persistentVolume:
+    addStandardLabels: false
+    # Setting this to 1M to make it obvious that this is not the real size.
+    # The value can be changed to the actual size of the pre-provisioned disk to correctly
+    # label the PV and PVC with the underlying disk size.
+    # Not setting this to the actual size of the pre-provisioned disk doesn't affect the
+    # functionality of the chart; only the labels on the PV and PVC will be incorrect.
+    # The pre-provisioned disk ID is specified below in the cloud provider specific configuration
+    size: 1M
+    # Must be "" to match the PV's hardcoded storageClassName: "" in the upstream chart template
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    annotations: {}
+
+  service:
+    type: ClusterIP
+
+  # Additional containers for the deployment
+  # `tpl` is applied when rendering these, so you can include {{ .Release.Name }}
+  # or references to the jupyterhub-home-nfs chart's configured values.
+  extraContainers: []
+
+  # Annotations for the deployment
+  annotations: {}
+
+  # Node selector for the deployment
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool-2026-02-12
+
+  # Affinity for the deployment - required to pin the pod to us-central1-b where the GKE disk lives
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                  - us-central1-b
+
+  # Tolerations for the deployment
+  tolerations: []

@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/csumb/prod
+    shareName: csumb/prod
 
 jupyterhub:
   # singleuser:

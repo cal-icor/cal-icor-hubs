@@ -1,6 +1,6 @@
 nfsPVC:
   nfs:
-    shareName: shares/ucsc/staging
+    shareName: ucsc/staging
   dirsizeReporter:
     enabled: false
 

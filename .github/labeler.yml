@@ -61,6 +61,10 @@ helm-config:
 support-deployment:
   - 'support/**'
 
+# jupyterhub-home-nfs chart
+jupyterhub-home-nfs-deployment:
+  - 'jupyterhub-home-nfs/**'
+
 # grafana panel backups
 grafana:
   - 'vendor/grafana/**'
@@ -108,9 +112,9 @@ jupyterhub-deployment:
   - 'deployments/chicostate/**'
 'hub: csusonoma':
   - 'deployments/csusonoma/**'
-# 'hub: demo':
-#   - 'deployments/demo/**'
-# 'hub: sage':
-#   - 'deployments/sage/**'
+'hub: demo':
+  - 'deployments/demo/**'
+'hub: sage':
+  - 'deployments/sage/**'
 # 'hub: gpu-demo':
 #   - 'deployments/gpu-demo/**'

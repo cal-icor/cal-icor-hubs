@@ -1,7 +1,7 @@
 nfsPVC:
  enabled: true
  nfs:
-   serverIP: 10.183.114.2
+   serverIP: 34.118.238.48
 
 jupyterhub:
   custom:
@@ -49,11 +49,12 @@ jupyterhub:
           - jonathanferrari@berkeley.edu
           - jonathanferrari
           - fraser@berkeley.edu
+          - yanglisa@berkeley.edu
 
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/workshop-user-image
-      tag: 0c88be60452e
+      tag: 6adfc68c7100
     extraFiles:
       # DH-216
       remove-exporters:
@@ -70,8 +71,8 @@ jupyterhub:
     storage:
       type: static
       static:
-        pvcName: home-nfs-v3
+        pvcName: home-nfs
         subPath: "{username}"
     memory:
-      guarantee: 2G
+      guarantee: 1G
       limit: 2G

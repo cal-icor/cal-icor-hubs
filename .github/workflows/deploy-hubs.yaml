@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Get PR labels
         id: pr-labels
-        uses: irby/get-labels-on-push@v1.1.0
+        uses: irby/get-labels-on-push@v1.2.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -69,13 +69,12 @@ jobs:
           chmod 755 "${HOME}/bin/sops"
           echo "${HOME}/bin" >> "$GITHUB_PATH"
 
-      - name: Store SOPS secret in a file
+      - name: Auth to gcloud
         if: ${{ env.DEPLOY }}
-        run: |
-          cat << EOF > "${HOME}/sops.key"
-          ${{ secrets.SOPS_KEY }}
-          EOF
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> "$GITHUB_ENV"
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GKE_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Install Google Cloud SDK
         if: ${{ env.DEPLOY }}
@@ -90,7 +89,7 @@ jobs:
             echo "Deploying single-user image and hub config to ${deployment}"
             hubploy --verbose deploy --timeout 30m "${deployment}" hub staging
             echo
-          done < <(python .github/scripts/determine-hub-deployments.py --ignore demo gpu-demo rstudio sage jupyter)
+          done < <(python .github/scripts/determine-hub-deployments.py --ignore gpu-demo rstudio)
 
   deploy-hubs-to-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
@@ -98,7 +97,7 @@ jobs:
     steps:
       - name: Get PR labels
         id: pr-labels
-        uses: irby/get-labels-on-push@v1.1.0
+        uses: irby/get-labels-on-push@v1.2.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -148,13 +147,12 @@ jobs:
           chmod 755 "${HOME}/bin/sops"
           echo "${HOME}/bin" >> "$GITHUB_PATH"
 
-      - name: Store SOPS secret in a file
+      - name: Auth to gcloud
         if: ${{ env.DEPLOY }}
-        run: |
-          cat << EOF > "${HOME}/sops.key"
-          ${{ secrets.SOPS_KEY }}
-          EOF
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${HOME}/sops.key" >> "$GITHUB_ENV"
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GKE_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Install Google Cloud SDK
         if: ${{ env.DEPLOY }}
@@ -169,4 +167,4 @@ jobs:
             echo "Deploying single-user image and hub config to ${deployment}"
             hubploy --verbose deploy --timeout 30m "${deployment}" hub prod
             echo
-          done < <(python .github/scripts/determine-hub-deployments.py --ignore demo gpu-demo rstudio sage)
+          done < <(python .github/scripts/determine-hub-deployments.py --ignore gpu-demo rstudio)
