@@ -54,7 +54,7 @@ spec:
             - dirsize-exporter
             - /shared-volume
             - "100" # Use only 100 io operations per second at most
-            - "4320" # Wait 3 days between runs
+            - "1440" # Wait 1 day between runs
             - --port=8000
           ports:
             - containerPort: 8000
