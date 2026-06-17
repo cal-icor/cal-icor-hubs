@@ -50,6 +50,7 @@ jupyterhub:
           - jonathanferrari
           - fraser@berkeley.edu
           - yanglisa@berkeley.edu
+          - minrk
 
   singleuser:
     image:
