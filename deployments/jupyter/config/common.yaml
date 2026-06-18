@@ -65,7 +65,8 @@ jupyterhub:
           c.QtPNGExporter.enabled = False
           c.WebPDFExporter.enabled = False
       opencode:
-        mountPath: /etc/opencode/opencode.json
+        # don't use highest-priority 'managed' path: /etc/opencode/opencode.json
+        mountPath: /etc/opencode-default/opencode.json
         data:
           $schema: "https://opencode.ai/config.json"
           model: nrp/qwen3
@@ -110,6 +111,7 @@ jupyterhub:
     extraEnv:
       # Unset NotebookApp from hub/values. Necessary for recent lab versions.
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+      OPENCODE_CONFIG: /etc/opencode-default/opencode.json
     nodeSelector:
       hub.jupyter.org/pool-name: base-pool
     storage:
