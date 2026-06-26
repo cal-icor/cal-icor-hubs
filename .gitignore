@@ -25,3 +25,6 @@ git-manage.sh
 
 # ignore all local claude files
 .claude/**
+
+# ignore any files put in to the reports directory
+reports/**
