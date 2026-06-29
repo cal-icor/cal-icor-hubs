@@ -7,7 +7,7 @@ jupyter-repo2docker==2026.4.0
 kubernetes==35.0.0
 myst-parser==4.0.0
 niquests==3.7.2
-pre-commit==4.0.1
+pre-commit==4.6.0
 pygithub==2.4.0
 pyrsistent==0.19.3
 ruamel.yaml==0.19.1

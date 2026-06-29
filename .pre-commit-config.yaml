@@ -8,7 +8,34 @@
 # - Run on all files:   pre-commit run --all-files
 # - Register git hooks: pre-commit install --install-hooks
 #
+# .pre-commit-config.yaml
+minimum_pre_commit_version: "4.4.0"
+
 repos:
+  # tofu
+  - repo: local
+    hooks:
+      - id: tofu_fmt
+        name: tofu fmt
+        entry: tofu fmt -recursive
+        language: unsupported
+        files: 'tofu/' # \.(tf|tofu|tfvars)(\.json)?$'
+        pass_filenames: false
+
+      - id: tofu_validate
+        name: tofu validate
+        entry: tofu validate -no-color
+        language: unsupported
+        files: 'tofu/' # */\.(tf|tofu)(\.json)?$'
+        pass_filenames: false
+
+  - repo: https://github.com/terraform-docs/terraform-docs
+    rev: v0.22.0
+    hooks:
+      - id: terraform-docs-go
+        args: ["markdown", "table", "--output-file", "README.md", "--output-mode", "inject", "tofu/"]
+
+
   # yaml linter
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.37.1

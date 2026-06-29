@@ -1,0 +1,25 @@
+# OpenTofu / Terraform
+
+# Provider plugins, modules, backend cache (per working dir)
+.terraform/
+
+# State files: may contain secrets in plaintext. We use a remote (gcs)
+# backend, so these should never appear locally; ignore them as a safety net.
+*.tfstate
+*.tfstate.*
+
+# Saved plan files: embed resource values, can contain secrets.
+*.tfplan
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Local-only overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# NOTE: .terraform.lock.hcl is intentionally NOT ignored. Commit it so provider
+# versions are pinned across machines and CI.
