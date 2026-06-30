@@ -84,7 +84,7 @@ prometheus:
       - services=[app,component]
   server:
     nodeSelector:
-      hub.jupyter.org/pool-name: prometheus-pool-2025-12-22
+      hub.jupyter.org/pool-name: prometheus-pool-2026-06-29
     resources:
       # Without this, prometheus can easily starve users
       requests:

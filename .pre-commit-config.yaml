@@ -15,6 +15,7 @@ repos:
   # tofu
   - repo: local
     hooks:
+      # Formats the OpenTofu module sources (*.tf). Does not touch *.hcl.
       - id: tofu_fmt
         name: tofu fmt
         entry: tofu fmt -recursive
@@ -22,11 +23,24 @@ repos:
         files: 'tofu/' # \.(tf|tofu|tfvars)(\.json)?$'
         pass_filenames: false
 
-      - id: tofu_validate
-        name: tofu validate
-        entry: tofu validate -no-color
+      # Formats the Terragrunt configs (root.hcl + per-unit terragrunt.hcl),
+      # which tofu fmt ignores. Requires terragrunt on PATH.
+      - id: terragrunt_hcl_fmt
+        name: terragrunt hcl fmt
+        entry: terragrunt hcl fmt --working-dir tofu
         language: unsupported
-        files: 'tofu/' # */\.(tf|tofu)(\.json)?$'
+        files: 'tofu/' # \.hcl$'
+        pass_filenames: false
+
+      # Validates the Terragrunt configs offline (parse + structure). Replaces
+      # the previous `tofu validate` hook, which ran at the repo root where there
+      # are no .tf files and so validated nothing. Real `tofu validate`/tflint/
+      # tfsec (which need a per-module init) are deferred to the CI mirror.
+      - id: terragrunt_hcl_validate
+        name: terragrunt hcl validate
+        entry: terragrunt hcl validate --working-dir tofu
+        language: unsupported
+        files: 'tofu/' # \.hcl$'
         pass_filenames: false
 
   - repo: https://github.com/terraform-docs/terraform-docs

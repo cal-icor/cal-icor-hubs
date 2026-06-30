@@ -15,6 +15,15 @@
 crash.log
 crash.*.log
 
+# Terragrunt per-unit working directory: the copied module source, the
+# terragrunt-generated backend.tf, and a full .terraform/ with provider plugins.
+# Regenerated on every run; never commit.
+.terragrunt-cache/
+
+# Debug output from `terragrunt run --all --terragrunt-debug` / `--terragrunt-debug`:
+# renders the unit's merged inputs to disk and can embed secrets.
+terragrunt-debug.tfvars.json
+
 # Local-only overrides
 override.tf
 override.tf.json
