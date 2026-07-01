@@ -31,8 +31,7 @@ body:
         - dvc.jupyter.cal-icor.org
         - folsomlake.jupyter.cal-icor.org
         - fresno.jupyter.cal-icor.org
-        - jupyter.jupyter.cal-icor.org
-        - lacc.jupyter.cal-icor.org
+        - jupyter.cal-icor.org
         - ucsc.jupyter.cal-icor.org
         - usc.jupyter.cal-icor.org
     validations:

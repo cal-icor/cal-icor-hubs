@@ -1,13 +1,13 @@
-name: Admin Access Request
-description: Fill out this form to request Admin access to your JupyterHub instance.
-title: Request Admin Access
-labels: ["admin", "access"]
+name: Additional Storage Request
+description: Fill out this form to request additional storage for your JupyterHub instance.
+title: Request Additional Storage
+labels: ["storage", "request"]
 assignees: ["shaneknapp", "sean-morris"]
 
 body:
   - type: markdown
     attributes:
-      value: "# Admin Access Request Form"
+      value: "# Additional Storage Request Form"
 
   - type: dropdown
     id: hub_url
@@ -40,13 +40,13 @@ body:
   - type: input
     attributes:
       label: Email Address
-      description: "Please provide your email address so we can contact you regarding this request, and add it to the Admin list for your hub."
+      description: "Please provide your email address so we can contact you regarding this request, and add a storage quota override for your hub."
     validations:
       required: true
 
   - type: textarea
     id: additional-info
     attributes:
-      label: "Any additional information we should know about?"
+      label: "Please let us know how much storage you need, a reason and any other relevant details."
     validations:
       required: false

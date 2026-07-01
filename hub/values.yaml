@@ -180,6 +180,24 @@ jupyterhub:
         operated_by:
           name: Cal-ICOR
           url: https://cal-icor.org
+        announcements:
+        - |
+          <div>
+            <center>
+              <p>
+                  <strong>Cal-ICOR is now enforcing per-user storage quotas.</strong>
+              </p>
+              <p>
+                All users now have a 10GB storage quota for their home directory, with unlimited storage in the shared directory for sharing large datasets.
+              </p>
+              <p>
+                You can read more about this in our <a href="https://docs.cal-icor.org/notebooks-materials/#materials-sharing">documentation</a>.
+              </p>
+              <p>
+                If you need more than 10GB of storage, please file a <a href="https://github.com/cal-icor/cal-icor-hubs/issues/new?template=additional_storage_request.yaml">GitHub issue</a> or contact us at <a href="mailto:calicor@berkeley.edu">calicor@berkeley.edu</a>.
+              </p>
+            </center>
+          </div>
 
   hub:
     initContainers:
