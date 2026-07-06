@@ -55,7 +55,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/workshop-user-image
-      tag: 53a3e0d11a7d
+      tag: 2305a104b7fe
     extraFiles:
       # DH-216
       remove-exporters:
@@ -64,50 +64,50 @@ jupyterhub:
           c.QtPDFExporter.enabled = False
           c.QtPNGExporter.enabled = False
           c.WebPDFExporter.enabled = False
-      opencode:
-        # don't use highest-priority 'managed' path: /etc/opencode/opencode.json
-        mountPath: /etc/opencode-default/opencode.json
-        data:
-          $schema: "https://opencode.ai/config.json"
-          model: nrp/qwen3
-          disabled_providers:
-            - opencode
-          provider:
-            nrp:
-              npm: "@ai-sdk/openai-compatible"
-              name: NRP
-              options:
-                baseURL: "https://ellm.nrp-nautilus.io/v1"
-                apiKey: "{env:OPENAI_API_KEY}"
-              models:
-                kimi:
-                  name: kimi
-                  limit:
-                    "context": 262144
-                    "output": 32768
-                  options:
-                    chat_template_kwargs:
-                      "thinking": true
-                      "preserve_thinking": true
-                  variants:
-                    instruct:
-                      chat_template_kwargs:
-                        thinking: false
-                        preserve_thinking: false
-                qwen3:
-                  name: qwen3
-                qwen3-small:
-                  name: qwen3-small
-                gpt-oss:
-                  name: gpt-oss
-                gemma:
-                  name: gemma
-                gemma-small:
-                  name: gemma-small
-                glm-5:
-                  name: glm-5
-                minimax-m2:
-                  name: minimax-m2
+      # opencode:
+      #   # don't use highest-priority 'managed' path: /etc/opencode/opencode.json
+      #   mountPath: /etc/opencode-default/opencode.json
+      #   data:
+      #     $schema: "https://opencode.ai/config.json"
+      #     model: nrp/qwen3
+      #     disabled_providers:
+      #       - opencode
+      #     provider:
+      #       nrp:
+      #         npm: "@ai-sdk/openai-compatible"
+      #         name: NRP
+      #         options:
+      #           baseURL: "https://ellm.nrp-nautilus.io/v1"
+      #           apiKey: "{env:OPENAI_API_KEY}"
+      #         models:
+      #           kimi:
+      #             name: kimi
+      #             limit:
+      #               "context": 262144
+      #               "output": 32768
+      #             options:
+      #               chat_template_kwargs:
+      #                 "thinking": true
+      #                 "preserve_thinking": true
+      #             variants:
+      #               instruct:
+      #                 chat_template_kwargs:
+      #                   thinking: false
+      #                   preserve_thinking: false
+      #           qwen3:
+      #             name: qwen3
+      #           qwen3-small:
+      #             name: qwen3-small
+      #           gpt-oss:
+      #             name: gpt-oss
+      #           gemma:
+      #             name: gemma
+      #           gemma-small:
+      #             name: gemma-small
+      #           glm-5:
+      #             name: glm-5
+      #           minimax-m2:
+      #             name: minimax-m2
     extraEnv:
       # Unset NotebookApp from hub/values. Necessary for recent lab versions.
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
