@@ -12,8 +12,20 @@
 # date-stamped, so it stays stable across recreations; the date-stamped pool
 # NAME lives in inputs below.
 #
-# Parity with the live core-pool-2026-03-05 (describe 2026-06-29). Differences
-# from the prometheus unit: n2-highmem-8, max_pods_per_node = 200 (deliberate
+# Config mirrors the live core-pool-2026-03-05 (describe 2026-06-29), with ONE
+# deliberate deviation: machine_type is right-sized n2-highmem-8 -> n2-standard-8.
+# Measured on the live n2-highmem-8 core node (2026-07-06): 104 pods requesting
+# 2600m CPU (35%) / 15.6 GiB mem (27%), with real usage only 761m CPU (10%) /
+# 11.6 GiB (19%). The workload (every hub's hub + proxy pods + the 3 ingress
+# replicas + GKE system daemons) is memory-shaped and light on CPU, so the 64 GB
+# of RAM was ~2x oversized. n2-standard-8 (8 vCPU / 32 GB, ~28 GiB allocatable)
+# halves the RAM to reclaim that waste while KEEPING the full 8 vCPU as headroom
+# for full-fleet redeploy spikes (all ~42 hub+proxy pods restarting at once). It
+# holds the current 15.6 GiB of requests at ~55% with room for ~19 more hub
+# pairs. The 16 GB n2 tiers were ruled out: their ~13 GiB allocatable is below
+# the 15.6 GiB of requests, so pods wouldn't schedule.
+#
+# Other differences from the prometheus unit: max_pods_per_node = 200 (deliberate
 # high pod density — each hub runs 2 hub + 2 proxy pods, so the pod count, not
 # CPU/RAM, is the binding limit), and cpu_manager_policy = "static" (the core
 # pool sets it; immutable on a live pool so it must be matched at creation).
@@ -33,7 +45,7 @@ inputs = {
 
   node_locations = ["us-central1-b"]
 
-  machine_type      = "n2-highmem-8"
+  machine_type      = "n2-standard-8"
   min_nodes         = 1
   max_nodes         = 3
   disk_size_gb      = 100

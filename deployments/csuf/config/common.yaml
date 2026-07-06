@@ -15,15 +15,15 @@ jupyterhub:
   scheduling:
     userScheduler:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-pool-2026-03-05
+        hub.jupyter.org/pool-name: core-pool-2026-06-30
   proxy:
     chp:
       nodeSelector:
-        hub.jupyter.org/pool-name: core-pool-2026-03-05
+        hub.jupyter.org/pool-name: core-pool-2026-06-30
 
   hub:
     nodeSelector:
-      hub.jupyter.org/pool-name: core-pool-2026-03-05
+      hub.jupyter.org/pool-name: core-pool-2026-06-30
     config:
       JupyterHub:
         authenticator_class: cilogon
