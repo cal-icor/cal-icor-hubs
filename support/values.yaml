@@ -1,12 +1,12 @@
 cert-manager:
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool-2026-02-12
+    hub.jupyter.org/pool-name: support-pool-2026-07-07
   cainjector:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool-2026-02-12
+      hub.jupyter.org/pool-name: support-pool-2026-07-07
   webhook:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool-2026-02-12
+      hub.jupyter.org/pool-name: support-pool-2026-07-07
   # # Our cluster-internal DNS seems to cache aggressively in
   # # some cases. The cache is also more likely to be warm,
   # # causing issues when cert-manager tries to verify
@@ -77,7 +77,7 @@ prometheus:
   # make sure we collect metrics on pods by app/component at least
   kube-state-metrics:
     nodeSelector:
-      hub.jupyter.org/pool-name: support-pool-2026-02-12
+      hub.jupyter.org/pool-name: support-pool-2026-07-07
     metricLabelsAllowlist:
       - pods=[app,component,hub.jupyter.org/username,app.kubernetes.io/component]
       - nodes=[*]
@@ -110,7 +110,7 @@ prometheus:
 grafana:
   assertNoLeakedSecrets: false
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool-2026-02-12
+    hub.jupyter.org/pool-name: support-pool-2026-07-07
   deploymentStrategy:
     type: Recreate
 
@@ -172,7 +172,7 @@ grafana:
 
 prometheus-statsd-exporter:
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool-2026-02-12
+    hub.jupyter.org/pool-name: support-pool-2026-07-07
   service:
     annotations:
       prometheus.io/scrape: "true"
@@ -194,7 +194,7 @@ node-placeholder-scaler:
   calendarOverrideEnabled: True
 
   nodeSelector:
-    hub.jupyter.org/pool-name: support-pool-2026-02-12
+    hub.jupyter.org/pool-name: support-pool-2026-07-07
 
   # cpuThreshold: 0.25 # ignore this as our workloads are memory-bound, not cpu
   memoryThreshold: 0.40 # set this pretty high to avoid overloading nodes and get new ones spun up earlier

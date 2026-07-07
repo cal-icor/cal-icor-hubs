@@ -107,6 +107,9 @@ tofu-prometheus-pool:
 tofu-core-pool:
   - 'tofu/spring-2025/core-pool/**'
 
+tofu-support-pool:
+  - 'tofu/spring-2025/support-pool/**'
+
 # add hub-specific labels for deployment changes
 'hub: dvc':
   - 'deployments/dvc/**'

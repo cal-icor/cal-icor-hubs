@@ -50,11 +50,11 @@ current as each phase lands.
 | A | `spring-2025/network` (`modules/network`) | Cloud Router + Cloud NAT + reserved egress IP `35.254.232.174`, so private nodes can reach the public internet. | Applied / live |
 | 0 | `spring-2025/network` (`modules/network`, `firewall.tf`) | `spring-2025-allow-iap-ssh` firewall (IAP range `35.235.240.0/20`, tcp:22) so `gcloud compute ssh --tunnel-through-iap` still works once nodes lose external IPs. | Applied / live |
 | 1 | `spring-2025/prometheus-pool` (`modules/nodepools`) | Private `prometheus-pool-2026-06-29` (canary). `prometheus-server` moved onto it (PD reattached across pools); old public `prometheus-pool-2025-12-22` deleted. | Complete |
-| 2 | `spring-2025/core-pool` (`modules/nodepools`) | Private `core-pool-2026-06-30` for every hub's hub/proxy pods plus the shared ingress-nginx controller. `n2-standard-8` (right-sized down from the old pool's `n2-highmem-8` — the workload requested only 35% CPU / 27% mem there; halves RAM 64->32 GB while keeping 8 vCPU for redeploy headroom), `max_pods_per_node = 200`, `cpu_manager_policy = static`, plus the TCP/IP node sysctls. | IaC merged; pool `tg apply` + hub nodeSelector cutover pending |
+| 2 | `spring-2025/core-pool` (`modules/nodepools`) | Private `core-pool-2026-06-30` for every hub's hub/proxy pods plus the shared ingress-nginx controller. `n2-standard-8` (right-sized down from the old pool's `n2-highmem-8` — the workload requested only 35% CPU / 27% mem there; halves RAM 64->32 GB while keeping 8 vCPU for redeploy headroom), `max_pods_per_node = 200`, `cpu_manager_policy = static`, plus the TCP/IP node sysctls. | Complete (2026-07-06 — pool applied, all 42 hubs + ingress cut over via #844, old public `core-pool-2026-03-05` drained + deleted) |
+| 3 | `spring-2025/support-pool` (`modules/nodepools`) | Private `support-pool-2026-07-07` for the shared cluster services (cert-manager, kube-state-metrics, grafana, statsd, node-placeholder-scaler, per-hub dirsize reporters) and the in-cluster NFS server. `n2-standard-4`, module defaults otherwise. **Maintenance window**: the NFS server (`home-nfs`) and grafana carry RWO zonal PDs in `us-central1-b`; moving the NFS server freezes home dirs cluster-wide ~1-3 min. `home-nfs` ships `strategy=RollingUpdate` (not exposed for override by the chart), so its move is handled out of band (patch to `Recreate` / scale-to-0) to avoid a Multi-Attach deadlock. | IaC authored; pool `tg apply` + helm nodeSelector cutover pending (pre-login window) |
 
-The `gpu-pool` is excluded from the migration (idle / scaled to zero). `support-pool`
-(cert-manager, metrics, the in-cluster NFS server) and `user-pool` follow as later
-phases.
+The `gpu-pool` is excluded from the migration (idle / scaled to zero). `user-pool`
+follows as the final phase.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
