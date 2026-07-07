@@ -113,6 +113,9 @@ jupyterhub:
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
       # OPENCODE_CONFIG: /etc/opencode-default/opencode.json
     nodeSelector:
+      # uncomment before a workshop to ensure that all users are on the workshop node pool,
+      # and don't forget to comment out user-pool-2026-07-07!
+      # hub.jupyter.org/pool-name: workshop-pool-2026-07-07
       hub.jupyter.org/pool-name: user-pool-2026-07-07
     storage:
       type: static

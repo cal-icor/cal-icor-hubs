@@ -44,7 +44,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/terraform-docs/terraform-docs
-    rev: v0.22.0
+    rev: v0.24.0
     hooks:
       - id: terraform-docs-go
         args: ["markdown", "table", "--output-file", "README.md", "--output-mode", "inject", "tofu/"]

@@ -4,8 +4,9 @@ Phase A of the public-to-private node migration. This root module creates the
 **outbound** egress path that private nodes need: a Cloud Router, a Cloud NAT
 gateway, and a reserved static egress IP.
 
-This is the first OpenTofu-managed resource in the repo (new-resources-first
-adoption). The cluster and node pools remain out-of-band for now.
+This was the first OpenTofu-managed resource in the repo (new-resources-first
+adoption). The node pools are now tofu-managed too (see `modules/nodepools`); the
+GKE cluster itself remains out-of-band.
 
 ## What this does and does not touch
 
@@ -57,21 +58,26 @@ the rest of the network plumbing. The bucket cannot be created by this module
 
 ## Normal workflow
 
+This module is run through its live unit `spring-2025/network`, which supplies the
+backend and provider via Terragrunt (`export TG_TF_PATH=tofu` first, see the top
+`tofu/README.md`):
+
 ```sh
-cd tofu/network
-tofu init      # wires the gcs backend, downloads the google provider
-tofu plan      # expect: 3 to add, 0 to change, 0 to destroy
-tofu apply     # creates router + NAT + egress IP (requires approval)
-tofu output nat_egress_ip
+cd tofu/spring-2025/network
+terragrunt init      # wires the gcs backend, downloads the google provider
+terragrunt plan      # first apply expected: 3 to add, 0 to change, 0 to destroy
+terragrunt apply     # creates router + NAT + egress IP (requires approval)
+terragrunt output nat_egress_ip
 ```
 
 ## Rollback
 
-Nothing depends on the NAT yet (nodes are still public), so removal is clean:
-
-```sh
-tofu destroy   # removes NAT, router, and the egress IP
-```
+The private-node migration is complete, so the NAT is now load-bearing: every
+pool runs private nodes whose only path to the public internet is this gateway.
+Destroying it would break image pulls from non-Google registries and all student
+notebook egress. Do not `terragrunt destroy` this unit unless the cluster is
+first moved back to public nodes. During the original Phase A (nodes still
+public) removal was harmless; that is no longer the case.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
