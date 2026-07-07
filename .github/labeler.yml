@@ -110,6 +110,9 @@ tofu-core-pool:
 tofu-support-pool:
   - 'tofu/spring-2025/support-pool/**'
 
+tofu-user-pool:
+  - 'tofu/spring-2025/user-pool/**'
+
 # add hub-specific labels for deployment changes
 'hub: dvc':
   - 'deployments/dvc/**'

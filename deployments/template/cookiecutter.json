@@ -11,7 +11,7 @@
     "landing_page_branch": "main",
     "project_name": "cal-icor-hubs",
     "cluster_name": "spring-2025",
-    "pool_name": "base-pool",
+    "pool_name": "user-pool-2026-07-07",
     "authenticator_class": "valid-auth-class",
     "authenticator_class_instance": "valid-auth-instance",
     "idp_url": "https://idp.example.edu",

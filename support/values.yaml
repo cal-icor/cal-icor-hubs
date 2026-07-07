@@ -204,7 +204,7 @@ node-placeholder-scaler:
     # short name of the node pool, used in the calendar event description
     base:
       nodeSelector:
-        hub.jupyter.org/pool-name: base-pool
+        hub.jupyter.org/pool-name: user-pool-2026-07-07
       resources:
         requests:
           # Some value slightly lower than allocatable RAM on the nodepool

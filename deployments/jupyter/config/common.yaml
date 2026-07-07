@@ -113,7 +113,7 @@ jupyterhub:
       JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
       # OPENCODE_CONFIG: /etc/opencode-default/opencode.json
     nodeSelector:
-      hub.jupyter.org/pool-name: base-pool
+      hub.jupyter.org/pool-name: user-pool-2026-07-07
     storage:
       type: static
       static:
