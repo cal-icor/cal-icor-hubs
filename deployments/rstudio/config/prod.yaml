@@ -16,3 +16,10 @@ jupyterhub:
       pvc:
         # This also holds logs
         storage: 4Gi
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

@@ -23,3 +23,10 @@ jupyterhub:
     config:
       CILogonOAuthenticator:
         oauth_callback_url: https://dvc.jupyter.cal-icor.org/hub/oauth_callback
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

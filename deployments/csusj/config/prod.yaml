@@ -17,5 +17,12 @@ jupyterhub:
         # This also holds logs
         storage: 4Gi
     config:
-        CILogonOAuthenticator:
-          oauth_callback_url: https://csusj.jupyter.cal-icor.org/hub/oauth_callback
+      CILogonOAuthenticator:
+        oauth_callback_url: https://csusj.jupyter.cal-icor.org/hub/oauth_callback
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

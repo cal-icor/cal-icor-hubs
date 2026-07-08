@@ -1,7 +1,7 @@
 
 nfsPVC:
- nfs:
-   shareName: jupyter/prod
+  nfs:
+    shareName: jupyter/prod
 
 jupyterhub:
   ingress:
@@ -10,7 +10,7 @@ jupyterhub:
       - jupyter.cal-icor.org
     tls:
       - hosts:
-        - jupyter.cal-icor.org
+          - jupyter.cal-icor.org
         secretName: tls-cert
   proxy:
     https:
@@ -20,6 +20,13 @@ jupyterhub:
       pvc:
         # This also holds logs
         storage: 4Gi
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users
   scheduling:
     userPlaceholder:
       enabled: false
