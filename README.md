@@ -185,6 +185,72 @@ this time with the `base` set to prod and the `head` set to staging. This
 PR will trigger a similar Travis process. Test your change on production
 for good measure.
 
+## Service Accounts: cloudbank-pilot-hub-users
+
+The [`cloudbank-pilot-hub-users`](https://github.com/cal-icor/cloudbank-pilot-hub-users)
+repo runs a nightly dashboard job that queries each Cal-ICOR hub's
+`/hub/api/users` endpoint to report the number of users per hub for reporting
+purposes. Under JupyterHub 5.x, an API token can't list users unless it's
+explicitly granted the scopes to do so, so each hub defines a read-only service account, `cloudbank-pilot-hub-users`, for this purpose.
+
+The dashboard only ever queries **production** hubs, so this service account
+only needs to exist in each hub's `prod` config/secrets — it is not set up for `staging`.
+
+### The role stanza
+
+Each hub's `deployments/<hub>/config/prod.yaml` defines a `loadRoles` entry
+granting the `cloudbank-pilot-hub-users` service `list:users` and `read:users` scopes:
+
+``` yaml
+jupyterhub:
+  hub:
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users
+```
+
+If a hub's `prod.yaml` doesn't define this role and stanza, its `prod` config
+should be updated to include one when the service account is added or its
+tokens rotated.
+
+### The per-hub token
+
+Each hub also defines a **unique** SOPS-encrypted API token for the service,
+in `deployments/<hub>/secrets/prod.yaml`:
+
+``` yaml
+jupyterhub:
+  hub:
+    services:
+      cloudbank-pilot-hub-users:
+        apiToken: <unique per-hub token>
+```
+
+### Generating and setting a token
+
+Generate a new random token per hub:
+
+``` bash
+openssl rand -hex 32
+```
+
+Then set it in the hub's encrypted secret using the standard SOPS workflow.
+
+### Keeping it in sync with cloudbank-pilot-hub-users
+
+The dashboard authenticates using these same tokens, so whenever a hub's token
+is created here, the **same value** must also be updated in the
+`cloudbank-pilot-hub-users` repo's `enc-pilots.json`, in the `token` field of
+the pilot entry matching this hub (matched by `url`, where `where: icor`).
+
+If the two repos' tokens drift, the dashboard will get a `403` /
+`Missing or invalid credentials` error querying that hub until they're
+brought back in sync.
+
 ## SSL: LetsEncrypt Strategy
 
 The Berkeley-based SPA email address, <cal-icor-support@berkeley.edu>, is the
