@@ -17,6 +17,7 @@ hub/charts
 # random stuff
 **/.DS_Store
 **/*.bak
+**/*.tmp
 
 # deployment configs
 _deploy_configs/*.yaml
