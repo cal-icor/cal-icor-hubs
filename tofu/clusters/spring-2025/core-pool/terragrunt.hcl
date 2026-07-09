@@ -36,10 +36,16 @@ include "root" {
 }
 
 terraform {
-  source = "../../modules/nodepools"
+  source = "../../../modules/nodepools"
+}
+
+locals {
+  cluster = read_terragrunt_config(find_in_parent_folders("cluster.hcl")).locals
 }
 
 inputs = {
+  cluster = local.cluster.cluster_name
+
   pool_name            = "core-pool-2026-06-30"
   enable_private_nodes = true
 

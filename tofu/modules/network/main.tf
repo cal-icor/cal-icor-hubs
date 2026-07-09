@@ -1,3 +1,4 @@
+# CI smoke test (test-tofu-ci): no-op to trigger a plan; revert before merge.
 # Phase A of the public-to-private node migration: outbound egress for private nodes.
 #
 # Direction matters here. This file only creates an OUTBOUND path. It does not

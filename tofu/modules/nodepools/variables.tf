@@ -1,12 +1,11 @@
 variable "region" {
   type        = string
   default     = "us-central1"
-  description = "Region of the regional spring-2025 cluster; also the node pool's location. Value comes from root.hcl inputs."
+  description = "Region of the regional cluster; also the node pool's location. Value comes from root.hcl inputs."
 }
 
 variable "cluster" {
   type        = string
-  default     = "spring-2025"
   description = "Name of the GKE cluster this node pool belongs to."
 }
 

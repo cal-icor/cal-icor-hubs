@@ -4,10 +4,10 @@
 # state files:
 #
 #   1. Remote state. One GCS bucket, with each unit's state key derived from its
-#      path under tofu/ (e.g. tofu/spring-2025/network -> prefix
-#      "spring-2025/network"). Units never hand-write a backend block, and the
-#      derived key matches the prefixes the modules used before this conversion,
-#      so existing state is reused rather than orphaned.
+#      path under tofu/ (e.g. tofu/clusters/spring-2025/network -> prefix
+#      "clusters/spring-2025/network"). Units never hand-write a backend block;
+#      the key follows the unit's directory, so moving a unit means relocating
+#      its state object to the matching prefix.
 #
 #   2. Common inputs. project and region are identical for every unit, so they
 #      are declared once here and merged into each unit's inputs instead of being

@@ -2,8 +2,8 @@
 
 Live Terragrunt units for the `spring-2025` GKE cluster. Each subdirectory is a
 unit with its own state file (key = its path under `tofu/`, e.g.
-`spring-2025/network`). A unit `include`s `../../root.hcl` and sources a module
-from `../../modules/`.
+`clusters/spring-2025/network`). A unit `include`s `../../../root.hcl` and sources a module
+from `../../../modules/`.
 
 The units:
 

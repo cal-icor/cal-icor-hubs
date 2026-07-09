@@ -8,7 +8,7 @@ the Cloud NAT created by [`modules/network`](../network).
 
 The public-to-private migration is build-alongside, not in-place:
 
-1. A unit under `tofu/spring-2025/<role>-pool/` calls this module to create a new
+1. A unit under `tofu/clusters/spring-2025/<role>-pool/` calls this module to create a new
    private pool next to the existing public one.
 2. The old pool is cordoned and drained onto the new one.
 3. The old (public) pool is deleted once the new one is validated.
@@ -62,7 +62,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_cluster"></a> [cluster](#input\_cluster) | Name of the GKE cluster this node pool belongs to. | `string` | `"spring-2025"` | no |
+| <a name="input_cluster"></a> [cluster](#input\_cluster) | Name of the GKE cluster this node pool belongs to. | `string` | n/a | yes |
 | <a name="input_cpu_manager_policy"></a> [cpu\_manager\_policy](#input\_cpu\_manager\_policy) | kubelet CPU manager policy: "static" pins whole cores to Guaranteed-QoS integer-CPU pods; null/"none" shares all cores. Set "static" for the core pool to match the pool it replaces. | `string` | `null` | no |
 | <a name="input_disk_size_gb"></a> [disk\_size\_gb](#input\_disk\_size\_gb) | Boot disk size in GB. | `number` | `100` | no |
 | <a name="input_disk_type"></a> [disk\_type](#input\_disk\_type) | Boot disk type. | `string` | `"pd-balanced"` | no |
@@ -83,7 +83,7 @@ No modules.
 | <a name="input_node_taints"></a> [node\_taints](#input\_node\_taints) | Kubernetes node taints. Empty for nodeSelector-scheduled pools (prometheus/core/support); the user pool sets hub.jupyter.org\_dedicated=user:NO\_SCHEDULE. | <pre>list(object({<br/>    key    = string<br/>    value  = string<br/>    effect = string<br/>  }))</pre> | `[]` | no |
 | <a name="input_oauth_scopes"></a> [oauth\_scopes](#input\_oauth\_scopes) | OAuth scopes for the node service account. Defaults to the six GKE default scopes carried by the existing pools. | `list(string)` | <pre>[<br/>  "https://www.googleapis.com/auth/devstorage.read_only",<br/>  "https://www.googleapis.com/auth/logging.write",<br/>  "https://www.googleapis.com/auth/monitoring",<br/>  "https://www.googleapis.com/auth/service.management.readonly",<br/>  "https://www.googleapis.com/auth/servicecontrol",<br/>  "https://www.googleapis.com/auth/trace.append"<br/>]</pre> | no |
 | <a name="input_pool_name"></a> [pool\_name](#input\_pool\_name) | Node pool name. House style is <role>-pool-YYYY-MM-DD, stamped with the day the pool is created. Also used as the value of the hub.jupyter.org/pool-name node label that helm nodeSelectors pin. | `string` | n/a | yes |
-| <a name="input_region"></a> [region](#input\_region) | Region of the regional spring-2025 cluster; also the node pool's location. Value comes from root.hcl inputs. | `string` | `"us-central1"` | no |
+| <a name="input_region"></a> [region](#input\_region) | Region of the regional cluster; also the node pool's location. Value comes from root.hcl inputs. | `string` | `"us-central1"` | no |
 | <a name="input_resource_labels"></a> [resource\_labels](#input\_resource\_labels) | GCE instance labels applied to the nodes (billing/rollup dimension). The repo keys billing on hub; e.g. { hub = "prometheus", nodepool-deployment = "prometheus" }. | `map(string)` | n/a | yes |
 
 ## Outputs
