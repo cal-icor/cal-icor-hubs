@@ -1,0 +1,133 @@
+name: Deploy dev cluster (tofu)
+
+# Stands up / converges the throwaway dev GKE cluster from tofu/clusters/dev.
+# Fires on push to staging when the merged PR carried the `tofu-dev` label
+# (the labeler auto-applies it to any tofu/clusters/dev/** change): runs
+# `terragrunt run --all plan` first, then `apply` only if the plan succeeds.
+# Manual dispatch honors the plan/apply dropdown and runs just that one command.
+# Keyless: authenticates as the dev-infra SA via Workload Identity Federation
+# in the dev-infra environment. This is triggered on a merge to staging only,
+# never prod.
+
+permissions:
+  contents: read
+  id-token: write # mint the WIF OIDC token
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "terragrunt run --all command"
+        type: choice
+        options: [apply, plan, destroy]
+        default: plan
+  push:
+    branches:
+      - staging
+
+concurrency:
+  group: dev-cluster-tofu # serialize applies; the GCS backend also locks state
+  cancel-in-progress: false
+
+env:
+  TOFU_VERSION: "1.12.3"
+  TERRAGRUNT_VERSION: "1.1.0"
+  TG_TF_PATH: tofu
+  TG_NON_INTERACTIVE: "true"
+
+jobs:
+  tofu:
+    runs-on: ubuntu-latest
+    # The infra SA's WIF binding is pinned to this environment's OIDC subject, so
+    # the job must name it to authenticate. No protection rules = auto-apply.
+    environment: dev-infra
+    steps:
+      - name: Get PR labels
+        id: pr-labels
+        if: github.event_name == 'push'
+        uses: irby/get-labels-on-push@v1.2.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Decide what to run
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+          LABELS: ${{ steps.pr-labels.outputs.labels }}
+          CMD: ${{ github.event.inputs.command }}
+        run: |
+          should_plan=false
+          should_apply=false
+          should_destroy=false
+          if [[ "$EVENT" == "workflow_dispatch" ]]; then
+            # Manual run honors the dropdown: exactly one of plan/apply/destroy.
+            case "$CMD" in
+              plan)    should_plan=true ;;
+              apply)   should_apply=true ;;
+              destroy) should_destroy=true ;;
+            esac
+          else
+            # Labeled merge to staging: plan first, then apply if the plan holds.
+            # A staging merge never destroys.
+            for label in $LABELS; do
+              if [[ "$label" == "tofu-dev" ]]; then
+                should_plan=true
+                should_apply=true
+              fi
+            done
+          fi
+          echo "should_plan=$should_plan" >> "$GITHUB_OUTPUT"
+          echo "should_apply=$should_apply" >> "$GITHUB_OUTPUT"
+          echo "should_destroy=$should_destroy" >> "$GITHUB_OUTPUT"
+          if [[ "$should_plan" == "true" || "$should_apply" == "true" || "$should_destroy" == "true" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Plan: $should_plan  Apply: $should_apply  Destroy: $should_destroy"
+
+      - name: Check out the repo
+        if: ${{ success() && steps.gate.outputs.run == 'true' }}
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud (keyless WIF)
+        if: ${{ success() && steps.gate.outputs.run == 'true' }}
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
+          service_account: ${{ vars.DEV_INFRA_SA }}
+
+      - name: Install OpenTofu
+        if: ${{ success() && steps.gate.outputs.run == 'true' }}
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+          tofu_wrapper: false # terragrunt calls `tofu` directly
+
+      - name: Install Terragrunt
+        if: ${{ success() && steps.gate.outputs.run == 'true' }}
+        run: |
+          curl -sSL -o /usr/local/bin/terragrunt \
+            "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64"
+          chmod +x /usr/local/bin/terragrunt
+          terragrunt --version
+
+      # run --all walks the dependency DAG and reports changes only for the modules
+      # that actually differ; unchanged modules plan to "No changes". A non-zero
+      # exit here (syntax/auth/provider error) fails the job and skips apply.
+      - name: terragrunt run --all plan
+        if: ${{ success() && steps.gate.outputs.should_plan == 'true' }}
+        working-directory: tofu/clusters/dev
+        run: terragrunt run --all plan
+
+      # Only reached when the plan step above succeeded (or was skipped on a
+      # manual apply-only dispatch). Recomputes its own plan at apply time.
+      - name: terragrunt run --all apply
+        if: ${{ success() && steps.gate.outputs.should_apply == 'true' }}
+        working-directory: tofu/clusters/dev
+        run: terragrunt run --all apply
+
+      # Manual teardown only (never reached by a staging merge). Walks the DAG in
+      # reverse; TG_NON_INTERACTIVE auto-approves.
+      - name: terragrunt run --all destroy
+        if: ${{ success() && steps.gate.outputs.should_destroy == 'true' }}
+        working-directory: tofu/clusters/dev
+        run: terragrunt run --all destroy

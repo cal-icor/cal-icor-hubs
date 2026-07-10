@@ -90,28 +90,43 @@ tofu-modules:
 tofu-spring-2025:
   - 'tofu/clusters/spring-2025/**'
 
+# live units for the dev cluster (throwaway e2e pilot)
+tofu-dev:
+  - 'tofu/clusters/dev/**'
+
+# tofu cluster (control plane / VPC; dev creates its cluster via this module)
+tofu-cluster:
+  - 'tofu/modules/cluster/**'
+  - 'tofu/clusters/dev/cluster/**'
+
 # tofu networking (Cloud Router / NAT / egress IP / firewall)
 tofu-network:
   - 'tofu/modules/network/**'
   - 'tofu/clusters/spring-2025/network/**'
+  - 'tofu/clusters/dev/network/**'
 
 # tofu node pools
 tofu-nodepools:
   - 'tofu/modules/nodepools/**'
   - 'tofu/clusters/spring-2025/*pool*/**'
+  - 'tofu/clusters/dev/*pool*/**'
 
-# per-pool labels (filter migration-phase PRs by which pool they touch)
+# per-pool labels (filter PRs by which pool they touch, across clusters)
 tofu-prometheus-pool:
   - 'tofu/clusters/spring-2025/prometheus-pool/**'
+  - 'tofu/clusters/dev/prometheus-pool/**'
 
 tofu-core-pool:
   - 'tofu/clusters/spring-2025/core-pool/**'
+  - 'tofu/clusters/dev/core-pool/**'
 
 tofu-support-pool:
   - 'tofu/clusters/spring-2025/support-pool/**'
+  - 'tofu/clusters/dev/support-pool/**'
 
 tofu-user-pool:
   - 'tofu/clusters/spring-2025/user-pool/**'
+  - 'tofu/clusters/dev/user-pool/**'
 
 # add hub-specific labels for deployment changes
 'hub: dvc':
