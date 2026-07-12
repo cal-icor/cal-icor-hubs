@@ -1,7 +1,13 @@
 variable "region" {
   type        = string
   default     = "us-central1"
-  description = "Region of the regional cluster; also the node pool's location. Value comes from root.hcl inputs."
+  description = "Region of the regional cluster. Fallback for the pool's location when var.location is null (the spring-2025 regional pools). Value comes from root.hcl inputs."
+}
+
+variable "location" {
+  type        = string
+  default     = null
+  description = "Pool location: the cluster's own location, a region for a regional cluster or a zone for a zonal one. A node pool's location must equal its cluster's, so wire this to the cluster module's location output. Defaults (null) to var.region, so the existing spring-2025 regional pools, which pass nothing, keep their region."
 }
 
 variable "cluster" {

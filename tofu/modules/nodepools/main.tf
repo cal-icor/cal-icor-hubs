@@ -9,9 +9,12 @@
 # name.
 
 resource "google_container_node_pool" "pool" {
-  name     = var.pool_name
-  cluster  = var.cluster
-  location = var.region # regional cluster: the pool's location is the region
+  name    = var.pool_name
+  cluster = var.cluster
+  # A pool's location must equal its cluster's: the region for a regional
+  # cluster, the zone for a zonal one. Falls back to var.region so the existing
+  # spring-2025 regional pools, which pass no location, are unchanged.
+  location = coalesce(var.location, var.region)
 
   # Pin the actual node zone(s). Single zone for spring-2025 so stateful pods can
   # reattach their zonal PDs.

@@ -25,7 +25,7 @@ terraform {
 dependency "cluster" {
   config_path = "../cluster"
 
-  mock_outputs                            = { name = "mock-cluster" }
+  mock_outputs                            = { name = "mock-cluster", location = "us-central1-b" }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
@@ -36,6 +36,7 @@ dependencies {
 
 inputs = {
   cluster              = dependency.cluster.outputs.name
+  location             = dependency.cluster.outputs.location
   pool_name            = "core-pool"
   enable_private_nodes = true
 
