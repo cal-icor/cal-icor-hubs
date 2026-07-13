@@ -1,0 +1,98 @@
+name: Deploy dev cluster stack
+
+# Single entry point for the dev cluster. Owns the label gate and the ordering:
+#
+#   cluster (tofu, dev-infra)  ->  support (helm, dev-deploy)  ->  hub (Phase 3)
+#
+# `needs:` keeps support from racing the cluster, and skips it if the apply fails.
+# Each called workflow names its own environment: the layers use different SAs.
+#
+# Merge to staging picks layers by PR label: tofu-dev -> cluster, support-dev ->
+# support. A merge never destroys; teardown is a dispatch, and destroying the
+# cluster takes the helm releases with it.
+
+permissions:
+  contents: read
+  id-token: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_command:
+        description: "What to do with the cluster"
+        type: choice
+        options: [skip, plan, apply, destroy]
+        default: plan
+      deploy_support:
+        description: "Deploy the support chart afterwards"
+        type: boolean
+        default: false
+  push:
+    branches:
+      - staging
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      cluster_command: ${{ steps.decide.outputs.cluster_command }}
+      deploy_support: ${{ steps.decide.outputs.deploy_support }}
+    steps:
+      - name: Get PR labels
+        id: pr-labels
+        if: github.event_name == 'push'
+        uses: irby/get-labels-on-push@v1.2.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Decide which layers to run
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          LABELS: ${{ steps.pr-labels.outputs.labels }}
+          CMD: ${{ inputs.cluster_command }}
+          SUPPORT: ${{ inputs.deploy_support }}
+        run: |
+          if [[ "$EVENT" == "workflow_dispatch" ]]; then
+            cluster_command="$CMD"
+            deploy_support="$SUPPORT"
+          else
+            cluster_command=skip
+            deploy_support=false
+            for label in $LABELS; do
+              case "$label" in
+                tofu-dev)    cluster_command=apply ;;
+                support-dev) deploy_support=true ;;
+              esac
+            done
+          fi
+
+          # Don't leave support chasing a cluster that's going away.
+          if [[ "$cluster_command" == "destroy" ]]; then
+            deploy_support=false
+          fi
+
+          echo "cluster_command=$cluster_command" >> "$GITHUB_OUTPUT"
+          echo "deploy_support=$deploy_support" >> "$GITHUB_OUTPUT"
+          echo "Cluster: $cluster_command  Support: $deploy_support"
+
+  cluster:
+    needs: gate
+    if: ${{ needs.gate.outputs.cluster_command != 'skip' }}
+    uses: ./.github/workflows/deploy-dev-cluster.yaml
+    with:
+      command: ${{ needs.gate.outputs.cluster_command }}
+    permissions:
+      contents: read
+      id-token: write
+    secrets: inherit
+
+  support:
+    needs: [gate, cluster]
+    # Runs if cluster succeeded OR was skipped (support-only change); not if it failed.
+    if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_support == 'true' }}
+    uses: ./.github/workflows/deploy-dev-support.yaml
+    permissions:
+      contents: read
+      id-token: write
+    secrets: inherit

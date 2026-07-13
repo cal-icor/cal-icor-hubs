@@ -1,4 +1,7 @@
 creation_rules:
+  - path_regex: dev/secrets.yaml # this is just for the dev cluster
+    gcp_kms: projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops-dev
+  # all rules below are for staging/prod
   - path_regex: deployments/.*/secrets/.*
     gcp_kms: projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops
   - path_regex: support/secrets.yaml

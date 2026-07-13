@@ -1,0 +1,93 @@
+name: Deploy dev support chart (helm)
+
+# Installs the support chart on the dev cluster with raw helm.
+# Called by deploy-dev.yaml after the cluster job, so it can never race the cluster.
+#
+# Keyless as dev-deploy, whose WIF binding is pinned to the `dev-deploy` environment.
+# That SA holds only container.clusterViewer project-wide; its write comes from a
+# cluster-admin binding that exists in the dev cluster alone.
+#
+# Never touches support/secrets.yaml: that uses the `sops` key, which also unlocks
+# every prod secret. Dev secrets use the separate `sops-dev` key.
+
+permissions:
+  contents: read
+  id-token: write
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: dev-support-helm
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev-deploy
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      # access_token feeds the helm registry login below, so gcloud is never needed.
+      - name: Authenticate to Google Cloud (keyless WIF)
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
+          service_account: ${{ vars.DEV_DEPLOY_SA }}
+          token_format: access_token
+
+      # Embeds a short-lived token in the kubeconfig and exports KUBECONFIG.
+      - name: Get dev cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ vars.DEV_CLUSTER }}
+          location: ${{ vars.DEV_ZONE }}
+          project_id: ${{ vars.DEV_PROJECT }}
+
+      # Helm maps every manifest before applying any, so the ClusterIssuer in
+      # support/templates needs these to already exist; the chart's own cert-manager
+      # dependency installs them too late. Version tracks support/requirements.yaml.
+      - name: Install cert-manager CRDs
+        run: |
+          cm=$(awk '/name: cert-manager/{f=1} f&&/version:/{print $2; exit}' support/requirements.yaml)
+          kubectl apply --server-side \
+            -f "https://github.com/cert-manager/cert-manager/releases/download/${cm}/cert-manager.crds.yaml"
+
+      - name: Install SOPS
+        run: |
+          mkdir -p "${HOME}/bin"
+          curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 \
+            -o "${HOME}/bin/sops"
+          chmod 755 "${HOME}/bin/sops"
+          echo "${HOME}/bin" >> "$GITHUB_PATH"
+
+      # helm dep up resolves every dependency regardless of what values switch off,
+      # and node-placeholder-scaler lives in a private GAR OCI registry.
+      - name: Log in to the GAR helm registry
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: |
+          printf '%s' "$ACCESS_TOKEN" \
+            | helm registry login -u oauth2accesstoken --password-stdin \
+              https://us-central1-docker.pkg.dev
+
+      - name: Deploy the support chart
+        run: |
+          # sops picks up the WIF credentials from ADC.
+          sops -d -i dev/secrets.yaml
+
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+          helm dep up support
+          helm upgrade \
+            --install --wait --timeout 15m \
+            --create-namespace --namespace=support \
+            support support/ \
+            -f dev/support-values.yaml \
+            -f dev/secrets.yaml

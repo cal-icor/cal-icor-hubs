@@ -55,6 +55,7 @@ helm-config:
   - '**/Chart.yaml'
   - 'support/*.yaml'
   - 'hub/*.yaml'
+  - 'dev/**/*.yaml'
   - '**/.helmignore'
 
 # support systems
@@ -90,9 +91,18 @@ tofu-modules:
 tofu-spring-2025:
   - 'tofu/clusters/spring-2025/**'
 
-# live units for the dev cluster (throwaway e2e pilot)
+# live units for the dev cluster (throwaway e2e pilot); RBAC rides along, the
+# cluster workflow reapplies it
 tofu-dev:
   - 'tofu/clusters/dev/**'
+  - 'dev/rbac/**'
+
+# support chart on the DEV cluster. NOT under support/**, which carries
+# `support-deployment` and would deploy the PROD chart. Workflow edits don't
+# deploy, same as prod.
+support-dev:
+  - 'dev/support-values.yaml'
+  - 'dev/secrets.yaml'
 
 # tofu cluster (control plane / VPC; dev creates its cluster via this module)
 tofu-cluster:

@@ -1,0 +1,91 @@
+# Dev-cluster overlay for the support chart. Layered on support/values.yaml by
+# deploy-dev-support.yaml. Staging and prod never read this file.
+#
+# Lives outside support/ on purpose: the labeler applies `support-deployment` to
+# support/**, which deploys the PROD chart.
+
+cert-manager:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool
+  cainjector:
+    nodeSelector:
+      hub.jupyter.org/pool-name: support-pool
+  webhook:
+    nodeSelector:
+      hub.jupyter.org/pool-name: support-pool
+
+ingress-nginx:
+  controller:
+    nodeSelector:
+      hub.jupyter.org/pool-name: core-pool
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    service:
+      # dev-ingress, reserved in Phase 0.
+      loadBalancerIP: 136.65.235.102
+
+prometheus:
+  kube-state-metrics:
+    nodeSelector:
+      hub.jupyter.org/pool-name: support-pool
+  server:
+    nodeSelector:
+      hub.jupyter.org/pool-name: prometheus-pool
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1536Mi
+    persistentVolume:
+      size: 30Gi
+      storageClass: standard
+      # Clears prod's existingClaim so dev provisions its own PVC.
+      existingClaim: null
+    retention: 7d
+
+grafana:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool
+  persistence:
+    enabled: true
+    storageClassName: standard
+    size: 1Gi
+  # adminPassword comes from dev/secrets.yaml (sops-dev key).
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - grafana.dev.cal-icor.org
+    tls:
+      - hosts:
+          - grafana.dev.cal-icor.org
+        secretName: grafana-dev-https-auto-tls
+  grafana.ini:
+    server:
+      root_url: https://grafana.dev.cal-icor.org/
+
+prometheus-statsd-exporter:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool
+
+# Installed but inert. Chart defaults point at the PROD calendar, and a calendar
+# hard-pin outranks replicas, so both switches are load-bearing.
+node-placeholder-scaler:
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool
+  calendarOverrideEnabled: false
+  nodePools:
+    base:
+      nodeSelector:
+        hub.jupyter.org/pool-name: user-pool
+      replicas: 0

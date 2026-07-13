@@ -1,0 +1,14 @@
+# Gives dev-deploy write access to THIS cluster only; it has no such binding in prod.
+# Reapplied by deploy-dev-cluster.yaml after every apply, since teardown takes it with it.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dev-deploy-cluster-admin
+subjects:
+  - kind: User
+    name: dev-deploy@cal-icor-hubs.iam.gserviceaccount.com
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
