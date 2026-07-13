@@ -1,0 +1,83 @@
+name: Deploy dev NFS home volume (PV/PVC)
+
+# Applies the home-directory PV/PVC for the dev hubs.
+#
+# Separate from the hub deploy on purpose. The hub chart CAN render these (see
+# hub/templates/nfs-pvc.yaml), but that ties a volume to the hub release: it would be
+# re-applied on every hub redeploy, and it would need the NFS server's IP hardcoded
+# into config. Neither is true here. deployments/dev/config/common.yaml sets
+# nfsPVC.enabled: false so the hub release never owns the volume.
+#
+# The NFS ClusterIP is discovered, not configured: the upstream chart's Service
+# template exposes no clusterIP field, so the address is assigned at install. Prod
+# hardcodes the discovered value into deployments/*/config/common.yaml by hand; this
+# reads it back out of the cluster instead.
+#
+# Keyless as dev-deploy. No sops: a volume has no secrets.
+
+permissions:
+  contents: read
+  id-token: write
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: dev-nfs-volume
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev-deploy
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud (keyless WIF)
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
+          service_account: ${{ vars.DEV_DEPLOY_SA }}
+
+      # Embeds a short-lived token in the kubeconfig and exports KUBECONFIG.
+      - name: Get dev cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ vars.DEV_CLUSTER }}
+          location: ${{ vars.DEV_ZONE }}
+          project_id: ${{ vars.DEV_PROJECT }}
+
+      # The PVCs are namespaced, and the hub releases may not have been deployed yet.
+      - name: Ensure the hub namespaces exist
+        run: |
+          for ns in dev-staging dev-prod; do
+            kubectl create namespace "$ns" --dry-run=client -o yaml | kubectl apply -f -
+          done
+
+      - name: Discover the NFS server ClusterIP and apply the volumes
+        run: |
+          NFS_SERVER_IP=$(kubectl -n jupyterhub-home-nfs get svc home-nfs \
+            -o jsonpath='{.spec.clusterIP}')
+          if [[ -z "$NFS_SERVER_IP" ]]; then
+            echo "No ClusterIP on svc/home-nfs. Deploy the NFS chart first." >&2
+            exit 1
+          fi
+          echo "NFS server ClusterIP: ${NFS_SERVER_IP}"
+
+          # spec.nfs is immutable, so this is a no-op once the PVs exist. If the NFS
+          # server is ever rebuilt onto a new ClusterIP, delete the PVs and re-run.
+          #
+          export NFS_SERVER_IP
+          # The single quotes are load-bearing: envsubst's shell-format argument is the
+          # literal '${NFS_SERVER_IP}', naming the one variable it may substitute. Let
+          # the shell expand it and envsubst would replace every $VAR in the file.
+          # shellcheck disable=SC2016
+          envsubst '${NFS_SERVER_IP}' < dev/nfs-volume.yaml | kubectl apply -f -
+
+      - name: Show the bound volumes
+        run: |
+          kubectl get pv dev-staging-home-nfs dev-prod-home-nfs
+          kubectl -n dev-staging get pvc home-nfs
+          kubectl -n dev-prod get pvc home-nfs

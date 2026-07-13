@@ -104,6 +104,23 @@ support-dev:
   - 'dev/support-values.yaml'
   - 'dev/secrets.yaml'
 
+# jupyterhub-home-nfs chart on the DEV cluster. Same reasoning: NOT under
+# jupyterhub-home-nfs/**, which carries `jupyterhub-home-nfs-deployment` and would
+# deploy the PROD chart.
+nfs-dev:
+  - 'dev/nfs-values.yaml'
+
+# home PV/PVC on the DEV cluster. Its own layer, not part of the hub deploy: the
+# volume doesn't change when a hub does.
+nfs-volume-dev:
+  - 'dev/nfs-volume.yaml'
+
+# hub on the DEV cluster. NOT 'hub: dev' like the prod hubs below: that label sets
+# GITHUB_PR_LABEL_HUB_DEV, which is exactly what determine-hub-deployments.py reads to
+# pick prod hubs. deploy-hubs.yaml passes `--ignore dev` for the same reason.
+hub-dev:
+  - 'deployments/dev/**'
+
 # tofu cluster (control plane / VPC; dev creates its cluster via this module)
 tofu-cluster:
   - 'tofu/modules/cluster/**'

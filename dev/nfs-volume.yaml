@@ -1,0 +1,81 @@
+# Home-directory PV/PVC for the dev hubs.
+#
+# Deliberately NOT rendered by the hub chart (deployments/dev/config/common.yaml sets
+# nfsPVC.enabled: false). Two reasons:
+#
+#   1. The NFS server's address is only knowable after the jupyterhub-home-nfs chart
+#      deploys. The upstream chart's Service template exposes no clusterIP field, so
+#      the IP is assigned, not chosen. deploy-dev-nfs-volume.yaml discovers it and
+#      substitutes ${NFS_SERVER_IP} below.
+#   2. A volume does not change when a hub does, so re-applying it on every hub
+#      redeploy buys nothing.
+#
+# The server MUST be the ClusterIP, not home-nfs.jupyterhub-home-nfs.svc.cluster.local.
+# The kubelet mounts NFS in the node's network namespace, and GKE nodes resolve against
+# the metadata server (169.254.169.254), which knows nothing of cluster.local. The DNS
+# name NXDOMAINs at mount time.
+#
+# spec.nfs is effectively immutable: if the NFS server is rebuilt and lands on a new
+# ClusterIP, these PVs must be deleted and re-applied, not patched.
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dev-staging-home-nfs
+spec:
+  capacity:
+    storage: 1Mi
+  accessModes:
+    - ReadWriteMany
+  mountOptions:
+    - soft
+    - noatime
+    - vers=4
+  nfs:
+    server: "${NFS_SERVER_IP}"
+    path: "/dev/staging"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: home-nfs
+  namespace: dev-staging
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeName: dev-staging-home-nfs
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dev-prod-home-nfs
+spec:
+  capacity:
+    storage: 1Mi
+  accessModes:
+    - ReadWriteMany
+  mountOptions:
+    - soft
+    - noatime
+    - vers=4
+  nfs:
+    server: "${NFS_SERVER_IP}"
+    path: "/dev/prod"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: home-nfs
+  namespace: dev-prod
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeName: dev-prod-home-nfs
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 1Mi

@@ -1,0 +1,34 @@
+# Dev-cluster overlay for the jupyterhub-home-nfs chart. Layered on
+# jupyterhub-home-nfs/values.yaml by deploy-dev-nfs.yaml. Staging and prod never
+# read this file.
+#
+# Lives outside jupyterhub-home-nfs/ on purpose: the labeler puts
+# `jupyterhub-home-nfs-deployment` on that path, which deploys the PROD chart.
+
+jupyterhub-home-nfs:
+  gke:
+    enabled: true
+    # 30 GB and blank; the PD CSI driver mkfs.xfs's it on first attach.
+    volumeId: projects/cal-icor-hubs/zones/us-central1-b/disks/dev-nfs-homedirs
+
+  # On now that the dev hub exists. create_deployment.py already made these dirs on
+  # the NFS server; prod keeps the same list in jupyterhub-home-nfs/values.yaml.
+  quotaEnforcer:
+    enabled: true
+    config:
+      QuotaManager:
+        paths: [
+          "/export/dev/staging", "/export/dev/prod"
+        ]
+
+  nfsServer:
+    enableClientAllowlist: true
+    # Dev's own ranges, from tofu/clusters/dev/cluster/terragrunt.hcl. CIDR rather
+    # than prod's globs; ganesha takes either.
+    allowedClients:
+      - "10.10.0.0/22"  # nodes
+      - "10.96.0.0/14"  # pods
+
+  # Dev pool names are role-only, no date stamp.
+  nodeSelector:
+    hub.jupyter.org/pool-name: support-pool

@@ -64,8 +64,13 @@ jobs:
           if [[ -z "$DEPLOY" ]]; then
             echo "hubs=[]" >> "$GITHUB_OUTPUT"
           else
+            # `dev` is the dev CLUSTER's hub and must never deploy here. This script
+            # deploys every directory under deployments/ whenever a PR carries
+            # jupyterhub-deployment or hub-images, and a `hub: dev`/`hub-dev` label
+            # sets GITHUB_PR_LABEL_HUB_DEV, which it also reads. Both paths land on
+            # the prod cluster. deploy-dev.yaml owns the dev hub.
             hubs=$(python .github/scripts/determine-hub-deployments.py \
-                     --ignore gpu-demo rstudio \
+                     --ignore gpu-demo rstudio dev \
                    | jq -R -s -c 'split("\n") | map(select(length > 0))')
             echo "hubs=${hubs}" >> "$GITHUB_OUTPUT"
           fi
@@ -163,8 +168,13 @@ jobs:
           if [[ -z "$DEPLOY" ]]; then
             echo "hubs=[]" >> "$GITHUB_OUTPUT"
           else
+            # `dev` is the dev CLUSTER's hub and must never deploy here. This script
+            # deploys every directory under deployments/ whenever a PR carries
+            # jupyterhub-deployment or hub-images, and a `hub: dev`/`hub-dev` label
+            # sets GITHUB_PR_LABEL_HUB_DEV, which it also reads. Both paths land on
+            # the prod cluster. deploy-dev.yaml owns the dev hub.
             hubs=$(python .github/scripts/determine-hub-deployments.py \
-                     --ignore gpu-demo rstudio \
+                     --ignore gpu-demo rstudio dev \
                    | jq -R -s -c 'split("\n") | map(select(length > 0))')
             echo "hubs=${hubs}" >> "$GITHUB_OUTPUT"
           fi

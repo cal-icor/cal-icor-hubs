@@ -1,0 +1,16 @@
+# Dev cluster serves *.dev.cal-icor.org, not *.jupyter.cal-icor.org.
+# No oauth_callback_url: the dummy authenticator has no OAuth flow.
+jupyterhub:
+  ingress:
+    enabled: true
+    hosts:
+      - hub.dev.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - hub.dev.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi

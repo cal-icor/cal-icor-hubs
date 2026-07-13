@@ -1,0 +1,17 @@
+# Dev cluster serves *.dev.cal-icor.org, not *.jupyter.cal-icor.org.
+# No oauth_callback_url: the dummy authenticator has no OAuth flow.
+jupyterhub:
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - hub-staging.dev.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - hub-staging.dev.cal-icor.org

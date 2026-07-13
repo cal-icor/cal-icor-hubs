@@ -1,0 +1,65 @@
+name: Deploy dev jupyterhub-home-nfs chart (helm)
+
+# Installs the home-directory NFS server on the dev cluster with raw helm.
+# Called by deploy-dev.yaml after the cluster job, so it can never race the cluster.
+#
+# Keyless as dev-deploy, same identity the support layer uses.
+#
+# No sops here: prod decrypts jupyterhub-home-nfs/secrets/quota-overrides.yaml under
+# the `sops` key, but that file only carries per-user quota bumps and dev has no
+# users. The chart default quota_overrides: {} stands, and the quota enforcer itself
+# is off until the dev hub lands.
+
+permissions:
+  contents: read
+  id-token: write
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: dev-nfs-helm
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev-deploy
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud (keyless WIF)
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
+          service_account: ${{ vars.DEV_DEPLOY_SA }}
+
+      # Embeds a short-lived token in the kubeconfig and exports KUBECONFIG.
+      - name: Get dev cluster credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ vars.DEV_CLUSTER }}
+          location: ${{ vars.DEV_ZONE }}
+          project_id: ${{ vars.DEV_PROJECT }}
+
+      # The chart dependency is public ghcr, so no registry login.
+      - name: Deploy the jupyterhub-home-nfs chart
+        run: |
+          helm dep up jupyterhub-home-nfs
+          helm upgrade \
+            --install --wait --timeout 10m \
+            --create-namespace --namespace=jupyterhub-home-nfs \
+            jupyterhub-home-nfs jupyterhub-home-nfs/ \
+            -f dev/nfs-values.yaml
+
+      # --wait above is a placebo on this chart. Helm's Deployment readiness test is
+      # readyReplicas >= replicas - maxUnavailable, and the chart hardcodes replicas: 1
+      # with maxUnavailable: 1, so 0 >= 0 clears instantly: the first deploy went green
+      # in 14 seconds with the pod still ContainerCreating. Assert on the rollout.
+      - name: Wait for the NFS server to actually roll out
+        run: |
+          kubectl rollout status deployment/home-nfs \
+            -n jupyterhub-home-nfs --timeout=10m
+          kubectl get pods -n jupyterhub-home-nfs
