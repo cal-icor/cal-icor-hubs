@@ -9,8 +9,10 @@ on:
       - staging
 
 jobs:
-  deploy:
+  determine-deploy:
     runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.check-labels.outputs.deploy }}
     steps:
       - name: Get PR labels
         id: pr-labels
@@ -18,36 +20,41 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if the support helm chart needs to be deployed
+        id: check-labels
+        run: |
+          echo "PR labels: ${{ steps.pr-labels.outputs.labels }}"
+          deploy=false
+          for label in $(echo -e "${{ steps.pr-labels.outputs.labels }}"); do
+            if [[ "$label" == support-deployment ]]; then
+              deploy=true
+            fi
+          done
+          echo "Deploy support chart: ${deploy}"
+          echo "deploy=${deploy}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: determine-deploy
+    if: needs.determine-deploy.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
       - name: Check out the image repo
         uses: actions/checkout@v6
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
-      - name: Check if the support helm chart needs to be deployed
-        run: |
-          echo "PR labels: ${{ steps.pr-labels.outputs.labels }}"
-          for label in $(echo -e "${{ steps.pr-labels.outputs.labels }}"); do
-            if [[ "$label" == support-deployment ]]; then
-              echo "Deploying support charts!"
-              echo "DEPLOY=1" >> "$GITHUB_ENV"
-            fi
-          done
-
       - name: Auth to gcloud
-        if: ${{ env.DEPLOY }}
         uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GKE_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Install Google Cloud SDK
-        if: ${{ env.DEPLOY }}
         uses: google-github-actions/setup-gcloud@v3
         with:
           install_components: 'gke-gcloud-auth-plugin'
 
       - name: Install SOPS
-        if: ${{ env.DEPLOY }}
         run: |
           mkdir -p "${HOME}/bin"
           curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 -o "${HOME}/bin/sops"
@@ -55,7 +62,6 @@ jobs:
           echo "${HOME}/bin" >> "$GITHUB_PATH"
 
       - name: Activate credentials for cluster
-        if: ${{ env.DEPLOY }}
         run: |
           sops -d -i deployments/jupyter/secrets/gke-key.json
           gcloud auth \
@@ -66,14 +72,12 @@ jobs:
             get-credentials spring-2025
 
       - name: Login to GAR
-        if: ${{ env.DEPLOY }}
         run: |
           helm registry login \
             -u _json_key --password-stdin https://us-central1-docker.pkg.dev \
             < deployments/jupyter/secrets/gke-key.json
 
       - name: Deploy support helm chart
-        if: ${{ env.DEPLOY }}
         run: |
           sops -d -i support/secrets.yaml
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
