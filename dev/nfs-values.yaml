@@ -15,6 +15,13 @@ jupyterhub-home-nfs:
   # the NFS server; prod keeps the same list in jupyterhub-home-nfs/values.yaml.
   quotaEnforcer:
     enabled: true
+    resources:
+      requests:
+        cpu: 0.001
+        memory: 256M
+      limits:
+        cpu: 0.2
+        memory: 1G
     config:
       QuotaManager:
         paths: [
@@ -22,6 +29,13 @@ jupyterhub-home-nfs:
         ]
 
   nfsServer:
+    resources:
+      requests:
+        cpu: 0.02
+        memory: 512M
+      limits:
+        cpu: 0.1
+        memory: 1.5G
     enableClientAllowlist: true
     # Dev's own ranges, from tofu/clusters/dev/cluster/terragrunt.hcl. CIDR rather
     # than prod's globs; ganesha takes either.

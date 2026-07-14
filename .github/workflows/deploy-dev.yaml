@@ -1,31 +1,16 @@
 name: Deploy dev cluster stack
-
-# Single entry point for the dev cluster. Owns the label gate and the ordering:
-#
-#   cluster (tofu, dev-infra) -> support (helm) -> nfs (helm) -> nfs-volume -> hub
-#
-# `needs:` keeps each layer from racing the one before it, and skips it if that one
-# fails. Each called workflow names its own environment: the layers use different SAs.
-#
-# nfs-volume sits between nfs and hub because it reads the NFS server's ClusterIP out
-# of the cluster and writes the PV/PVC the hub's user pods mount. It is its own layer,
-# not part of the hub deploy, so redeploying a hub does not re-apply a volume.
-#
-# Merge to staging picks layers by PR label: tofu-dev -> cluster, support-dev ->
-# support, nfs-dev -> nfs, nfs-volume-dev -> nfs-volume, hub-dev -> hub.
-#
-# The hub follows the same staging -> prod promotion as the prod hubs: a merge to
-# `staging` deploys the staging hub, and the later staging -> prod merge deploys the
-# prod hub. Only the hub is per-environment. The cluster and the support, nfs, and
-# nfs-volume layers are single cluster-wide instances shared by both hubs, so they only
-# ever deploy from staging and are forced off on a prod merge.
-#
-# A merge never destroys; teardown is a dispatch, and destroying the cluster takes the
-# helm releases with it.
+# Single entry point for the dev cluster.
+# Order of operations:  cluster (tofu) -> support -> nfs -> nfs-volume -> hub.
 
 permissions:
   contents: read
   id-token: write
+
+# The leaf workflows serialize themselves, but only against their own kind. This keeps two
+# runs from interleaving layers against the one shared cluster.
+concurrency:
+  group: dev-stack
+  cancel-in-progress: false
 
 on:
   workflow_dispatch:
@@ -106,9 +91,6 @@ jobs:
             deploy_nfs_volume=false
             deploy_hub=false
 
-            # The branch picks the hub environment, exactly as it does for the prod
-            # hubs: staging deploys on a merge to staging, prod on the staging -> prod
-            # merge.
             if [[ "$REF" == "refs/heads/prod" ]]; then
               hub_environment=prod
             else
@@ -125,9 +107,8 @@ jobs:
               esac
             done
 
-            # The cluster and the support, nfs and nfs-volume layers are one shared
-            # instance each, not one per hub environment. They deploy from staging.
-            # A prod merge promotes the hub and nothing else.
+            # The shared layers deploy from staging only, so a prod merge promotes the
+            # hub and nothing else.
             if [[ "$REF" == "refs/heads/prod" ]]; then
               cluster_command=skip
               deploy_support=false
@@ -136,7 +117,7 @@ jobs:
             fi
           fi
 
-          # Don't leave the helm layers chasing a cluster that's going away.
+          # A destroy leaves nothing for the helm layers to deploy into.
           if [[ "$cluster_command" == "destroy" ]]; then
             deploy_support=false
             deploy_nfs=false
@@ -155,6 +136,7 @@ jobs:
           echo "Cluster: $cluster_command  Support: $deploy_support  NFS: $deploy_nfs" \
                "NFS volume: $deploy_nfs_volume  Hub: $deploy_hub ($hub_environment)"
 
+  # Each job below runs if no layer before it failed (skipped is fine) and the gate says to.
   cluster:
     needs: gate
     if: ${{ needs.gate.outputs.cluster_command != 'skip' }}
@@ -164,44 +146,34 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    secrets: inherit
 
   support:
     needs: [gate, cluster]
-    # Runs if cluster succeeded OR was skipped (support-only change); not if it failed.
     if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_support == 'true' }}
     uses: ./.github/workflows/deploy-dev-support.yaml
     permissions:
       contents: read
       id-token: write
-    secrets: inherit
 
   nfs:
     needs: [gate, cluster, support]
-    # Same rule: runs if the layers before it succeeded or were skipped, not if one
-    # failed. NFS doesn't depend on the support chart, but ordering it keeps a
-    # from-scratch rebuild in one predictable sequence.
     if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_nfs == 'true' }}
     uses: ./.github/workflows/deploy-dev-nfs.yaml
     permissions:
       contents: read
       id-token: write
-    secrets: inherit
 
+  # Must follow nfs, because it reads the ClusterIP from the running home-nfs Service.
   nfs-volume:
     needs: [gate, cluster, support, nfs]
-    # Must follow nfs: it reads the ClusterIP off the running home-nfs Service. Its own
-    # layer, so a hub redeploy doesn't re-apply the volume.
     if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_nfs_volume == 'true' }}
     uses: ./.github/workflows/deploy-dev-nfs-volume.yaml
     permissions:
       contents: read
       id-token: write
-    secrets: inherit
 
   hub:
     needs: [gate, cluster, support, nfs, nfs-volume]
-    # Last: the user pods mount the PVC that nfs-volume applies.
     if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_hub == 'true' }}
     uses: ./.github/workflows/deploy-dev-hub.yaml
     with:
@@ -209,4 +181,3 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    secrets: inherit

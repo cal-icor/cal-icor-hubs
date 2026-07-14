@@ -1,23 +1,5 @@
 name: Deploy dev hub (helm)
-
-# Installs the JupyterHub chart on the dev cluster with raw helm.
-# Called by deploy-dev.yaml after the nfs-volume job, so the home PVC exists before
-# any user pod tries to mount it.
-#
-# One environment per call, picked by the caller from the branch: staging deploys from
-# a merge to `staging`, prod from the staging -> prod merge. Same promotion path the
-# prod hubs use; this workflow never deploys both at once.
-#
-# This is what hubploy does for the prod hubs, minus hubploy: same hub/ chart, same
-# common -> env -> secrets values precedence, same `<deployment>-<environment>` release
-# name. Prod authenticates with a GKE service account key out of
-# deployments/<hub>/secrets/gke-key.json; dev has no key at all, and no hubploy.yaml.
-#
-# The volume is NOT deployed here. deployments/dev/config/common.yaml sets
-# nfsPVC.enabled: false; deploy-dev-nfs-volume.yaml owns the PV/PVC.
-#
-# Secrets are sops-dev, the dev-only key. The `sops` key that unlocks the prod
-# secrets is never within reach of this workflow.
+# Installs the JupyterHub chart on the dev cluster with raw helm
 
 permissions:
   contents: read
@@ -50,55 +32,39 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v6
 
-      - name: Authenticate to Google Cloud (keyless WIF)
-        uses: google-github-actions/auth@v3
+      - name: Authenticate to the dev cluster
+        uses: ./.github/actions/gke-auth
         with:
           workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
           service_account: ${{ vars.DEV_DEPLOY_SA }}
-
-      # Embeds a short-lived token in the kubeconfig and exports KUBECONFIG.
-      - name: Get dev cluster credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
           cluster_name: ${{ vars.DEV_CLUSTER }}
           location: ${{ vars.DEV_ZONE }}
           project_id: ${{ vars.DEV_PROJECT }}
 
       - name: Install SOPS
-        run: |
-          mkdir -p "${HOME}/bin"
-          curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 \
-            -o "${HOME}/bin/sops"
-          chmod 755 "${HOME}/bin/sops"
-          echo "${HOME}/bin" >> "$GITHUB_PATH"
+        uses: ./.github/actions/install-sops
 
       - name: Deploy the ${{ inputs.environment }} hub
         env:
           ENV: ${{ inputs.environment }}
         run: |
-          # sops picks up the WIF credentials from ADC.
           sops -d -i "deployments/dev/secrets/${ENV}.yaml"
 
-          # The only dependency is the public jupyterhub chart, so no registry login.
           helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
           helm repo update
           helm dep up hub
 
-          # Release name is dev-<env>, matching hubploy's `<deployment>-<environment>`.
-          # It is not cosmetic: z2jh names the PriorityClasses after the release, and
-          # those are cluster-scoped. Name both releases `dev` and the second one dies
-          # trying to create a `dev-user-placeholder-priority` the first already owns.
+          # Keep the dev-<env> release name. z2jh names the PriorityClasses after the
+          # release and those are cluster-scoped, so if both releases were named `dev`
+          # the second would collide with the first.
           helm upgrade \
-            --install --wait --timeout 15m \
+            --install --timeout 15m \
             --create-namespace --namespace="dev-${ENV}" \
             "dev-${ENV}" hub/ \
             -f deployments/dev/config/common.yaml \
             -f "deployments/dev/config/${ENV}.yaml" \
             -f "deployments/dev/secrets/${ENV}.yaml"
 
-      # helm --wait is not always the guarantee it looks like: its Deployment readiness
-      # test is readyReplicas >= replicas - maxUnavailable, which a 1-replica chart with
-      # maxUnavailable: 1 clears at zero ready pods. Assert on the rollout directly.
       - name: Wait for the hub and proxy to actually roll out
         env:
           ENV: ${{ inputs.environment }}

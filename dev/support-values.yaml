@@ -39,7 +39,7 @@ prometheus:
       hub.jupyter.org/pool-name: prometheus-pool
     resources:
       requests:
-        cpu: 100m
+        cpu: 101m
         memory: 512Mi
       limits:
         cpu: 500m
@@ -88,4 +88,7 @@ node-placeholder-scaler:
     base:
       nodeSelector:
         hub.jupyter.org/pool-name: user-pool
+      resources:
+        requests:
+          memory: 2123718400
       replicas: 0

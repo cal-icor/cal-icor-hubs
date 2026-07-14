@@ -8,7 +8,6 @@
 #   - machine_type e2-medium (4 GB): one dev user, one small singleuser pod. The
 #     dev hub's mem_guarantee is set small to match; bump this if it OOMs.
 #   - max_nodes 1: one user means at most one user pod, so one node.
-#   - no placeholder-scaler warm spare: one user needs no pre-warmed node.
 #   - pool_name role-only, not date-stamped (CI recreates the cluster).
 
 include "root" {
@@ -41,8 +40,8 @@ inputs = {
   node_locations = ["us-central1-b"]
 
   machine_type    = "e2-medium"
-  min_nodes       = 0 # scales to zero when the user is not logged in
-  max_nodes       = 1 # exactly one dev user
+  min_nodes       = 1 # so we always have a node for the single dev user
+  max_nodes       = 1
   location_policy = "ANY"
   disk_size_gb    = 50
 

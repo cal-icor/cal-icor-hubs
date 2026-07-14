@@ -1,0 +1,46 @@
+name: Authenticate to a GKE cluster
+description: Authenticate to Google Cloud, then write the cluster's kubeconfig.
+
+inputs:
+  workload_identity_provider:
+    description: Full resource name of the workload identity provider.
+    required: true
+  service_account:
+    description: Service account to impersonate.
+    required: true
+  cluster_name:
+    description: Cluster to fetch credentials for.
+    required: true
+  location:
+    description: Zone or region the cluster lives in.
+    required: true
+  project_id:
+    description: Project the cluster lives in.
+    required: true
+  token_format:
+    description: Set to access_token if the caller also has to log in to a registry.
+    required: false
+    default: ""
+
+outputs:
+  access_token:
+    description: Google access token. Empty unless token_format is access_token.
+    value: ${{ steps.auth.outputs.access_token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Authenticate to Google Cloud
+      id: auth
+      uses: google-github-actions/auth@v3
+      with:
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+        token_format: ${{ inputs.token_format }}
+
+    - name: Get cluster credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ inputs.cluster_name }}
+        location: ${{ inputs.location }}
+        project_id: ${{ inputs.project_id }}

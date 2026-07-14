@@ -1,14 +1,9 @@
 name: Deploy dev cluster (tofu)
-
 # Converges or tears down the throwaway dev cluster from tofu/clusters/dev.
-# deploy-dev.yaml owns the label gate and calls this first in the
-# cluster -> support -> hub chain; dispatch drives it standalone.
-#
-# Keyless as dev-infra, whose WIF binding is pinned to the `dev-infra` environment.
 
 permissions:
   contents: read
-  id-token: write # mint the WIF OIDC token
+  id-token: write
 
 on:
   workflow_call:
@@ -43,14 +38,11 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v6
 
-      - name: Authenticate to Google Cloud (keyless WIF)
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
           service_account: ${{ vars.DEV_INFRA_SA }}
-
-      # The action installs both tofu and terragrunt, then runs the command.
-      # tg_add_approve is off: TG_NON_INTERACTIVE already auto-approves.
 
       # An apply plans first; a failure here skips the apply below.
       - name: terragrunt run --all plan
@@ -73,7 +65,7 @@ jobs:
           tg_command: run --all apply
           tg_add_approve: "0"
 
-      # Unguarded is fine for dev; prod would need a gate.
+      # Unguarded, which is fine for a throwaway cluster. Prod would need a gate.
       - name: terragrunt run --all destroy
         if: ${{ inputs.command == 'destroy' }}
         uses: gruntwork-io/terragrunt-action@v3
@@ -84,8 +76,8 @@ jobs:
           tg_command: run --all destroy
           tg_add_approve: "0"
 
-      # Reapply the dev-deploy RBAC binding: recreate drops it, and dev-deploy
-      # cannot grant itself admin. Embeds a short-lived token; no gcloud needed.
+      # Reapply the dev-deploy RBAC binding: a recreate drops it, and dev-deploy
+      # cannot grant itself admin.
       - name: Get dev cluster credentials
         if: ${{ inputs.command == 'apply' }}
         uses: google-github-actions/get-gke-credentials@v2

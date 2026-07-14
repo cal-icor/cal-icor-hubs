@@ -1,0 +1,23 @@
+name: Install SOPS
+description: Put the SOPS binary on the runner's PATH.
+
+inputs:
+  version:
+    description: SOPS release tag.
+    required: false
+    default: v3.9.0
+
+runs:
+  using: composite
+  steps:
+    - name: Install SOPS
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        mkdir -p "${HOME}/bin"
+        curl -sSL \
+          "https://github.com/getsops/sops/releases/download/${VERSION}/sops-${VERSION}.linux.amd64" \
+          -o "${HOME}/bin/sops"
+        chmod 755 "${HOME}/bin/sops"
+        echo "${HOME}/bin" >> "$GITHUB_PATH"
