@@ -39,7 +39,7 @@ prometheus:
       hub.jupyter.org/pool-name: prometheus-pool
     resources:
       requests:
-        cpu: 101m
+        cpu: 100m
         memory: 512Mi
       limits:
         cpu: 500m

@@ -16,7 +16,7 @@ jupyterhub:
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
-          name: Cal-ICOR Dev Hub
+          name: Cal-ICOR Dev Hub (ephemeral)
           logo_url: https://www.cal-icor.org/images/logos/cal-icor.png
           url: https://cal-icor.org
 

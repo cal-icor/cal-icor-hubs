@@ -1,28 +1,28 @@
 #! /usr/bin/env python
 """
 Decide which layers of a deployment's stack run for a given trigger.  A stack is
-one deployment (dev, staging, prod); a layer is one tier within it —
-cluster, support, nfs, nfs-volume, hub.  We can add more stacks in the future for
-other deployments, or more layers to extend an existing one.  This script relies
-on PR labels to direct the workflow to deploy the correct layers.
+one deployment (dev, staging, prod); a layer is one tier within it: cluster,
+support, nfs, nfs-volume, hub.  PR labels drive which layers deploy.
 
 The caller passes a YAML layer spec in LAYER_SPEC.  On push the decision comes
 from the PR labels and branch; on workflow_dispatch the inputs pass straight
 through.
 
-A shared_branch is a branch that owns a cluster's shared infra.  This is done
-on purpose, as we want to limit when we deploy our core infrastructure (always
-before we deploy actual hubs).  For our prod deployments, this will always be
-'staging'.
+A shared_branch owns a cluster's shared infra, so that infra only deploys from
+there, always before the hubs.  For prod it is 'staging'.
 
-Each layer names one GITHUB_OUTPUT key in its output field and sets that key
-when the layer's label is present.  A shared_branch_only layer is set only on
-shared_branch, so merging to any other branch skips it.  A layer with a
-when_on/when_off pair emits those values; one without emits "true"/"false".
-Optional environment_output adds a key set to "prod" on refs/heads/prod, else
-shared_branch.  If any layer's value comes out as "destroy", the plain
-true/false layers are all forced off.
-The calling workflow carries the same spec with per-field comments.
+Each layer sets one GITHUB_OUTPUT key, named in its output field.  The rest of
+the spec fields:
+  label               set the output when this label is on the PR.
+  shared_branch_only  only set on shared_branch; other branches skip it.
+  when_on/when_off    emit these instead of "true"/"false".
+  implied_by          force this layer on whenever the named layer is on (the
+                      NFS volume follows the NFS server, whose ClusterIP can
+                      change under the immutable PV).
+  environment_output  set to "prod" on refs/heads/prod, else shared_branch.
+
+A "destroy" value forces every plain true/false layer off.  The calling workflow
+carries the same spec with per-field comments.
 """
 
 import argparse
@@ -35,12 +35,12 @@ from ruamel.yaml import YAML
 _yaml = YAML(typ="safe")
 _yaml.default_flow_style = False
 
-# One layer of the stack, as an immutable record.  Set when_on/when_off to emit
-# custom values; leave them unset and the layer emits "true"/"false".
+# One layer of the stack, as an immutable record.  Fields are documented in the
+# module docstring.
 Layer = namedtuple(
     "Layer",
-    ["output", "label", "shared_branch_only", "when_on", "when_off"],
-    defaults=(False, None, None),
+    ["output", "label", "shared_branch_only", "when_on", "when_off", "implied_by"],
+    defaults=(False, None, None, None),
 )
 
 
@@ -80,6 +80,11 @@ def decide(
                 results[layer.output] = "true" if enabled else "false"
         if env_output:
             results[env_output] = "prod" if ref == "refs/heads/prod" else shared_branch
+
+    # Apply implied_by before the destroy check below, so destroy still wins.
+    for layer in layers:
+        if layer.implied_by is not None and results.get(layer.implied_by) == "true":
+            results[layer.output] = "true"
 
     # A destroyed stack has nothing to deploy into.
     destroying = any(

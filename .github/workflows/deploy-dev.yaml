@@ -106,10 +106,13 @@ jobs:
               - output: deploy_nfs
                 label: nfs-dev
                 shared_branch_only: true
-              # NFS home-directory volume/PV layer.
+              # NFS home-directory volume/PV layer.  Always re-applied when the
+              # NFS server deploys: a re-created server can change the ClusterIP,
+              # and the PV's spec.nfs is immutable, so it must be recreated.
               - output: deploy_nfs_volume
                 label: nfs-volume-dev
                 shared_branch_only: true
+                implied_by: deploy_nfs
               # the hub itself: promoted per-branch (staging->staging, prod->prod).
               - output: deploy_hub
                 label: hub-dev
