@@ -370,8 +370,7 @@ def format_html(report):
         return "<tr>" + "".join(f"<td>{c}</td>" for c in cells) + "</tr>"
 
     parts = []
-    parts.append(
-        f"""<!DOCTYPE html>
+    parts.append(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -397,8 +396,7 @@ def format_html(report):
   Thresholds: {T}, {T2} users per node &nbsp;|&nbsp;
   Namespace: {report["namespace_pattern"]} &nbsp;|&nbsp;
   Timezone: {report["timezone"]}
-</p>"""
-    )
+</p>""")
 
     parts.append(
         f"<h2>Column legend</h2><table>"

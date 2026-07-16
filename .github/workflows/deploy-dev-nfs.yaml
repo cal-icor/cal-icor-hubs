@@ -6,6 +6,10 @@ permissions:
   contents: read
   id-token: write
 
+defaults:
+  run:
+    shell: bash
+
 on:
   workflow_call:
   workflow_dispatch:

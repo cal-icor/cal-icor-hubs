@@ -7,6 +7,10 @@ permissions:
   contents: read
   id-token: write
 
+defaults:
+  run:
+    shell: bash
+
 on:
   workflow_call:
   workflow_dispatch:
@@ -73,7 +77,13 @@ jobs:
 
       - name: Wait for the support workloads to actually roll out
         run: |
-          for w in $(kubectl -n support get deploy,statefulset,daemonset -o name); do
+          workloads=$(kubectl -n support get deploy,statefulset,daemonset -o name)
+          if [[ -z "$workloads" ]]; then
+            echo "No workloads in the support namespace: the chart did not install." >&2
+            exit 1
+          fi
+
+          for w in $workloads; do
             kubectl -n support rollout status "$w" --timeout=10m
           done
           kubectl get pods -n support

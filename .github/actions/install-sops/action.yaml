@@ -5,7 +5,7 @@ inputs:
   version:
     description: SOPS release tag.
     required: false
-    default: v3.9.0
+    default: v3.13.2
 
 runs:
   using: composite
@@ -16,8 +16,11 @@ runs:
         VERSION: ${{ inputs.version }}
       run: |
         mkdir -p "${HOME}/bin"
-        curl -sSL \
+        curl -fsSL \
           "https://github.com/getsops/sops/releases/download/${VERSION}/sops-${VERSION}.linux.amd64" \
           -o "${HOME}/bin/sops"
         chmod 755 "${HOME}/bin/sops"
+        # verify the binary is executable and on the PATH
+        "${HOME}/bin/sops" --version --disable-version-check
+        # this needs to live in the runner's PATH for subsequent steps, so add it to $GITHUB_PATH
         echo "${HOME}/bin" >> "$GITHUB_PATH"

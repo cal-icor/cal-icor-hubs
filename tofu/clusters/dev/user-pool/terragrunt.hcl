@@ -41,7 +41,7 @@ inputs = {
 
   machine_type    = "e2-medium"
   min_nodes       = 1 # so we always have a node for the single dev user
-  max_nodes       = 1
+  max_nodes       = 2
   location_policy = "ANY"
   disk_size_gb    = 50
 

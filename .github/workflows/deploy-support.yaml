@@ -2,6 +2,7 @@ name: Deploy support helm chart
 # use echo ${VAR##*: } to get the value of a variable that is a string with a colon in it
 permissions:
   contents: read
+  id-token: write  # mint the OIDC token for keyless WIF auth
 on:
   workflow_dispatch:
   push:
@@ -43,39 +44,27 @@ jobs:
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
-      - name: Auth to gcloud
-        uses: google-github-actions/auth@v3
+      - name: Authenticate to the cluster (keyless WIF)
+        id: auth
+        uses: ./.github/actions/gke-auth
         with:
-          credentials_json: ${{ secrets.GKE_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Install Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-        with:
-          install_components: 'gke-gcloud-auth-plugin'
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_DEPLOY_SA }}
+          cluster_name: ${{ vars.PROD_CLUSTER }}
+          location: ${{ vars.PROD_ZONE }}
+          project_id: ${{ vars.PROD_PROJECT }}
+          token_format: access_token
 
       - name: Install SOPS
-        run: |
-          mkdir -p "${HOME}/bin"
-          curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 -o "${HOME}/bin/sops"
-          chmod 755 "${HOME}/bin/sops"
-          echo "${HOME}/bin" >> "$GITHUB_PATH"
+        uses: ./.github/actions/install-sops
 
-      - name: Activate credentials for cluster
+      - name: Log in to the GAR helm registry (keyless)
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
         run: |
-          sops -d -i deployments/jupyter/secrets/gke-key.json
-          gcloud auth \
-            activate-service-account \
-            --key-file deployments/jupyter/secrets/gke-key.json
-          gcloud container clusters \
-            --region=us-central1 --project=cal-icor-hubs \
-            get-credentials spring-2025
-
-      - name: Login to GAR
-        run: |
-          helm registry login \
-            -u _json_key --password-stdin https://us-central1-docker.pkg.dev \
-            < deployments/jupyter/secrets/gke-key.json
+          printf '%s' "$ACCESS_TOKEN" \
+            | helm registry login -u oauth2accesstoken --password-stdin \
+              https://us-central1-docker.pkg.dev
 
       - name: Deploy support helm chart
         run: |

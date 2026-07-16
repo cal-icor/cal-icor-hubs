@@ -12,34 +12,18 @@
 minimum_pre_commit_version: "4.4.0"
 
 repos:
-  # tofu
+  - repo: https://github.com/tofuutils/pre-commit-opentofu
+    rev: v2.4.2
+    hooks:
+      - id: tofu_fmt
+      - id: terragrunt_fmt
+
   - repo: local
     hooks:
-      # Formats the OpenTofu module sources (*.tf). Does not touch *.hcl.
-      - id: tofu_fmt
-        name: tofu fmt
-        entry: tofu fmt -recursive
-        language: unsupported
-        files: 'tofu/' # \.(tf|tofu|tfvars)(\.json)?$'
-        pass_filenames: false
-
-      # Formats the Terragrunt configs (root.hcl + per-unit terragrunt.hcl),
-      # which tofu fmt ignores. Requires terragrunt on PATH.
-      - id: terragrunt_hcl_fmt
-        name: terragrunt hcl fmt
-        entry: terragrunt hcl fmt --working-dir tofu
-        language: unsupported
-        files: 'tofu/' # \.hcl$'
-        pass_filenames: false
-
-      # Validates the Terragrunt configs offline (parse + structure). Replaces
-      # the previous `tofu validate` hook, which ran at the repo root where there
-      # are no .tf files and so validated nothing. Real `tofu validate`/tflint/
-      # tfsec (which need a per-module init) are deferred to the CI mirror.
       - id: terragrunt_hcl_validate
         name: terragrunt hcl validate
         entry: terragrunt hcl validate --working-dir tofu
-        language: unsupported
+        language: system
         files: 'tofu/' # \.hcl$'
         pass_filenames: false
 
@@ -52,7 +36,7 @@ repos:
 
   # yaml linter
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.37.1
+    rev: v1.38.0
     hooks:
       - id: yamllint
         # TODO: remove --no-warnings eventually
@@ -61,7 +45,7 @@ repos:
   # Autoformat: Python code
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.14.0
+    rev: v0.15.22
     hooks:
       # Run the linter.
       - id: ruff
@@ -73,7 +57,7 @@ repos:
 
   # Autoformat: Python code, syntax patterns are modernized
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args:
@@ -81,13 +65,13 @@ repos:
 
   # Autoformat: Python code
   - repo: https://github.com/pycqa/isort
-    rev: "7.0.0"
+    rev: "8.0.1"
     hooks:
       - id: isort
 
   # Autoformat: Python code
   - repo: https://github.com/psf/black
-    rev: "25.9.0"
+    rev: "26.5.1"
     hooks:
       - id: black
         # This is a `.py` file but is encrypted with sops
@@ -110,7 +94,7 @@ repos:
 
   # Prevent known typos from being committed
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.3
     hooks:
       - id: codespell
         args:
@@ -138,5 +122,10 @@ repos:
       - id: check-executables-have-shebangs
 
 # pre-commit.ci config reference: https://pre-commit.ci/#configuration
-#ci:
-#  autoupdate_schedule: monthly
+ci:
+  autoupdate_schedule: monthly
+  skip:
+    - tofu_fmt
+    - terragrunt_fmt
+    - terragrunt_hcl_validate
+    - terraform-docs-go

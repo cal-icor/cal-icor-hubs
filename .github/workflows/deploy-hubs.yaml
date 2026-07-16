@@ -10,6 +10,7 @@ name: Deploy staging and prod hubs
 permissions:
   contents: read
   pull-requests: read
+  id-token: write  # mint the OIDC token for keyless WIF auth
 on:
   workflow_dispatch:
   push:
@@ -100,22 +101,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Install SOPS
-        run: |
-          mkdir -p "${HOME}/bin"
-          curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 -o "${HOME}/bin/sops"
-          chmod 755 "${HOME}/bin/sops"
-          echo "${HOME}/bin" >> "$GITHUB_PATH"
+        uses: ./.github/actions/install-sops
 
-      - name: Auth to gcloud
+      - name: Log in to Google Cloud via WIF
         uses: google-github-actions/auth@v3
         with:
-          credentials_json: ${{ secrets.GKE_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Install Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-        with:
-          install_components: 'gke-gcloud-auth-plugin'
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_DEPLOY_SA }}
 
       - name: Deploy ${{ matrix.hub }} to staging
         run: |
@@ -204,22 +196,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Install SOPS
-        run: |
-          mkdir -p "${HOME}/bin"
-          curl -sSL https://github.com/getsops/sops/releases/download/v3.9.0/sops-v3.9.0.linux.amd64 -o "${HOME}/bin/sops"
-          chmod 755 "${HOME}/bin/sops"
-          echo "${HOME}/bin" >> "$GITHUB_PATH"
+        uses: ./.github/actions/install-sops
 
-      - name: Auth to gcloud
+      - name: Log in to Google Cloud via WIF
         uses: google-github-actions/auth@v3
         with:
-          credentials_json: ${{ secrets.GKE_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Install Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
-        with:
-          install_components: 'gke-gcloud-auth-plugin'
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_DEPLOY_SA }}
 
       - name: Deploy ${{ matrix.hub }} to prod
         run: |

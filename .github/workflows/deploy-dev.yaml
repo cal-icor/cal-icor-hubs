@@ -6,8 +6,11 @@ permissions:
   contents: read
   id-token: write
 
-# The leaf workflows serialize themselves, but only against their own kind. This keeps two
-# runs from interleaving layers against the one shared cluster.
+defaults:
+  run:
+    shell: bash
+
+# Serialize the whole stack; leaf workflows only serialize against themselves.
 concurrency:
   group: dev-stack
   cancel-in-progress: false
@@ -64,77 +67,61 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check out the repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install the YAML parser
+        run: pip install ruamel.yaml==0.19.1
+
+      # The dev spec decide-layers.py reads; prod passes its own. Field
+      # definitions are in the script's docstring.
       - name: Decide which layers to run
         id: decide
         env:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
           LABELS: ${{ steps.pr-labels.outputs.labels }}
-          CMD: ${{ inputs.cluster_command }}
-          SUPPORT: ${{ inputs.deploy_support }}
-          NFS: ${{ inputs.deploy_nfs }}
-          NFS_VOLUME: ${{ inputs.deploy_nfs_volume }}
-          HUB: ${{ inputs.deploy_hub }}
-          HUB_ENV: ${{ inputs.hub_environment }}
-        run: |
-          if [[ "$EVENT" == "workflow_dispatch" ]]; then
-            cluster_command="$CMD"
-            deploy_support="$SUPPORT"
-            deploy_nfs="$NFS"
-            deploy_nfs_volume="$NFS_VOLUME"
-            deploy_hub="$HUB"
-            hub_environment="$HUB_ENV"
-          else
-            cluster_command=skip
-            deploy_support=false
-            deploy_nfs=false
-            deploy_nfs_volume=false
-            deploy_hub=false
-
-            if [[ "$REF" == "refs/heads/prod" ]]; then
-              hub_environment=prod
-            else
-              hub_environment=staging
-            fi
-
-            for label in $LABELS; do
-              case "$label" in
-                tofu-dev)       cluster_command=apply ;;
-                support-dev)    deploy_support=true ;;
-                nfs-dev)        deploy_nfs=true ;;
-                nfs-volume-dev) deploy_nfs_volume=true ;;
-                hub-dev)        deploy_hub=true ;;
-              esac
-            done
-
-            # The shared layers deploy from staging only, so a prod merge promotes the
-            # hub and nothing else.
-            if [[ "$REF" == "refs/heads/prod" ]]; then
-              cluster_command=skip
-              deploy_support=false
-              deploy_nfs=false
-              deploy_nfs_volume=false
-            fi
-          fi
-
-          # A destroy leaves nothing for the helm layers to deploy into.
-          if [[ "$cluster_command" == "destroy" ]]; then
-            deploy_support=false
-            deploy_nfs=false
-            deploy_nfs_volume=false
-            deploy_hub=false
-          fi
-
-          {
-            echo "cluster_command=$cluster_command"
-            echo "deploy_support=$deploy_support"
-            echo "deploy_nfs=$deploy_nfs"
-            echo "deploy_nfs_volume=$deploy_nfs_volume"
-            echo "deploy_hub=$deploy_hub"
-            echo "hub_environment=$hub_environment"
-          } >> "$GITHUB_OUTPUT"
-          echo "Cluster: $cluster_command  Support: $deploy_support  NFS: $deploy_nfs" \
-               "NFS volume: $deploy_nfs_volume  Hub: $deploy_hub ($hub_environment)"
+          LAYER_SPEC: |
+            shared_branch: staging
+            environment_output: hub_environment
+            layers:
+              # tofu cluster: apply or skip, and destroy via dispatch.
+              - output: cluster_command
+                label: tofu-dev
+                shared_branch_only: true
+                when_on: apply
+                when_off: skip
+              # support chart.
+              - output: deploy_support
+                label: support-dev
+                shared_branch_only: true
+              # in-cluster NFS server.
+              - output: deploy_nfs
+                label: nfs-dev
+                shared_branch_only: true
+              # NFS home-directory volume/PV layer.
+              - output: deploy_nfs_volume
+                label: nfs-volume-dev
+                shared_branch_only: true
+              # the hub itself: promoted per-branch (staging->staging, prod->prod).
+              - output: deploy_hub
+                label: hub-dev
+                shared_branch_only: false
+          DISPATCH_INPUTS: |
+            cluster_command: "${{ inputs.cluster_command }}"
+            deploy_support: "${{ inputs.deploy_support }}"
+            deploy_nfs: "${{ inputs.deploy_nfs }}"
+            deploy_nfs_volume: "${{ inputs.deploy_nfs_volume }}"
+            deploy_hub: "${{ inputs.deploy_hub }}"
+            hub_environment: "${{ inputs.hub_environment }}"
+        run: python .github/scripts/decide-layers.py
 
   # Each job below runs if no layer before it failed (skipped is fine) and the gate says to.
   cluster:
