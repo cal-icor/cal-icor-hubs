@@ -65,6 +65,15 @@ Merging to `staging` or `prod` triggers `.github/workflows/deploy-hubs.yaml`. Wh
 
 The script `.github/scripts/determine-hub-deployments.py` reads `GITHUB_PR_LABEL_HUB_*` env vars set by the labeler to determine which hubs to deploy.
 
+### Deploy authentication (keyless WIF)
+
+CI authenticates to GKE with keyless Workload Identity Federation — there are **no service-account keys in the repo**. The GitHub OIDC token is exchanged for short-lived credentials that impersonate `prod-deploy@cal-icor-hubs.iam.gserviceaccount.com` (repo vars `PROD_WIF_PROVIDER` / `PROD_DEPLOY_SA`; cluster coords in `PROD_CLUSTER` / `PROD_ZONE` / `PROD_PROJECT`).
+
+- `deploy-hubs.yaml` uses `google-github-actions/auth@v3` to write ADC; hubploy is keyless by default and mints its own GKE kubeconfig from ADC (no gcloud, no key file).
+- `deploy-support.yaml` and `deploy-jupyterhub-home-nfs.yaml` use the `.github/actions/gke-auth` composite (`auth@v3` + `get-gke-credentials@v2`) for raw `helm`; support also does a keyless `oauth2accesstoken` login to the GAR helm registry.
+- Write access is fenced to the `spring-2025` cluster by a `cluster-admin` RBAC ClusterRoleBinding on `prod-deploy@` — project IAM grants only `container.clusterViewer`, since `container.*` roles cannot be IAM-scoped to a single cluster.
+- SOPS is still used to decrypt secrets at deploy time; `prod-deploy@` holds `cloudkms.cryptoKeyDecrypter` on the `jupyterhubs/sops` KMS key.
+
 ### Helm chart structure
 
 ```
@@ -87,13 +96,12 @@ support/                    # Shared cluster services (one per cluster)
 
 ```
 deployments/<hub-name>/
-  hubploy.yaml              # GCP project, cluster, zone, service key path
+  hubploy.yaml              # GCP project, cluster, zone
   config/
     common.yaml             # Hub-specific overrides (auth, image, NFS IP, node pools)
     prod.yaml               # Prod-only overrides (hostname, TLS)
     staging.yaml            # Staging-only overrides
   secrets/
-    gke-key.json            # Encrypted GKE service account key
     prod.yaml               # Encrypted OAuth client secrets
     staging.yaml            # Encrypted OAuth client secrets
 ```
@@ -185,7 +193,7 @@ hubploy --verbose deploy --timeout 30m <deployment-name> hub staging
 hubploy --verbose deploy --timeout 30m <deployment-name> hub prod
 ```
 
-Requires GCP credentials and SOPS key configured locally.
+Requires local Application Default Credentials (`gcloud auth application-default login`) with access to the cluster and the `jupyterhubs/sops` KMS key. hubploy authenticates via ADC.
 
 ## Ignored hubs in CI
 
