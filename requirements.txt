@@ -1,7 +1,7 @@
 attrs==23.1.0
 chardet==5.2.0
 chartpress==2.4.0
-git+https://github.com/berkeley-dsep-infra/hubploy.git
+git+https://github.com/berkeley-dsep-infra/hubploy.git@1.1.0
 kubernetes==35.0.0
 myst-parser==4.0.0
 niquests==3.7.2
