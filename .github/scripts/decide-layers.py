@@ -19,6 +19,11 @@ the spec fields:
   implied_by          force this layer on whenever the named layer is on (the
                       NFS volume follows the NFS server, whose ClusterIP can
                       change under the immutable PV).
+  requires            force this layer off unless the named layer's backend
+                      already exists (BACKENDS_PRESENT) or is being created in
+                      this run.  A layer cannot deploy into a missing cluster.
+                      A requested layer skipped this way is reported as a
+                      GitHub Actions notice annotation.
   environment_output  set to "prod" on refs/heads/prod, else shared_branch.
 
 A "destroy" value forces every plain true/false layer off.  The calling workflow
@@ -39,8 +44,16 @@ _yaml.default_flow_style = False
 # module docstring.
 Layer = namedtuple(
     "Layer",
-    ["output", "label", "shared_branch_only", "when_on", "when_off", "implied_by"],
-    defaults=(False, None, None, None),
+    [
+        "output",
+        "label",
+        "shared_branch_only",
+        "when_on",
+        "when_off",
+        "implied_by",
+        "requires",
+    ],
+    defaults=(False, None, None, None, None),
 )
 
 
@@ -49,14 +62,26 @@ def _load(text: str) -> dict:
     return _yaml.load(text) or {}
 
 
+def _on_value(layer: "Layer") -> str:
+    """The value a layer's output carries when it is on."""
+    return layer.when_on if layer.when_on is not None else "true"
+
+
+def _off_value(layer: "Layer") -> str:
+    """The value a layer's output carries when it is off."""
+    return layer.when_off if layer.when_off is not None else "false"
+
+
 def decide(
     event: str,
     ref: str,
     labels: str,
     spec: dict,
     dispatch_inputs: dict,
-) -> "OrderedDict[str, str]":
-    """Return the output key -> value map for one trigger."""
+    backends_present: "set[str]",
+) -> "tuple[OrderedDict[str, str], list]":
+    """Return the output key -> value map and any layers skipped for a missing
+    backend, as (output, required) pairs, for one trigger."""
     layers = [Layer(**item) for item in spec["layers"]]
     shared_branch = spec["shared_branch"]
     env_output = spec.get("environment_output")
@@ -86,6 +111,25 @@ def decide(
         if layer.implied_by is not None and results.get(layer.implied_by) == "true":
             results[layer.output] = "true"
 
+    # A layer can only deploy into a backend that exists.  Force it off unless
+    # the required layer's backend is already present (BACKENDS_PRESENT) or is
+    # being created in this run (its output sits at its on-value, e.g.
+    # cluster_command == "apply").  Runs after implied_by so a missing backend
+    # overrides an implied-on layer.
+    by_output = {layer.output: layer for layer in layers}
+    suppressed = []
+    for layer in layers:
+        if layer.requires is None:
+            continue
+        required = by_output.get(layer.requires)
+        activating = required is not None and results.get(layer.requires) == _on_value(
+            required
+        )
+        if layer.requires not in backends_present and not activating:
+            if results[layer.output] == _on_value(layer):
+                suppressed.append((layer.output, layer.requires))
+            results[layer.output] = _off_value(layer)
+
     # A destroyed stack has nothing to deploy into.
     destroying = any(
         layer.when_on is not None and results[layer.output] == "destroy"
@@ -96,16 +140,17 @@ def decide(
             if layer.when_on is None:
                 results[layer.output] = "false"
 
-    return results
+    return results, suppressed
 
 
 def main(args: argparse.Namespace) -> None:
-    results = decide(
+    results, suppressed = decide(
         event=os.environ.get("EVENT", ""),
         ref=os.environ.get("REF", ""),
         labels=os.environ.get("LABELS", ""),
         spec=_load(os.environ["LAYER_SPEC"]),
         dispatch_inputs=_load(os.environ.get("DISPATCH_INPUTS", "")),
+        backends_present=set(os.environ.get("BACKENDS_PRESENT", "").split()),
     )
 
     output_path = os.environ.get("GITHUB_OUTPUT")
@@ -115,6 +160,19 @@ def main(args: argparse.Namespace) -> None:
                 fh.write(f"{key}={value}\n")
 
     print("  ".join(f"{key}: {value}" for key, value in results.items()))
+
+    # Tell whoever merged that a requested layer did not deploy, and why.  The
+    # change is committed and applies on the next stand-up of its backend.
+    if suppressed:
+        layers = ", ".join(
+            f"{output} (needs {required})" for output, required in suppressed
+        )
+        print(
+            f"::notice title=Layers not deployed::{layers} skipped: required "
+            "backend is not present. The change is committed and will deploy "
+            "on the next stack stand-up."
+        )
+
     if args.debug:
         _yaml.dump(results, sys.stdout)
 

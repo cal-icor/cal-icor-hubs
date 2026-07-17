@@ -80,6 +80,31 @@ jobs:
       - name: Install the YAML parser
         run: pip install ruamel.yaml==0.19.1
 
+      # Read-only cluster existence check. Bare auth@v3, NOT the gke-auth
+      # composite, whose get-gke-credentials is the call that fails on a
+      # missing cluster. DEV_DEPLOY_SA holds container.clusterViewer.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.DEV_WIF_PROVIDER }}
+          service_account: ${{ vars.DEV_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      # Emit the cluster's layer key when it is RUNNING, else nothing, so the
+      # gate skips layers that would deploy into a cluster that isn't there.
+      - name: Probe cluster existence
+        id: probe
+        run: |
+          if gcloud container clusters describe "${{ vars.DEV_CLUSTER }}" \
+               --zone "${{ vars.DEV_ZONE }}" --project "${{ vars.DEV_PROJECT }}" \
+               --format='value(status)' 2>/dev/null | grep -qx RUNNING; then
+            echo "backends=cluster_command" >> "$GITHUB_OUTPUT"
+          else
+            echo "backends=" >> "$GITHUB_OUTPUT"
+          fi
+
       # The dev spec decide-layers.py reads; prod passes its own. Field
       # definitions are in the script's docstring.
       - name: Decide which layers to run
@@ -88,6 +113,7 @@ jobs:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
           LABELS: ${{ steps.pr-labels.outputs.labels }}
+          BACKENDS_PRESENT: ${{ steps.probe.outputs.backends }}
           LAYER_SPEC: |
             shared_branch: staging
             environment_output: hub_environment
@@ -102,10 +128,12 @@ jobs:
               - output: deploy_support
                 label: support-dev
                 shared_branch_only: true
+                requires: cluster_command
               # in-cluster NFS server.
               - output: deploy_nfs
                 label: nfs-dev
                 shared_branch_only: true
+                requires: cluster_command
               # NFS home-directory volume/PV layer.  Always re-applied when the
               # NFS server deploys: a re-created server can change the ClusterIP,
               # and the PV's spec.nfs is immutable, so it must be recreated.
@@ -113,10 +141,12 @@ jobs:
                 label: nfs-volume-dev
                 shared_branch_only: true
                 implied_by: deploy_nfs
+                requires: cluster_command
               # the hub itself: promoted per-branch (staging->staging, prod->prod).
               - output: deploy_hub
                 label: hub-dev
                 shared_branch_only: false
+                requires: cluster_command
           DISPATCH_INPUTS: |
             cluster_command: "${{ inputs.cluster_command }}"
             deploy_support: "${{ inputs.deploy_support }}"
