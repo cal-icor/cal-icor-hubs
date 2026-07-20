@@ -5,7 +5,7 @@
 # sit on top of ~1.5 GB of GKE system daemons, so 4 GB would be too tight to
 # guarantee the hub schedules.
 #
-# Other deviations from prod, by design for dev:
+# Other deviations from prod for the dev cluster:
 #   - no max_pods_per_node override: prod's 200 is for ~42 hubs; dev has one, so
 #     the 110 cluster default is plenty.
 #   - no cpu_manager_policy / DH-3 sysctls: those tune ingress-nginx under real

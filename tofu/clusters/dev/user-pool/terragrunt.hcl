@@ -4,7 +4,7 @@
 # The only tainted pool: hub.jupyter.org_dedicated=user:NO_SCHEDULE, so only
 # singleuser servers land here. Scales to zero when idle.
 #
-# Deviations from prod, by design for dev:
+# Deviations from prod for the dev cluster:
 #   - machine_type e2-medium (4 GB): one dev user, one small singleuser pod. The
 #     dev hub's mem_guarantee is set small to match; bump this if it OOMs.
 #   - max_nodes 1: one user means at most one user pod, so one node.

@@ -24,6 +24,13 @@ the spec fields:
                       this run.  A layer cannot deploy into a missing cluster.
                       A requested layer skipped this way is reported as a
                       GitHub Actions notice annotation.
+  destroy_label       on push, this label on the merged PR makes the layer emit
+                      "destroy" instead of its on/off value (gated the same as
+                      the layer's own label).  Only meaningful on a when_on
+                      layer whose leaf understands "destroy" (the cluster).  It
+                      is the only path to a teardown: dispatch offers no destroy
+                      choice, so prod can only be torn down through a labelled,
+                      reviewable PR.
   environment_output  set to "prod" on refs/heads/prod, else shared_branch.
 
 A "destroy" value forces every plain true/false layer off.  The calling workflow
@@ -52,8 +59,9 @@ Layer = namedtuple(
         "when_off",
         "implied_by",
         "requires",
+        "destroy_label",
     ],
-    defaults=(False, None, None, None, None),
+    defaults=(None, False, None, None, None, None, None),
 )
 
 
@@ -96,11 +104,18 @@ def decide(
         present = set(labels.split())
         on_shared_branch = ref == f"refs/heads/{shared_branch}"
         for layer in layers:
-            enabled = layer.label in present and (
-                not layer.shared_branch_only or on_shared_branch
-            )
+            gated_on = not layer.shared_branch_only or on_shared_branch
+            enabled = layer.label in present and gated_on
             if layer.when_on is not None:
-                results[layer.output] = layer.when_on if enabled else layer.when_off
+                # A destroy label (same branch gating) overrides apply/skip.
+                if (
+                    layer.destroy_label is not None
+                    and layer.destroy_label in present
+                    and gated_on
+                ):
+                    results[layer.output] = "destroy"
+                else:
+                    results[layer.output] = layer.when_on if enabled else layer.when_off
             else:
                 results[layer.output] = "true" if enabled else "false"
         if env_output:

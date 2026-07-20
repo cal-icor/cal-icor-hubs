@@ -1,0 +1,93 @@
+name: Deploy spring-2025 cluster (tofu)
+# Converges or tears down the spring-2025 tofu units in tofu/clusters/spring-2025.
+#
+# IMPORTANT: spring-2025's control plane was created imperatively with
+# `gcloud container clusters create` (regional), NOT tofu, so there is no
+# cluster/ unit here. `run --all` converges only the network + node pools;
+# a destroy tears down pools+network (still an outage), never the control plane.
+# Because the control plane is never recreated, prod-deploy@'s cluster-admin
+# RBAC binding never drops, so there is no post-apply RBAC reapply.
+#
+# destroy is reachable only via workflow_call with command=destroy, which the
+# orchestrator emits from a merged PR carrying tofu-destroy-spring-2025. This
+# leaf's own dispatch offers no destroy choice.
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: "plan, apply, or destroy"
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "terragrunt run --all command"
+        type: choice
+        options: [apply, plan]
+        default: plan
+
+concurrency:
+  group: spring-2025-cluster-tofu # serialize applies; the GCS backend also locks state
+  cancel-in-progress: false
+
+env:
+  TOFU_VERSION: "1.12.3"
+  TERRAGRUNT_VERSION: "1.1.0"
+  TG_TF_PATH: tofu
+  TG_NON_INTERACTIVE: "true"
+
+jobs:
+  tofu:
+    runs-on: ubuntu-latest
+    environment: prod-infra
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_INFRA_SA }}
+
+      # An apply plans first; a failure here skips the apply below.
+      - name: terragrunt run --all plan
+        if: ${{ inputs.command == 'plan' || inputs.command == 'apply' }}
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+          tg_version: ${{ env.TERRAGRUNT_VERSION }}
+          tg_dir: tofu/clusters/spring-2025
+          tg_command: run --all plan
+          tg_add_approve: "0"
+
+      - name: terragrunt run --all apply
+        if: ${{ inputs.command == 'apply' }}
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+          tg_version: ${{ env.TERRAGRUNT_VERSION }}
+          tg_dir: tofu/clusters/spring-2025
+          tg_command: run --all apply
+          tg_add_approve: "0"
+
+      # Tears down pools+network only (the control plane is gcloud-made). Reached
+      # only through a merged PR labelled tofu-destroy-spring-2025.
+      - name: terragrunt run --all destroy
+        if: ${{ inputs.command == 'destroy' }}
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+          tg_version: ${{ env.TERRAGRUNT_VERSION }}
+          tg_dir: tofu/clusters/spring-2025
+          tg_command: run --all destroy
+          tg_add_approve: "0"

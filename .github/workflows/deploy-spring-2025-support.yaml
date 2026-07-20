@@ -1,0 +1,72 @@
+name: Deploy spring-2025 support helm chart
+# Deploys the support chart (cert-manager, ingress-nginx, prometheus, grafana,
+# statsd) to the spring-2025 cluster via keyless WIF and raw helm.
+
+permissions:
+  contents: read
+  id-token: write  # mint the OIDC token for keyless WIF auth
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: spring-2025-support
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate to the cluster (keyless WIF)
+        id: auth
+        uses: ./.github/actions/gke-auth
+        with:
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_DEPLOY_SA }}
+          cluster_name: ${{ vars.PROD_CLUSTER }}
+          location: ${{ vars.PROD_ZONE }}
+          project_id: ${{ vars.PROD_PROJECT }}
+          token_format: access_token
+
+      - name: Install SOPS
+        uses: ./.github/actions/install-sops
+
+      - name: Log in to the GAR helm registry (keyless)
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: |
+          printf '%s' "$ACCESS_TOKEN" \
+            | helm registry login -u oauth2accesstoken --password-stdin \
+              https://us-central1-docker.pkg.dev
+
+      - name: Deploy support helm chart
+        run: |
+          sops -d -i support/secrets.yaml
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+          helm dep up support
+          helm upgrade \
+            --install --wait --create-namespace \
+            --namespace=support \
+            support support/ \
+            -f support/secrets.yaml
+
+      - name: Confirm the support workloads rolled out
+        run: |
+          set -euo pipefail
+          # Process substitution keeps the loop in this shell, so a failed
+          # rollout trips set -e instead of being swallowed by a pipe subshell.
+          while IFS= read -r res; do
+            kubectl -n support rollout status "$res" --timeout=10m
+          done < <(kubectl -n support get deploy,statefulset,daemonset -o name)
+          kubectl -n support get pods

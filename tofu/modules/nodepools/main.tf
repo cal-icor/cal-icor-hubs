@@ -1,12 +1,7 @@
-# Reusable module for rebuilding a spring-2025 node pool as a PRIVATE pool (nodes
-# get internal IPs only; egress flows through the Cloud NAT in modules/network).
-#
-# The migration is build-alongside: create a new private pool with this module,
-# drain the old public pool onto it, then delete the old pool. So this module
-# only ever CREATES a pool; it never mutates the existing public pools (which are
-# not tofu-managed). Config mirrors the pool being replaced exactly, changed only
-# by two deltas the caller sets: enable_private_nodes = true and a date-stamped
-# name.
+# Reusable module for one private spring-2025 node pool: nodes get internal IPs
+# only, and egress flows through the Cloud NAT in modules/network. Shared config
+# lives in the module defaults; a caller sets only the pool-specific inputs
+# (machine type, sizing, taints, labels).
 
 resource "google_container_node_pool" "pool" {
   name    = var.pool_name
@@ -43,8 +38,7 @@ resource "google_container_node_pool" "pool" {
     max_unavailable = 0
   }
 
-  # The migration delta. Per-pool because the cluster itself is not flipped to
-  # private; each new pool opts in as it is created.
+  # Per-pool: the cluster-level flag is off, so each pool opts into private nodes.
   network_config {
     enable_private_nodes = var.enable_private_nodes
   }
@@ -68,7 +62,7 @@ resource "google_container_node_pool" "pool" {
       var.extra_node_labels,
     )
 
-    # GCE instance labels — the billing/rollup dimension, keyed on hub.
+    # GCE instance labels: the billing/rollup dimension, keyed on hub.
     resource_labels = var.resource_labels
 
     metadata = {

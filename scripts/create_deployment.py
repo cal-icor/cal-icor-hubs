@@ -3,11 +3,14 @@ import argparse
 import re
 import subprocess
 import sys
+from io import StringIO
 from pathlib import Path
 
-import yaml
 from cookiecutter.main import cookiecutter
 from hubploy import helm
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
+from ruamel.yaml.scalarstring import SingleQuotedScalarString
 
 
 def delete_file(filepath: Path):
@@ -79,6 +82,72 @@ def handle_secrets(school_arg: str, env_arg: str):
     delete_file(Path(f"deployments/{school_arg}/secrets/{env_arg}.plain.yaml"))
 
 
+def insert_hub_label(labeler_text: str, hub_name: str) -> str:
+    """
+    Return labeler_text with a `hub: <hub_name>` label inserted into the
+    hub-specific label block in alphabetical order.
+
+    The whole active hub block is rewritten sorted. Commented-out entries
+    (e.g. gpu-demo) and any other trailing comment lines are preserved
+    untouched at the bottom of the block. If the hub already has an active
+    entry, the text is unchanged.
+
+    Args:
+        labeler_text (str): The full contents of .github/labeler.yml.
+        hub_name (str): The name of the hub to add.
+
+    Returns:
+        str: The updated labeler.yml contents.
+
+    Raises:
+        ValueError: If the hub-label block marker cannot be found.
+    """
+    marker = "# add hub-specific labels for deployment changes"
+    if marker not in labeler_text:
+        raise ValueError(f"Could not find hub-label marker '{marker}' in labeler.yml")
+
+    head, _, tail = labeler_text.partition(marker)
+
+    # Split the block into active `hub: <name>` entries and trailing comment
+    # lines (e.g. the commented-out gpu-demo entry), which we preserve verbatim
+    # at the bottom rather than round-tripping through the parser.
+    entry_lines, trailing_lines = [], []
+    for line in tail.splitlines():
+        if not line.strip():
+            continue
+        if line.lstrip().startswith("#"):
+            trailing_lines.append(line)
+        else:
+            entry_lines.append(line)
+
+    yaml = YAML(typ="rt")
+    yaml.preserve_quotes = True
+    yaml.width = 4096
+    yaml.indent(mapping=2, sequence=4, offset=2)
+
+    existing = yaml.load("\n".join(entry_lines)) or {}
+    names = {key.split("hub: ", 1)[1] for key in existing}
+    if hub_name in names:
+        return labeler_text
+    names.add(hub_name)
+
+    # Rebuild the whole active block sorted, so it self-heals to alphabetical
+    # order on every run. Single-quote the key (the `: ` needs it) and the glob
+    # value to match the existing style.
+    block = CommentedMap()
+    for name in sorted(names):
+        block[SingleQuotedScalarString(f"hub: {name}")] = [
+            SingleQuotedScalarString(f"deployments/{name}/**")
+        ]
+    buf = StringIO()
+    yaml.dump(block, buf)
+
+    parts = [head + marker, buf.getvalue().rstrip("\n")]
+    if trailing_lines:
+        parts.append("\n".join(trailing_lines))
+    return "\n".join(parts) + "\n"
+
+
 def create_label(hub_name: str, root_path: str) -> str:
     """
     Create labels for the new hub in the GitHub repository.
@@ -90,13 +159,13 @@ def create_label(hub_name: str, root_path: str) -> str:
         str: The GitHub label created for the new hub.
     """
     labeler_path = Path(root_path) / ".github" / "labeler.yml"
-    hub_label = f"""
-'hub: {hub_name}':
-  - 'deployments/{hub_name}/**'
-""".strip()
-    with labeler_path.open("a") as labeler_file:
-        labeler_file.write(f"\n{hub_label}\n")
-    print(f"Added {hub_name} to the labeler.yml file.")
+    original = labeler_path.read_text()
+    updated = insert_hub_label(original, hub_name)
+    if updated == original:
+        print(f"Label for {hub_name} already present in labeler.yml, skipping.")
+    else:
+        labeler_path.write_text(updated)
+        print(f"Added {hub_name} to the labeler.yml file in alphabetical order.")
 
     # create the github label for the new hub
     github_label = f"hub: {hub_name}"
@@ -592,7 +661,7 @@ def main(args):
     deployment_config = (
         Path(root_path) / "_deploy_configs" / f"{args.institution_name}.yaml"
     )
-    config = yaml.safe_load(deployment_config.read_text())
+    config = YAML(typ="safe").load(deployment_config)
     if not config:
         print(f"Error loading config for {args.institution_name}.")
         exit(1)

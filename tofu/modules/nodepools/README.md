@@ -1,30 +1,21 @@
 # tofu/modules/nodepools: private GKE node pools for spring-2025
 
-A reusable module that creates one **private** node pool on the `spring-2025`
-cluster — nodes get internal IPs only, so their outbound traffic flows through
-the Cloud NAT created by [`modules/network`](../network).
+A reusable module that creates one private node pool on the `spring-2025`
+cluster. Nodes get internal IPs only, so outbound traffic flows through the
+Cloud NAT from [`modules/network`](../network).
 
-## How it fits the migration
+## Per-pool inputs
 
-The public-to-private migration is build-alongside, not in-place:
-
-1. A unit under `tofu/clusters/spring-2025/<role>-pool/` calls this module to create a new
-   private pool next to the existing public one.
-2. The old pool is cordoned and drained onto the new one.
-3. The old (public) pool is deleted once the new one is validated.
-
-So this module only ever **creates** a pool. It never imports or mutates the
-existing public pools, which are not tofu-managed.
-
-Config is meant to mirror the pool being replaced exactly. For a given pool the
-only intended differences from its public predecessor are:
+Each pool is a unit under `tofu/clusters/spring-2025/<role>-pool/` that calls
+this module. Shared config lives in the module defaults; a unit sets only its
+pool-specific values (machine type, sizing, taints, labels) plus:
 
 - `enable_private_nodes = true`
 - a date-stamped `pool_name` (house style `<role>-pool-YYYY-MM-DD`)
 
 `pool_name` is also written as the `hub.jupyter.org/pool-name` node label, which
-is the value helm `nodeSelector`s pin. Read `pool_name_selector` from the outputs
-to get the exact `key=value` to update in the paired helm change before draining.
+helm `nodeSelector`s pin. Read `pool_name_selector` from the outputs for the
+exact `key=value` to set in the paired helm change.
 
 ## Zone pinning
 
@@ -63,10 +54,10 @@ No modules.
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_cluster"></a> [cluster](#input\_cluster) | Name of the GKE cluster this node pool belongs to. | `string` | n/a | yes |
-| <a name="input_cpu_manager_policy"></a> [cpu\_manager\_policy](#input\_cpu\_manager\_policy) | kubelet CPU manager policy: "static" pins whole cores to Guaranteed-QoS integer-CPU pods; null/"none" shares all cores. Set "static" for the core pool to match the pool it replaces. | `string` | `null` | no |
+| <a name="input_cpu_manager_policy"></a> [cpu\_manager\_policy](#input\_cpu\_manager\_policy) | kubelet CPU manager policy: "static" pins whole cores to Guaranteed-QoS integer-CPU pods; null/"none" shares all cores. Set "static" for the core pool. | `string` | `null` | no |
 | <a name="input_disk_size_gb"></a> [disk\_size\_gb](#input\_disk\_size\_gb) | Boot disk size in GB. | `number` | `100` | no |
 | <a name="input_disk_type"></a> [disk\_type](#input\_disk\_type) | Boot disk type. | `string` | `"pd-balanced"` | no |
-| <a name="input_enable_private_nodes"></a> [enable\_private\_nodes](#input\_enable\_private\_nodes) | Whether nodes get internal IPs only (no external IP). True is the point of the migration; egress then flows through the Cloud NAT in modules/network. Set per-pool because the cluster-level flag is off. | `bool` | `true` | no |
+| <a name="input_enable_private_nodes"></a> [enable\_private\_nodes](#input\_enable\_private\_nodes) | Whether nodes get internal IPs only (no external IP); egress then flows through the Cloud NAT in modules/network. Set per-pool because the cluster-level flag is off. | `bool` | `true` | no |
 | <a name="input_extra_node_labels"></a> [extra\_node\_labels](#input\_extra\_node\_labels) | Additional Kubernetes node labels merged in alongside the always-set hub.jupyter.org/pool-name label. | `map(string)` | `{}` | no |
 | <a name="input_image_type"></a> [image\_type](#input\_image\_type) | Node image type. | `string` | `"COS_CONTAINERD"` | no |
 | <a name="input_initial_node_count"></a> [initial\_node\_count](#input\_initial\_node\_count) | Number of nodes created per zone when the pool is first created. The existing pools were created with 1. | `number` | `1` | no |
@@ -93,5 +84,5 @@ No modules.
 | ---- | ----------- |
 | <a name="output_pool_id"></a> [pool\_id](#output\_pool\_id) | Fully qualified GKE node pool ID. |
 | <a name="output_pool_name"></a> [pool\_name](#output\_pool\_name) | Name of the created node pool. |
-| <a name="output_pool_name_selector"></a> [pool\_name\_selector](#output\_pool\_name\_selector) | The node label helm nodeSelectors must pin to schedule onto this pool. Use it when updating the paired helm config before draining the old pool. |
+| <a name="output_pool_name_selector"></a> [pool\_name\_selector](#output\_pool\_name\_selector) | The node label helm nodeSelectors must pin to schedule onto this pool. Use it when updating the paired helm config for this pool. |
 <!-- END_TF_DOCS -->

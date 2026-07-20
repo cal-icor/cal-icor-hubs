@@ -1,17 +1,13 @@
-# Phase 1 (canary) of the public-to-private node migration: the private
-# replacement for the existing public prometheus-pool-2025-12-22.
-#
-# Lowest-risk pool to move first — zero user impact (a metrics gap at worst), but
-# stateful enough (the 1000Gi prometheus-data PD must reattach) to prove the full
-# private path: Cloud NAT egress, Private Google Access, and PD reattachment.
+# Private node pool for prometheus-server. It carries the 1000Gi prometheus-data
+# PD, which is zonal in us-central1-b, so node_locations pins that zone so the
+# stateful pod can reattach its disk.
 #
 # State key derives from this path: "spring-2025/prometheus-pool". The directory
-# is role-named, not date-stamped, so it stays stable across future recreations;
-# the date-stamped pool NAME lives in inputs below.
+# is role-named, not date-stamped, so it stays stable across recreations; the
+# date-stamped pool NAME lives in inputs below.
 #
-# Parity with the live prometheus-pool-2025-12-22 (describe 2026-06-28); the
-# module defaults carry the shared config, so inputs here are only the
-# prometheus-specific values plus the two migration deltas (private + name).
+# The module defaults carry the shared config; inputs here are only the
+# prometheus-specific values.
 
 include "root" {
   path           = find_in_parent_folders("root.hcl")

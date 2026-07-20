@@ -27,7 +27,7 @@
 # highmem node. Which user pods land here vs. the shared student pool is decided
 # entirely by the nodeSelector, so keep those set deliberately per hub.
 #
-# Private + Cloud NAT egress like every other pool post-migration.
+# Private nodes with Cloud NAT egress, like every other pool.
 #
 # State key derives from this path: "spring-2025/workshop-pool". Role-named, not
 # date-stamped, so it stays stable across recreations; the date-stamped pool

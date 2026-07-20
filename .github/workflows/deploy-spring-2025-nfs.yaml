@@ -1,0 +1,58 @@
+name: Deploy spring-2025 jupyterhub-home-nfs chart (helm)
+# Installs the home-directory NFS server on the spring-2025 cluster with raw helm.
+
+permissions:
+  contents: read
+  id-token: write  # mint the OIDC token for keyless WIF auth
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: spring-2025-nfs-helm
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+
+      - name: Authenticate to the cluster (keyless WIF)
+        uses: ./.github/actions/gke-auth
+        with:
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_DEPLOY_SA }}
+          cluster_name: ${{ vars.PROD_CLUSTER }}
+          location: ${{ vars.PROD_ZONE }}
+          project_id: ${{ vars.PROD_PROJECT }}
+
+      - name: Install SOPS
+        uses: ./.github/actions/install-sops
+
+      - name: Decrypt jupyterhub-home-nfs secrets
+        run: sops -d -i jupyterhub-home-nfs/secrets/quota-overrides.yaml
+
+      # No --wait here. The chart pins replicas=1 and maxUnavailable=1, which makes helm's
+      # readiness check pass with zero ready pods. kubectl rollout status is the real gate.
+      - name: Deploy the jupyterhub-home-nfs chart
+        run: |
+          helm dep up jupyterhub-home-nfs
+          helm upgrade \
+            --install --timeout 10m \
+            --create-namespace --namespace=jupyterhub-home-nfs \
+            jupyterhub-home-nfs jupyterhub-home-nfs/ \
+            --values jupyterhub-home-nfs/values.yaml \
+            --values jupyterhub-home-nfs/secrets/quota-overrides.yaml
+
+      - name: Wait for the NFS server to actually roll out
+        run: |
+          kubectl rollout status deployment/home-nfs \
+            -n jupyterhub-home-nfs --timeout=10m
+          kubectl get pods -n jupyterhub-home-nfs

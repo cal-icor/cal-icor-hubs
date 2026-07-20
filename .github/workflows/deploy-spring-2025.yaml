@@ -1,0 +1,187 @@
+name: Deploy spring-2025 cluster stack
+# Single entry point for the prod (spring-2025) cluster.
+# Order of operations:  cluster (tofu) -> support -> nfs -> hub.
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    shell: bash
+
+# Serialize the whole stack; leaf workflows only serialize against themselves.
+concurrency:
+  group: spring-2025-stack
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_command:
+        description: "What to do with the cluster (destroy is PR-label-only)"
+        type: choice
+        options: [skip, plan, apply]
+        default: plan
+      deploy_support:
+        description: "Deploy the support chart afterwards"
+        type: boolean
+        default: false
+      deploy_nfs:
+        description: "Deploy the jupyterhub-home-nfs chart afterwards"
+        type: boolean
+        default: false
+      deploy_hub:
+        description: "Deploy a hub (choose which one below)"
+        type: boolean
+        default: false
+      hub:
+        description: "Which hub to deploy (dispatch only; push uses the label matrix)"
+        type: string
+        default: jupyter
+      hub_environment:
+        description: "Which hub environment to deploy"
+        type: choice
+        options: [staging, prod]
+        default: staging
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      cluster_command: ${{ steps.decide.outputs.cluster_command }}
+      deploy_support: ${{ steps.decide.outputs.deploy_support }}
+      deploy_nfs: ${{ steps.decide.outputs.deploy_nfs }}
+      deploy_hub: ${{ steps.decide.outputs.deploy_hub }}
+      hub_environment: ${{ steps.decide.outputs.hub_environment }}
+    steps:
+      - name: Get PR labels
+        id: pr-labels
+        if: github.event_name == 'push'
+        uses: irby/get-labels-on-push@v1.2.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check out the repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install the YAML parser
+        run: pip install ruamel.yaml==0.19.1
+
+      # Read-only cluster existence check. Bare auth@v3, NOT the gke-auth
+      # composite, whose get-gke-credentials is the call that fails on a
+      # missing cluster. PROD_DEPLOY_SA holds container.clusterViewer.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      # Emit the cluster's layer key when it is RUNNING, else nothing, so the
+      # gate skips layers that would deploy into a cluster that isn't there.
+      # spring-2025 is REGIONAL, so this is --location, not dev's --zone.
+      - name: Probe cluster existence
+        id: probe
+        run: |
+          if gcloud container clusters describe "${{ vars.PROD_CLUSTER }}" \
+               --location "${{ vars.PROD_ZONE }}" --project "${{ vars.PROD_PROJECT }}" \
+               --format='value(status)' 2>/dev/null | grep -qx RUNNING; then
+            echo "backends=cluster_command" >> "$GITHUB_OUTPUT"
+          else
+            echo "backends=" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The prod spec decide-layers.py reads. Field definitions are in the
+      # script's docstring.
+      - name: Decide which layers to run
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          LABELS: ${{ steps.pr-labels.outputs.labels }}
+          BACKENDS_PRESENT: ${{ steps.probe.outputs.backends }}
+          LAYER_SPEC: |
+            shared_branch: staging
+            environment_output: hub_environment
+            layers:
+              # tofu cluster: apply or skip on push; destroy only via a merged PR
+              # carrying tofu-destroy-spring-2025 (no dispatch/push destroy path).
+              # Converges pools+network only -- the control plane is gcloud-made.
+              - output: cluster_command
+                label: tofu-spring-2025
+                destroy_label: tofu-destroy-spring-2025
+                shared_branch_only: true
+                when_on: apply
+                when_off: skip
+              # support chart.
+              - output: deploy_support
+                label: support-deployment
+                shared_branch_only: true
+                requires: cluster_command
+              # in-cluster NFS server.
+              - output: deploy_nfs
+                label: jupyterhub-home-nfs-deployment
+                shared_branch_only: true
+                requires: cluster_command
+              # the hubs. On dispatch a single hub is chosen via the `hub` input
+              # (passed straight to the leaf). No push label yet: the label
+              # matrix is wired when the push: trigger is turned on.
+              - output: deploy_hub
+                shared_branch_only: false
+                requires: cluster_command
+          DISPATCH_INPUTS: |
+            cluster_command: "${{ inputs.cluster_command }}"
+            deploy_support: "${{ inputs.deploy_support }}"
+            deploy_nfs: "${{ inputs.deploy_nfs }}"
+            deploy_hub: "${{ inputs.deploy_hub }}"
+            hub_environment: "${{ inputs.hub_environment }}"
+        run: python .github/scripts/decide-layers.py
+
+  # Each job below runs if no layer before it failed (skipped is fine) and the gate says to.
+  cluster:
+    needs: gate
+    if: ${{ needs.gate.outputs.cluster_command != 'skip' }}
+    uses: ./.github/workflows/deploy-spring-2025-cluster.yaml
+    with:
+      command: ${{ needs.gate.outputs.cluster_command }}
+    permissions:
+      contents: read
+      id-token: write
+
+  support:
+    needs: [gate, cluster]
+    if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_support == 'true' }}
+    uses: ./.github/workflows/deploy-spring-2025-support.yaml
+    permissions:
+      contents: read
+      id-token: write
+
+  nfs:
+    needs: [gate, cluster, support]
+    if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_nfs == 'true' }}
+    uses: ./.github/workflows/deploy-spring-2025-nfs.yaml
+    permissions:
+      contents: read
+      id-token: write
+
+  hub:
+    needs: [gate, cluster, support, nfs]
+    if: ${{ !cancelled() && !failure() && needs.gate.outputs.deploy_hub == 'true' }}
+    uses: ./.github/workflows/deploy-spring-2025-hub.yaml
+    with:
+      environment: ${{ needs.gate.outputs.hub_environment }}
+      hub: ${{ inputs.hub }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read

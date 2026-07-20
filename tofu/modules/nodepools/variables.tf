@@ -29,7 +29,7 @@ variable "node_locations" {
 variable "enable_private_nodes" {
   type        = bool
   default     = true
-  description = "Whether nodes get internal IPs only (no external IP). True is the point of the migration; egress then flows through the Cloud NAT in modules/network. Set per-pool because the cluster-level flag is off."
+  description = "Whether nodes get internal IPs only (no external IP); egress then flows through the Cloud NAT in modules/network. Set per-pool because the cluster-level flag is off."
 }
 
 variable "machine_type" {
@@ -142,15 +142,12 @@ variable "insecure_kubelet_readonly_port_enabled" {
 }
 
 variable "cpu_manager_policy" {
-  # Null (the default) omits the field, leaving the GKE default of "none" — that
-  # matches prometheus-pool. The core pool was created with "static", so its
-  # replacement unit sets it explicitly to preserve 1:1 parity. The setting is
-  # immutable on a live pool, so it must be chosen at creation; today it is a
-  # no-op on core (no Guaranteed-QoS integer-CPU pods land there) but is kept to
-  # avoid any behavioral change during the migration.
+  # Null (the default) omits the field, leaving the GKE default of "none", which
+  # the prometheus/support/user pools use. The core pool sets "static"; it is
+  # immutable on a live pool, so it is chosen at creation.
   type        = string
   default     = null
-  description = "kubelet CPU manager policy: \"static\" pins whole cores to Guaranteed-QoS integer-CPU pods; null/\"none\" shares all cores. Set \"static\" for the core pool to match the pool it replaces."
+  description = "kubelet CPU manager policy: \"static\" pins whole cores to Guaranteed-QoS integer-CPU pods; null/\"none\" shares all cores. Set \"static\" for the core pool."
 
   validation {
     condition     = var.cpu_manager_policy == null ? true : contains(["static", "none"], var.cpu_manager_policy)
@@ -159,8 +156,8 @@ variable "cpu_manager_policy" {
 }
 
 variable "linux_node_sysctls" {
-  # An empty map (the default) omits linux_node_config entirely, leaving GKE
-  # node defaults — that matches prometheus-pool. The core pool carries the DH-3
+  # An empty map (the default) omits linux_node_config entirely, leaving GKE node
+  # defaults, which every pool but core uses. The core pool carries the DH-3
   # TCP/IP stack tuning (net.core.* / net.ipv4.tcp_*), set inline in its unit.
   type        = map(string)
   default     = {}

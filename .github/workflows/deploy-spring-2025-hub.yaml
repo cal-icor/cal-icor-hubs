@@ -1,0 +1,136 @@
+name: Deploy spring-2025 hubs (hubploy)
+# Deploys hubs to the spring-2025 cluster with keyless hubploy (ADC, no key).
+# A lightweight determine job resolves the hub list and outputs it as a JSON
+# array; the deploy job fans out one runner per hub with fail-fast disabled.
+#
+# When `hub` is set (dispatch) exactly that hub deploys; otherwise the list is
+# resolved from the merge commit's labels via determine-hub-deployments.py.
+
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: write  # mint the OIDC token for keyless WIF auth
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "staging or prod"
+        type: string
+        required: true
+      hub:
+        description: "A single hub to deploy; empty resolves the list from labels"
+        type: string
+        default: ""
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "staging or prod"
+        type: choice
+        options: [staging, prod]
+        default: staging
+      hub:
+        description: "A single hub to deploy; empty resolves the list from labels"
+        type: string
+        default: ""
+
+concurrency:
+  group: spring-2025-hub-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  determine-hubs:
+    runs-on: ubuntu-latest
+    outputs:
+      hubs: ${{ steps.set-hubs.outputs.hubs }}
+    steps:
+      - name: Get PR labels
+        id: pr-labels
+        if: github.event_name == 'push' && inputs.hub == ''
+        uses: irby/get-labels-on-push@v1.2.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check out the repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Determine hubs to deploy
+        id: set-hubs
+        run: |
+          if [[ -n "${{ inputs.hub }}" ]]; then
+            echo "hubs=[\"${{ inputs.hub }}\"]" >> "$GITHUB_OUTPUT"
+          else
+            # `dev` is the dev CLUSTER's hub and must never deploy here. The script
+            # reads the GITHUB_PR_LABEL_HUB_* env vars set from the merge commit's
+            # labels; both the all-hubs labels and a per-hub label land on prod.
+            hubs=$(python .github/scripts/determine-hub-deployments.py \
+                     --ignore gpu-demo rstudio dev \
+                   | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            echo "hubs=${hubs}" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: determine-hubs
+    if: needs.determine-hubs.outputs.hubs != '[]'
+    strategy:
+      matrix:
+        hub: ${{ fromJson(needs.determine-hubs.outputs.hubs) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install SOPS
+        uses: ./.github/actions/install-sops
+
+      # gke-auth (auth@v3 + get-gke-credentials) writes ADC for hubploy AND a
+      # kubeconfig, so the confirm step below can run kubectl. hubploy still
+      # mints its own kubeconfig; the extra context does not interfere.
+      - name: Authenticate to the cluster (keyless WIF)
+        uses: ./.github/actions/gke-auth
+        with:
+          workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
+          service_account: ${{ vars.PROD_DEPLOY_SA }}
+          cluster_name: ${{ vars.PROD_CLUSTER }}
+          location: ${{ vars.PROD_ZONE }}
+          project_id: ${{ vars.PROD_PROJECT }}
+
+      - name: Deploy ${{ matrix.hub }} to ${{ inputs.environment }}
+        run: |
+          echo "Deploying ${{ matrix.hub }} to ${{ inputs.environment }}"
+          hubploy --verbose deploy --timeout 30m "${{ matrix.hub }}" hub "${{ inputs.environment }}"
+
+      - name: Confirm the ${{ matrix.hub }} pods rolled out
+        run: |
+          set -euo pipefail
+          ns="${{ matrix.hub }}-${{ inputs.environment }}"
+          # Process substitution keeps the loop in this shell, so a failed
+          # rollout trips set -e instead of being swallowed by a pipe subshell.
+          while IFS= read -r res; do
+            kubectl -n "$ns" rollout status "$res" --timeout=10m
+          done < <(kubectl -n "$ns" get deploy,statefulset,daemonset -o name)
+          kubectl -n "$ns" get pods

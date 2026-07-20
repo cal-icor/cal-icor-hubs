@@ -1,33 +1,26 @@
 # tofu/network: Cloud Router + NAT for spring-2025
 
-This root module creates the **outbound** egress path that private nodes need:
-a Cloud Router, a Cloud NAT gateway, and a reserved static egress IP.
+Creates the outbound egress path for the cluster's private nodes: a Cloud
+Router, a Cloud NAT gateway, and a reserved static egress IP.
 
-## What this does and does not touch
+## What it creates and does not touch
 
 - Creates: `spring-2025-nat-router`, `spring-2025-nat`, and the reserved egress
   IP `spring-2025-nat-egress`.
-- Does **not** touch the inbound ingress IP `34.56.76.244`
+- Does not touch the inbound ingress IP `34.56.76.244`
   (`wildcard-dns-target-spring-2025`), the ingress-nginx LoadBalancer, the
   `support/values.yaml` `loadBalancerIP`, or the Infoblox wildcard DNS. Those
   are inbound and independent of NAT.
-- Additive only: nodes are still public until later phases. Creating NAT now is
-  safe and changes nothing about existing traffic.
 
 ## IAP SSH firewall rule
 
-`firewall.tf` adds `spring-2025-allow-iap-ssh`: an INGRESS rule permitting
-Google's IAP TCP forwarding range (`35.235.240.0/20`) to reach tcp:22 on cluster
-nodes (target tag `hub-cluster`).
-
-This is **additive and changes nothing while nodes are public** — direct
-`gcloud compute ssh` over a node's external IP keeps working via the existing
-broad `allow-ssh` rule. The IAP rule matters once a pool goes private: a private
-node has no external IP, so SSH must tunnel through IAP
-(`gcloud compute ssh <node> --zone=us-central1-b --tunnel-through-iap`, plus
-`roles/iap.tunnelResourceAccessor`). Scoping the rule to the IAP range and the
-node tag also lets the broad `allow-ssh` rule be narrowed or removed later in the
-access lock-down without losing operator SSH.
+`firewall.tf` adds `spring-2025-allow-iap-ssh`: an INGRESS rule letting Google's
+IAP TCP forwarding range (`35.235.240.0/20`) reach tcp:22 on cluster nodes
+(target tag `hub-cluster`). Private nodes have no external IP, so SSH tunnels
+through IAP: `gcloud compute ssh <node> --zone=us-central1-b --tunnel-through-iap`
+(plus `roles/iap.tunnelResourceAccessor`). Scoping the rule to the IAP range and
+the node tag keeps access control at the IAP layer rather than firewall
+source-IP edits.
 
 ## NAT egress IP
 
@@ -60,19 +53,16 @@ backend and provider via Terragrunt (`export TG_TF_PATH=tofu` first, see the top
 ```sh
 cd tofu/clusters/spring-2025/network
 terragrunt init      # wires the gcs backend, downloads the google provider
-terragrunt plan      # first apply expected: 3 to add, 0 to change, 0 to destroy
+terragrunt plan
 terragrunt apply     # creates router + NAT + egress IP (requires approval)
 terragrunt output nat_egress_ip
 ```
 
-## Rollback
+## Do not destroy
 
-The private-node migration is complete, so the NAT is now load-bearing: every
-pool runs private nodes whose only path to the public internet is this gateway.
-Destroying it would break image pulls from non-Google registries and all student
-notebook egress. Do not `terragrunt destroy` this unit unless the cluster is
-first moved back to public nodes. During the original Phase A (nodes still
-public) removal was harmless; that is no longer the case.
+Every pool runs private nodes whose only path to the non-Google internet is this
+gateway. Destroying it breaks image pulls from non-Google registries and all
+student notebook egress.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
