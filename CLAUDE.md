@@ -32,7 +32,7 @@ pre-commit run ruff --all-files
 pre-commit run yamllint --all-files
 ```
 
-Hooks enforce: yamllint, ruff (Python linting + formatting), pyupgrade, isort, black, flake8, sops-encryption (blocks unencrypted secrets), codespell, end-of-file-fixer.
+Hooks enforce: yamllint, ruff (Python linting + formatting), pyupgrade, isort, black, flake8, sops-encryption (blocks unencrypted secrets), codespell, end-of-file-fixer, requirements-txt-fixer, check-case-conflict, check-executables-have-shebangs. The tofu hooks (`tofu_fmt`, `terragrunt_fmt`, `terragrunt_hcl_validate`, `terraform-docs-go`) run locally only — they sit under `ci.skip` in `.pre-commit-config.yaml`, so pre-commit.ci does not run them.
 
 ## GitHub Actions Conventions
 
@@ -43,7 +43,7 @@ Hooks enforce: yamllint, ruff (Python linting + formatting), pyupgrade, isort, b
 
 ## Secrets: SOPS encryption
 
-All files matching `deployments/*/secrets/*` and `support/secrets.yaml` **must be encrypted** with SOPS before committing. The pre-commit hook will block unencrypted secrets. Encryption uses GCP KMS key `projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops`.
+All files matching `deployments/*/secrets/*`, `support/secrets.yaml`, and `jupyterhub-home-nfs/secrets/*` **must be encrypted** with SOPS before committing. The pre-commit hook will block unencrypted secrets. Staging/prod secrets encrypt under GCP KMS key `projects/cal-icor-hubs/locations/global/keyRings/jupyterhubs/cryptoKeys/sops`. The dev cluster uses a separate `sops-dev` key for `deployments/dev/secrets/*` and `dev/secrets.yaml`, so dev CI can only decrypt dev secrets (see `.sops.yaml`, which matches the first rule in order).
 
 ```bash
 # Encrypt a plain secrets file
@@ -73,6 +73,37 @@ CI authenticates to GKE with keyless Workload Identity Federation — there are 
 - `deploy-support.yaml` and `deploy-jupyterhub-home-nfs.yaml` use the `.github/actions/gke-auth` composite (`auth@v3` + `get-gke-credentials@v2`) for raw `helm`; support also does a keyless `oauth2accesstoken` login to the GAR helm registry.
 - Write access is fenced to the `spring-2025` cluster by a `cluster-admin` RBAC ClusterRoleBinding on `prod-deploy@` — project IAM grants only `container.clusterViewer`, since `container.*` roles cannot be IAM-scoped to a single cluster.
 - SOPS is still used to decrypt secrets at deploy time; `prod-deploy@` holds `cloudkms.cryptoKeyDecrypter` on the `jupyterhubs/sops` KMS key.
+- The tofu cluster deploy (`deploy-spring-2025-cluster.yaml`) authenticates as a separate identity, `prod-infra@cal-icor-hubs.iam.gserviceaccount.com` (repo var `PROD_INFRA_SA`; project roles mirror `dev-infra@`). WIF grants impersonation to the whole repo; access is fenced to `staging` by the `prod-infra` GitHub environment, not by the WIF subject.
+
+#### One-time WIF setup (run once, needs an IAM admin)
+
+The pool, provider, and identity bindings below are created once. The `attribute-condition` locks the pool to the `cal-icor` org and each `principalSet` binding to this one repo, so no other repo can federate in. The provider resource name used in workflows is `projects/1045396016572/locations/global/workloadIdentityPools/github/providers/github`. The `roles/viewer` grant is a repo-wide read-only binding (originally the deleted tofu-ci plan job's identity), separate from the deploy identities.
+
+```bash
+gcloud services enable sts.googleapis.com iamcredentials.googleapis.com --project=cal-icor-hubs
+
+gcloud iam workload-identity-pools create github \
+  --project=cal-icor-hubs --location=global --display-name="GitHub Actions"
+
+gcloud iam workload-identity-pools providers create-oidc github \
+  --project=cal-icor-hubs --location=global --workload-identity-pool=github \
+  --display-name="GitHub OIDC" \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
+  --attribute-condition="assertion.repository_owner == 'cal-icor'"
+
+# Read-only, scoped to this repo's federated identity.
+gcloud projects add-iam-policy-binding cal-icor-hubs \
+  --role="roles/viewer" \
+  --member="principalSet://iam.googleapis.com/projects/1045396016572/locations/global/workloadIdentityPools/github/attribute.repository/cal-icor/cal-icor-hubs"
+
+# Deploy identity for tofu; access is fenced to staging by the prod-infra GitHub environment.
+gcloud iam service-accounts add-iam-policy-binding \
+  prod-infra@cal-icor-hubs.iam.gserviceaccount.com \
+  --project=cal-icor-hubs \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/1045396016572/locations/global/workloadIdentityPools/github/attribute.repository/cal-icor/cal-icor-hubs"
+```
 
 ### Helm chart structure
 
@@ -86,6 +117,7 @@ hub/                        # Wrapper chart (depends on jupyterhub helm chart)
     nfs-pvc.yaml            # NFS PersistentVolumeClaim for user home dirs
     home-dirsize-reporter.yaml
     configmap-hub-templates.yaml  # Hub UI template syncing from git
+    git-config.yaml         # System-wide gitconfig + GitHub App key Secret (etcGitConfig.enabled)
 
 support/                    # Shared cluster services (one per cluster)
   values.yaml               # cert-manager, ingress-nginx, prometheus, grafana, statsd
@@ -197,4 +229,4 @@ Requires local Application Default Credentials (`gcloud auth application-default
 
 ## Ignored hubs in CI
 
-`demo`, `gpu-demo`, `rstudio`, and `sage` are excluded from automatic CI deploys (passed as `--ignore` to `determine-hub-deployments.py`).
+`deploy-hubs.yaml` passes `--ignore gpu-demo rstudio dev` to `determine-hub-deployments.py`, which also ignores `template` by default. So `gpu-demo`, `rstudio`, `dev`, and `template` are excluded from automatic CI deploys; every other directory under `deployments/` (including `demo` and `sage`) deploys on an all-hubs trigger.

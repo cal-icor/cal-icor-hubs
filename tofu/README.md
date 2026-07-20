@@ -63,33 +63,9 @@ pre-commit.ci does not run them on PRs. pre-commit.ci runs the remaining hooks.
 `plan`, `apply`, and `destroy` run through
 `.github/workflows/deploy-spring-2025-cluster.yaml` (`workflow_dispatch` or
 `workflow_call`), which drives `terragrunt run --all` over the
-`clusters/spring-2025` units.
-
-One-time GCP setup (run once, needs an IAM admin):
-
-```bash
-gcloud services enable sts.googleapis.com iamcredentials.googleapis.com --project=cal-icor-hubs
-
-gcloud iam workload-identity-pools create github \
-  --project=cal-icor-hubs --location=global --display-name="GitHub Actions"
-
-gcloud iam workload-identity-pools providers create-oidc github \
-  --project=cal-icor-hubs --location=global --workload-identity-pool=github \
-  --display-name="GitHub OIDC" \
-  --issuer-uri="https://token.actions.githubusercontent.com" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
-  --attribute-condition="assertion.repository_owner == 'cal-icor'"
-
-# Read-only, scoped to this repo's federated identity.
-gcloud projects add-iam-policy-binding cal-icor-hubs \
-  --role="roles/viewer" \
-  --member="principalSet://iam.googleapis.com/projects/1045396016572/locations/global/workloadIdentityPools/github/attribute.repository/cal-icor/cal-icor-hubs"
-```
-
-The `attribute-condition` locks the pool to the `cal-icor` org and the
-`principalSet` binding to this one repo, so no other repo can use it. The provider
-resource name in the workflow is
-`projects/1045396016572/locations/global/workloadIdentityPools/github/providers/github`.
+`clusters/spring-2025` units. It authenticates as `prod-infra@` via keyless
+Workload Identity Federation; the WIF stack and one-time GCP setup are documented
+in the repo-root `CLAUDE.md` deploy-auth section.
 
 ## Cluster spec
 
