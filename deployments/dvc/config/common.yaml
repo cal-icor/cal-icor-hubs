@@ -29,6 +29,8 @@ jupyterhub:
       JupyterHub:
         authenticator_class: cilogon
       CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
         allowed_idps:
           http://login.microsoftonline.com/common/oauth2/v2.0/authorize:
             default: true

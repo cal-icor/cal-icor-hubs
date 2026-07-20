@@ -30,6 +30,8 @@ jupyterhub:
       JupyterHub:
         authenticator_class: cilogon
       CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
         allowed_idps:
           https://login.sonoma.edu/shibboleth:
             default: true

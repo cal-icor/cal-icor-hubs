@@ -34,6 +34,7 @@ jupyterhub:
         authenticator_class: {{cookiecutter.authenticator_class}}
       {{cookiecutter.authenticator_class_instance}}:
         {%- if cookiecutter.authenticator_class == "cilogon" %}
+        refresh_pre_spawn: false
         allowed_idps:
           {{cookiecutter.idp_url}}:
             default: true
