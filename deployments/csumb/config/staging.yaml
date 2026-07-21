@@ -5,6 +5,15 @@ nfsPVC:
     enabled: false
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, Monterey Bay
+          logo_url: https://csumb.edu/media/csumb/site-assets-2024/images/logo.svg
+          url: https://www.csumb.edu/
   # singleuser:
   #   image:
   #     name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
@@ -25,5 +34,32 @@ jupyterhub:
           - csumb-staging.jupyter.cal-icor.org
   hub:
     config:
-      CILogonOAuthenticator:
-        oauth_callback_url: https://csumb-staging.jupyter.cal-icor.org/hub/oauth_callback
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - aunfried@csumb.edu
+          - clogan@csumb.edu
+          - ducampbell@csumb.edu
+          - etang@csumb.edu
+          - hglanz@csumb.edu
+          - hswift@csumb.edu
+          - javmata@csumb.edu
+          - jcanner@csumb.edu
+          - jguilinger@csumb.edu
+          - jmccall@csumb.edu
+          - njue@csumb.edu
+          - pshereen@csumb.edu
+          - sajorgensen@csumb.edu
+          - shereynolds@csumb.edu
+          - sogden@csumb.edu
+          - stkim@csumb.edu

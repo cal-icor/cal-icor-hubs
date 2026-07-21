@@ -4,16 +4,6 @@ nfsPVC:
     serverIP: 34.118.238.48
 
 jupyterhub:
-  custom:
-    homepage:
-      # gitRepoBranch: "username-and-password-homepage"
-      gitRepoBranch: "main"
-      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
-      templateVars:
-        org:
-          name: California State University, Los Angeles
-          logo_url: https://news.calstatela.edu/wp-content/uploads/2025/05/placeholder.jpg
-          url: https://www.calstatela.edu/
   scheduling:
     userScheduler:
       nodeSelector:
@@ -26,35 +16,6 @@ jupyterhub:
   hub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool-2026-06-30
-    config:
-      JupyterHub:
-        authenticator_class: cilogon
-      CILogonOAuthenticator:
-        # temporarily disable token refresh to fix admin access to singleuser servers
-        refresh_pre_spawn: false
-        allowed_idps:
-          https://idpp.calstatela.edu/idp:
-            default: true
-            username_derivation:
-              username_claim: "email"
-            allow_all: true
-          https://idp.csudh.edu/idp/shibboleth:
-            default: true
-            username_derivation:
-              username_claim: "email"
-            allow_all: true
-          http://google.com/accounts/o8/id:
-            username_derivation:
-              username_claim: "email"
-      Authenticator:
-        manage_groups: false
-        admin_users:
-          # infrastructure
-          - jedwin321@berkeley.edu
-          - ericvd@berkeley.edu
-          - sean.smorris@berkeley.edu
-          - sknapp@berkeley.edu
-          - json2@calstatela.edu
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image

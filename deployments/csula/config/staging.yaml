@@ -5,6 +5,15 @@ nfsPVC:
     enabled: false
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, Los Angeles
+          logo_url: https://news.calstatela.edu/wp-content/uploads/2025/05/placeholder.jpg
+          url: https://www.calstatela.edu/
   scheduling:
     userScheduler:
       replicas: 1
@@ -21,5 +30,17 @@ jupyterhub:
           - csula-staging.jupyter.cal-icor.org
   hub:
     config:
-      CILogonOAuthenticator:
-        oauth_callback_url: https://csula-staging.jupyter.cal-icor.org/hub/oauth_callback
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - json2@calstatela.edu

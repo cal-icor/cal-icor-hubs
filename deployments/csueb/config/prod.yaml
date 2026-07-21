@@ -3,6 +3,15 @@ nfsPVC:
     shareName: csueb/prod
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, East Bay
+          logo_url: https://www.csueastbay.edu/_global/images/footer/new-csueb-logo/vp2-logo.png
+          url: https://www.csueastbay.edu/
   ingress:
     enabled: true
     hosts:
@@ -17,8 +26,31 @@ jupyterhub:
         # This also holds logs
         storage: 4Gi
     config:
+      JupyterHub:
+        authenticator_class: cilogon
       CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        allowed_idps:
+          https://vince.csueastbay.edu/idp/shibboleth:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allow_all: true
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
         oauth_callback_url: https://csueb.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - mary.combs@csueastbay.edu
+          - mikahl.banwarthkuhn@csueastbay.edu
     loadRoles:
       cloudbank-pilot-hub-users:
         services:

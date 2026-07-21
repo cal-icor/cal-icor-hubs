@@ -3,6 +3,15 @@ nfsPVC:
     shareName: dvc/prod
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Diablo Valley College
+          logo_url: https://www.dvcinquirer.com/wp-content/uploads/2022/03/dvc-logo-sidebar.png
+          url: https://www.dvc.edu/
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
@@ -21,8 +30,39 @@ jupyterhub:
         # This also holds logs
         storage: 4Gi
     config:
+      JupyterHub:
+        authenticator_class: cilogon
       CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        allowed_idps:
+          http://login.microsoftonline.com/common/oauth2/v2.0/authorize:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allowed_domains:
+              - dvc.edu
+              - 4cd.edu
+              - email.4cd.edu
+              - insite.4cd.edu
+              - losmedanos.edu
+              - contracosta.edu
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
+            allowed_domains:
+              - dvc.edu
         oauth_callback_url: https://dvc.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          - jedwin321@berkeley.edu
+          - sknapp@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - namato@dvc.edu
+          - llo@dvc.edu
+          - jazlin.dvc@gmail.com
     loadRoles:
       cloudbank-pilot-hub-users:
         services:

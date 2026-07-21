@@ -26,39 +26,20 @@ All user images are located in their own repositories located in the
 find them either by [searching there](https://github.com/orgs/cal-icor/repositories?language=&q=image&sort=&type=all)
 or from links in the deployment's `image/README.md`.
 
-We currently only use one single-user server image,
-[calicor/base](https://github.com/cal-icor/base-user-image). This will likely
-change in the future as we add more images to support different environments.
+We currently use three single-user server images, but
+[calicor/base-user-image](https://github.com/cal-icor/base-user-image) and
+[calicor/csumb-user-image](https://github.com/cal-icor/csumb-user-image) are
+live for students/instructors. These images are very similar, but the latter
+has additional conda environments for specific classes.
+
+The third user image is for workshops,
+[calicor/workshop-user-image](https://github.com/cal-icor/workshop-user-image).
+This is for workshops, and has a bunch of AI packages installed.
 
 ## Branches
 
 The `staging` branch always reflects the state of the [staging JupyterHub](https://staging.jupyter.cal-icor.org),
 and the `prod` branch reflects the state of the [production JupyterHub](https://jupyter.cal-icor.org).
-
-## Installing the required python packages for working with this repo
-
-In the root directory of this repo, install `dev-requirements.txt` with the
-following command:  `pip install -r dev-requirements.txt`.  This will install
-the base python packages that are required to perform the tasks associated with
-editing, testing, building and deploying hubs.
-
-The other python package definition file, `requirements.txt` is used solely by
-our Github Actions CI/CD pipeline.
-
-## Pre-Commit hooks: Installing
-
-The previous step, `pip install -r dev-requirements.txt`, installs the package
-[`pre-commit`](https://pre-commit.com/). This is used to run a series of
-commands defined in the file [`.pre-commit-config.yaml`](https://github.com/cal-icor/cal-icor-hubs/blob/staging/.pre-commit-config.yaml)
-to help ensure no mistakes are committed to the repo.
-
-After you've installed `dev-requirements.txt`, execute the following two
-commands:
-
-``` bash
-pre-commit install
-pre-commit run --all-files
-```
 
 ## Setting up your fork and clones
 
@@ -102,6 +83,59 @@ git checkout staging && \
 git fetch --prune --all && \
 git rebase upstream/staging && \
 git push origin staging
+```
+
+## Installing the required python packages for working with this repo
+
+In the root directory of this repo, install `dev-requirements.txt` with the
+following command:  `pip install -r dev-requirements.txt`.  This will install
+the base python packages that are required to perform the tasks associated with
+editing, testing, building and deploying hubs.
+
+The other python package definition file, `requirements.txt` is used solely by
+our Github Actions CI/CD pipeline.
+
+## Installing other software packages required to deploy infrastructure
+
+Our GKE infrastructure is managed with [OpenTofu](https://opentofu.org/) and
+orchestrated by [Terragrunt](https://terragrunt.gruntwork.io/).
+
+### Installing OpenTofu
+
+For macOS:
+
+``` bash
+brew update
+brew install opentofu
+```
+
+For Debian/Ubuntu flavors of linux:
+
+``` bash
+curl --proto '=https' --tlsv1.2 -fsSL https://get.opentofu.org/install-opentofu.sh | bash
+```
+
+### Installing Terragrunt
+
+For macOS, Linux:
+
+``` bash
+curl -sSfL --proto '=https' --tlsv1.2 https://terragrunt.com/install | bash
+```
+
+## Pre-Commit hooks: Installing
+
+The previous step, `pip install -r dev-requirements.txt`, installs the package
+[`pre-commit`](https://pre-commit.com/). This is used to run a series of
+commands defined in the file [`.pre-commit-config.yaml`](https://github.com/cal-icor/cal-icor-hubs/blob/staging/.pre-commit-config.yaml)
+to help ensure no mistakes are committed to the repo.
+
+After you've installed `dev-requirements.txt`, execute the following two
+commands:
+
+``` bash
+pre-commit install
+pre-commit run --all-files
 ```
 
 ## Procedure

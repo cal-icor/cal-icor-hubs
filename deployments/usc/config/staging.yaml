@@ -5,6 +5,15 @@ nfsPVC:
     enabled: false
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: University of Southern California
+          logo_url: https://identity.usc.edu/wp-content/uploads/2023/05/IdentitySite_MarksLogotypes_Card_606x330.png
+          url: https://usc.edu/
   scheduling:
     userScheduler:
       replicas: 1
@@ -21,5 +30,18 @@ jupyterhub:
           - usc-staging.jupyter.cal-icor.org
   hub:
     config:
-      CILogonOAuthenticator:
-        oauth_callback_url: https://usc-staging.jupyter.cal-icor.org/hub/oauth_callback
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - kristof@usc.edu
+          - kwalther@usc.edu

@@ -5,6 +5,15 @@ nfsPVC:
     enabled: false
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Fresno City College
+          logo_url: https://www.fresnocitycollege.edu/_files/images/headerlogo.png
+          url: https://www.fresnocitycollege.edu/
   scheduling:
     userScheduler:
       replicas: 1
@@ -21,5 +30,17 @@ jupyterhub:
           - fresno-staging.jupyter.cal-icor.org
   hub:
     config:
-      CILogonOAuthenticator:
-        oauth_callback_url: https://fresno-staging.jupyter.cal-icor.org/hub/oauth_callback
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - joellen.green@fresnocitycollege.edu

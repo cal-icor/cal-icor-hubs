@@ -4,16 +4,6 @@ nfsPVC:
     serverIP: 34.118.238.48
 
 jupyterhub:
-  custom:
-    homepage:
-      # gitRepoBranch: "username-and-password-homepage"
-      gitRepoBranch: "main"
-      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
-      templateVars:
-        org:
-          name: California State University, Chico
-          logo_url: https://www.csuchico.edu/_assets/images/brand/logomark-seal.jpg
-          url: https://www.csuchico.edu/
   scheduling:
     userScheduler:
       nodeSelector:
@@ -26,30 +16,6 @@ jupyterhub:
   hub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool-2026-06-30
-    config:
-      JupyterHub:
-        authenticator_class: cilogon
-      CILogonOAuthenticator:
-        # temporarily disable token refresh to fix admin access to singleuser servers
-        refresh_pre_spawn: false
-        allowed_idps:
-          https://shibboleth.csuchico.edu/idp/shibboleth:
-            default: true
-            username_derivation:
-              username_claim: "email"
-            allow_all: true
-          http://google.com/accounts/o8/id:
-            username_derivation:
-              username_claim: "email"
-      Authenticator:
-        manage_groups: false
-        admin_users:
-          # infrastructure
-          - jedwin321@berkeley.edu
-          - ericvd@berkeley.edu
-          - sean.smorris@berkeley.edu
-          - sknapp@berkeley.edu
-          - rdonatello@csuchico.edu
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image

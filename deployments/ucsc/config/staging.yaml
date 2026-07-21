@@ -5,6 +5,15 @@ nfsPVC:
     enabled: false
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: University of California, Santa Cruz
+          logo_url: https://communications.ucsc.edu/wp-content/uploads/2021/04/2021-Logo-Do-2.jpg
+          url: https://www.ucsc.edu/
   scheduling:
     userScheduler:
       replicas: 1
@@ -21,5 +30,18 @@ jupyterhub:
           - ucsc-staging.jupyter.cal-icor.org
   hub:
     config:
-      CILogonOAuthenticator:
-        oauth_callback_url: https://ucsc-staging.jupyter.cal-icor.org/hub/oauth_callback
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - abrsvn@ucsc.edu
+          - jusimons@ucsc.edu
