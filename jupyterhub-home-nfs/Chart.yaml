@@ -5,5 +5,5 @@ name: jupyterhub-home-nfs
 version: 0.0.1+1750.5619aab
 dependencies:
   - name: jupyterhub-home-nfs
-    version: 1.2.1-0.dev.git.1.hd7e9643
+    version: 1.2.1-0.dev.git.1.h363b75f
     repository: oci://ghcr.io/2i2c-org/jupyterhub-home-nfs
