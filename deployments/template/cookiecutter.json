@@ -16,11 +16,12 @@
     "authenticator_class_instance": "valid-auth-instance",
     "idp_url": "https://idp.example.edu",
     "admin_emails": "",
-    "client_id_staging": "valid-client-id-staging",
-    "client_secret_staging": "valid-client-secret-staging",
     "client_id_prod": "valid-client-id-production",
     "client_secret_prod": "valid-client-secret-production",
     "idp_allowed_domains": "",
     "allow_all": "",
-    "allowed_organizations": ""
+    "allowed_organizations": "",
+    "_copy_without_render": [
+        "secrets/staging.yaml"
+    ]
 }

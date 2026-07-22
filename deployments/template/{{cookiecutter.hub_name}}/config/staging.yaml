@@ -5,6 +5,15 @@ nfsPVC:
     enabled: false
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: {{cookiecutter.institution}}
+          logo_url: {{cookiecutter.institution_logo_url}}
+          url: {{cookiecutter.institution_url}}
   scheduling:
     userScheduler:
       replicas: 1
@@ -21,5 +30,19 @@ jupyterhub:
           - {{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org
   hub:
     config:
-      {{cookiecutter.authenticator_class_instance}}:
-        oauth_callback_url: https://{{cookiecutter.hub_name}}-staging.jupyter.cal-icor.org/hub/oauth_callback
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          {%- for email in cookiecutter.admin_emails.split(',') %}
+          - {{ email.strip() }}
+          {%- endfor %}

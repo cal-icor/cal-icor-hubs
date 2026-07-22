@@ -351,9 +351,7 @@ def populate_deployment_config(
             "authenticator_class": config["authenticator_class"],
             "authenticator_class_instance": config["authenticator_class_instance"],
             "client_id_prod": config["prod"]["client"],
-            "client_id_staging": config["staging"]["client"],
             "client_secret_prod": config["prod"]["secret"],
-            "client_secret_staging": config["staging"]["secret"],
             "idp_url": config["idp_url"],
             "idp_allowed_domains": ", ".join(
                 domain for domain in config["idp_allowed_domains"]
@@ -366,10 +364,10 @@ def populate_deployment_config(
         },
     )
 
-    # Generate secrets for prod and staging
-    print(f"Generating and encrypting secrets for {config['hub_name']}.")
-    for env in ["prod", "staging"]:
-        handle_secrets(config["hub_name"], env)
+    # Encrypt the prod secret. The staging secret is a shared dummy-auth
+    # password shipped verbatim by the template, so it needs no processing.
+    print(f"Encrypting prod secret for {config['hub_name']}.")
+    handle_secrets(config["hub_name"], "prod")
 
 
 def update_nfs_quota_paths(

@@ -3,6 +3,15 @@ nfsPVC:
     shareName: {{cookiecutter.hub_nfs_mount_path}}/prod
 
 jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "{{cookiecutter.landing_page_branch}}"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: {{cookiecutter.institution}}
+          logo_url: {{cookiecutter.institution_logo_url}}
+          url: {{cookiecutter.institution_url}}
   ingress:
     enabled: true
     hosts:
@@ -17,5 +26,52 @@ jupyterhub:
         # This also holds logs
         storage: 4Gi
     config:
-        {{cookiecutter.authenticator_class_instance}}:
-          oauth_callback_url: https://{{cookiecutter.hub_name}}.jupyter.cal-icor.org/hub/oauth_callback
+      JupyterHub:
+        authenticator_class: {{cookiecutter.authenticator_class}}
+      {{cookiecutter.authenticator_class_instance}}:
+        {%- if cookiecutter.authenticator_class == "cilogon" %}
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        allowed_idps:
+          {{cookiecutter.idp_url}}:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            {%- if cookiecutter.allow_all == "true" %}
+            allow_all: true
+            {%- elif cookiecutter.idp_allowed_domains %}
+            allowed_domains:
+              {%- for domain in cookiecutter.idp_allowed_domains.split(',') %}
+              - {{ domain.strip() }}
+              {%- endfor %}
+            {%- endif %}
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
+        {%- elif cookiecutter.authenticator_class == "github" %}
+        allowed_organizations:
+          {%- for org in cookiecutter.allowed_organizations.split(',') %}
+          - {{ org.strip() }}
+          {%- endfor %}
+        scope:
+          - read:org
+        {%- endif %}
+        oauth_callback_url: https://{{cookiecutter.hub_name}}.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          {%- for email in cookiecutter.admin_emails.split(',') %}
+          - {{ email.strip() }}
+          {%- endfor %}
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

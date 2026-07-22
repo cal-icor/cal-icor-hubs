@@ -44,6 +44,10 @@ on:
         type: choice
         options: [staging, prod]
         default: staging
+  push:
+    branches:
+      - staging
+      - prod
 
 jobs:
   gate:
@@ -114,9 +118,11 @@ jobs:
             shared_branch: staging
             environment_output: hub_environment
             layers:
+              # shared_branch_only: the staging branch. cluster infra + staging
+              # hubs when true, hubs only when false.
+              #
               # tofu cluster: apply or skip on push; destroy only via a merged PR
               # carrying tofu-destroy-spring-2025 (no dispatch/push destroy path).
-              # Converges pools+network only -- the control plane is gcloud-made.
               - output: cluster_command
                 label: tofu-spring-2025
                 destroy_label: tofu-destroy-spring-2025
@@ -133,10 +139,11 @@ jobs:
                 label: jupyterhub-home-nfs-deployment
                 shared_branch_only: true
                 requires: cluster_command
-              # the hubs. On dispatch a single hub is chosen via the `hub` input
-              # (passed straight to the leaf). No push label yet: the label
-              # matrix is wired when the push: trigger is turned on.
+              # hub deployments. always_on: the leaf resolves the matrix from
+              # the PR's hub labels (jupyterhub-deployment / hub-images /
+              # `hub: <name>`); on dispatch the `hub` input picks one.
               - output: deploy_hub
+                always_on: true
                 shared_branch_only: false
                 requires: cluster_command
           DISPATCH_INPUTS: |
@@ -145,7 +152,7 @@ jobs:
             deploy_nfs: "${{ inputs.deploy_nfs }}"
             deploy_hub: "${{ inputs.deploy_hub }}"
             hub_environment: "${{ inputs.hub_environment }}"
-        run: python .github/scripts/decide-layers.py
+        run: python .github/scripts/decide-layers.py -d
 
   # Each job below runs if no layer before it failed (skipped is fine) and the gate says to.
   cluster:

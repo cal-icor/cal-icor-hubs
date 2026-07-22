@@ -12,11 +12,8 @@ institution_url:
 institution_logo_url: 
 landing_page_branch: main
 prod:
-  client: 
-  secret: 
-staging:
-  client: 
-  secret: 
+  client:
+  secret:
 admin_emails:
   - 
 authenticator_class: cilogon # This is either cilogon or github

@@ -7,16 +7,6 @@ nfsPVC:
     enabled: false
   {% endif %}
 jupyterhub:
-  custom:
-    homepage:
-      # gitRepoBranch: "username-and-password-homepage"
-      gitRepoBranch: "{{cookiecutter.landing_page_branch}}"
-      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
-      templateVars:
-        org:
-          name: {{cookiecutter.institution}}
-          logo_url: {{cookiecutter.institution_logo_url}}
-          url: {{cookiecutter.institution_url}}
   scheduling:
     userScheduler:
       nodeSelector:
@@ -29,47 +19,6 @@ jupyterhub:
   hub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool-2026-06-30
-    config:
-      JupyterHub:
-        authenticator_class: {{cookiecutter.authenticator_class}}
-      {{cookiecutter.authenticator_class_instance}}:
-        {%- if cookiecutter.authenticator_class == "cilogon" %}
-        refresh_pre_spawn: false
-        allowed_idps:
-          {{cookiecutter.idp_url}}:
-            default: true
-            username_derivation:
-              username_claim: "email"
-            {%- if cookiecutter.allow_all == "true" %}
-            allow_all: true
-            {%- elif cookiecutter.idp_allowed_domains %}
-            allowed_domains:
-              {%- for domain in cookiecutter.idp_allowed_domains.split(',') %}
-              - {{ domain.strip() }}
-              {%- endfor %}
-            {%- endif %}
-          http://google.com/accounts/o8/id:
-            username_derivation:
-              username_claim: "email"
-        {%- elif cookiecutter.authenticator_class == "github" %}
-        allowed_organizations:
-          {%- for org in cookiecutter.allowed_organizations.split(',') %}
-          - {{ org.strip() }}
-          {%- endfor %}
-        scope:
-          - read:org
-        {%- endif %}
-      Authenticator:
-        manage_groups: false
-        admin_users:
-          # infrastructure
-          - jedwin321@berkeley.edu
-          - ericvd@berkeley.edu
-          - sean.smorris@berkeley.edu
-          - sknapp@berkeley.edu
-          {%- for email in cookiecutter.admin_emails.split(',') %}
-          - {{ email.strip() }}
-          {%- endfor %}
   singleuser:
     image:
       {%- if cookiecutter.image_name and cookiecutter.image_name != "" %}

@@ -14,6 +14,9 @@ there, always before the hubs.  For prod it is 'staging'.
 Each layer sets one GITHUB_OUTPUT key, named in its output field.  The rest of
 the spec fields:
   label               set the output when this label is on the PR.
+  always_on           on push, set the output regardless of label; the leaf
+                      resolves specifics.  The prod hubs use it: their label
+                      family is expanded by determine-hub-deployments.py.
   shared_branch_only  only set on shared_branch; other branches skip it.
   when_on/when_off    emit these instead of "true"/"false".
   implied_by          force this layer on whenever the named layer is on (the
@@ -60,8 +63,9 @@ Layer = namedtuple(
         "implied_by",
         "requires",
         "destroy_label",
+        "always_on",
     ],
-    defaults=(None, False, None, None, None, None, None),
+    defaults=(None, False, None, None, None, None, None, False),
 )
 
 
@@ -105,7 +109,7 @@ def decide(
         on_shared_branch = ref == f"refs/heads/{shared_branch}"
         for layer in layers:
             gated_on = not layer.shared_branch_only or on_shared_branch
-            enabled = layer.label in present and gated_on
+            enabled = (layer.always_on or layer.label in present) and gated_on
             if layer.when_on is not None:
                 # A destroy label (same branch gating) overrides apply/skip.
                 if (

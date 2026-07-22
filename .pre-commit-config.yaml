@@ -90,7 +90,7 @@ repos:
     hooks:
       - id: sops-encryption
         # Add files here if they contain the word 'secret' but should not be encrypted
-        exclude: deployments/template/{{cookiecutter\.hub_name}}/secrets/prod\.plain\.yaml|deployments/template/{{cookiecutter\.hub_name}}/secrets/staging\.plain\.yaml
+        exclude: deployments/template/{{cookiecutter\.hub_name}}/secrets/prod\.plain\.yaml
 
   # Prevent known typos from being committed
   - repo: https://github.com/codespell-project/codespell

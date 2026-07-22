@@ -1,16 +1,16 @@
 name: Deploy spring-2025 cluster (tofu)
-# Converges or tears down the spring-2025 tofu units in tofu/clusters/spring-2025.
+# Plans, applies, or destroys the spring-2025 tofu units in tofu/clusters/spring-2025.
 #
-# IMPORTANT: spring-2025's control plane was created imperatively with
-# `gcloud container clusters create` (regional), NOT tofu, so there is no
-# cluster/ unit here. `run --all` converges only the network + node pools;
-# a destroy tears down pools+network (still an outage), never the control plane.
-# Because the control plane is never recreated, prod-deploy@'s cluster-admin
-# RBAC binding never drops, so there is no post-apply RBAC reapply.
+# The control plane was created by hand (gcloud container clusters create,
+# regional), not tofu, so there is no cluster/ unit. run --all only touches the
+# network and node pools. A destroy removes pools and network (still an outage)
+# but never the control plane. Since the control plane is never recreated,
+# prod-deploy@'s cluster-admin RBAC binding survives, so nothing reapplies it
+# after an apply.
 #
-# destroy is reachable only via workflow_call with command=destroy, which the
-# orchestrator emits from a merged PR carrying tofu-destroy-spring-2025. This
-# leaf's own dispatch offers no destroy choice.
+# destroy runs only via workflow_call with command=destroy, which the
+# orchestrator emits from a merged PR labelled tofu-destroy-spring-2025. This
+# leaf's own dispatch has no destroy option.
 
 permissions:
   contents: read
@@ -59,19 +59,42 @@ jobs:
           workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
           service_account: ${{ vars.PROD_INFRA_SA }}
 
-      # An apply plans first; a failure here skips the apply below.
+      # check to see if anything changed, and if so, apply it. The exit code of
+      # plan is used to determine whether to apply or not.  since the exit
+      # code of plan will be 2 (not 0), we need to use continue-on-error to
+      # avoid failing the job.
+      # order of operations:
+      # 1) plan, which returns 0 (no changes), 2 (changes), or 1 (error) via -detailed-exitcode
+      # 2) if plan errored, fail the job
+      # 3) if plan found no changes, skip apply and report no-op
+      # 4) if plan found changes, apply them
       - name: terragrunt run --all plan
+        id: plan
         if: ${{ inputs.command == 'plan' || inputs.command == 'apply' }}
+        continue-on-error: true
         uses: gruntwork-io/terragrunt-action@v3
         with:
           tofu_version: ${{ env.TOFU_VERSION }}
           tg_version: ${{ env.TERRAGRUNT_VERSION }}
           tg_dir: tofu/clusters/spring-2025
-          tg_command: run --all plan
+          tg_command: run --all -- plan -detailed-exitcode
           tg_add_approve: "0"
 
+      # continue-on-error means we had a 2 or 1 exit code.  if it was a 1, we
+      # want to fail the job
+      - name: Fail if the plan errored
+        if: ${{ (inputs.command == 'plan' || inputs.command == 'apply') && steps.plan.outputs.tg_action_exit_code == '1' }}
+        run: |
+          echo "::error::terragrunt run --all plan failed"
+          exit 1
+
+      # no changes: skip the apply and say so.
+      - name: Report no-op apply
+        if: ${{ inputs.command == 'apply' && steps.plan.outputs.tg_action_exit_code == '0' }}
+        run: echo "::notice::Plan found no changes; skipping apply."
+
       - name: terragrunt run --all apply
-        if: ${{ inputs.command == 'apply' }}
+        if: ${{ inputs.command == 'apply' && steps.plan.outputs.tg_action_exit_code == '2' }}
         uses: gruntwork-io/terragrunt-action@v3
         with:
           tofu_version: ${{ env.TOFU_VERSION }}
