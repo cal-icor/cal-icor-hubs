@@ -12,6 +12,8 @@ jupyterhub:
       templateVars:
         org:
           name: California State University, Fullerton
+          logo_url: https://cdn.jsdelivr.net/gh/CSUF-Strat-Comm/campus-template@latest/_assets/images/csuf-wordmark.svg
+          url: https://www.fullerton.edu/
   scheduling:
     userScheduler:
       replicas: 1
