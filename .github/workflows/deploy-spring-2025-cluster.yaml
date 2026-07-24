@@ -1,15 +1,14 @@
 name: Deploy spring-2025 cluster (tofu)
-# Plans, applies, or destroys the spring-2025 tofu units in tofu/clusters/spring-2025.
+# Plans, applies, or destroys the spring-2025 tofu units in
+# tofu/clusters/spring-2025.
 #
-# The control plane was created by hand (gcloud container clusters create,
-# regional), not tofu, so there is no cluster/ unit. run --all only touches the
-# network and node pools. A destroy removes pools and network (still an outage)
-# but never the control plane. Since the control plane is never recreated,
-# prod-deploy@'s cluster-admin RBAC binding survives, so nothing reapplies it
-# after an apply.
+# The control plane was created by hand (gcloud, regional), not tofu, so there's
+# no cluster/ unit: run --all only touches the network and node pools. A destroy
+# removes pools and network (still an outage) but never the control plane, so
+# prod-deploy@'s cluster-admin RBAC binding survives.
 #
 # destroy runs only via workflow_call with command=destroy, which the
-# orchestrator emits from a merged PR labelled tofu-destroy-spring-2025. This
+# orchestrator emits from a merged PR labelled tofu-destroy-spring-2025; this
 # leaf's own dispatch has no destroy option.
 
 permissions:
@@ -59,15 +58,9 @@ jobs:
           workload_identity_provider: ${{ vars.PROD_WIF_PROVIDER }}
           service_account: ${{ vars.PROD_INFRA_SA }}
 
-      # check to see if anything changed, and if so, apply it. The exit code of
-      # plan is used to determine whether to apply or not.  since the exit
-      # code of plan will be 2 (not 0), we need to use continue-on-error to
-      # avoid failing the job.
-      # order of operations:
-      # 1) plan, which returns 0 (no changes), 2 (changes), or 1 (error) via -detailed-exitcode
-      # 2) if plan errored, fail the job
-      # 3) if plan found no changes, skip apply and report no-op
-      # 4) if plan found changes, apply them
+      # plan with -detailed-exitcode: 0 = no changes, 2 = changes, 1 = error.
+      # continue-on-error lets the 2 through (it isn't a failure); the steps
+      # below fail on 1, skip apply on 0, and apply on 2.
       - name: terragrunt run --all plan
         id: plan
         if: ${{ inputs.command == 'plan' || inputs.command == 'apply' }}
@@ -80,8 +73,7 @@ jobs:
           tg_command: run --all -- plan -detailed-exitcode
           tg_add_approve: "0"
 
-      # continue-on-error means we had a 2 or 1 exit code.  if it was a 1, we
-      # want to fail the job
+      # exit code 1 is a real plan error; fail the job.
       - name: Fail if the plan errored
         if: ${{ (inputs.command == 'plan' || inputs.command == 'apply') && steps.plan.outputs.tg_action_exit_code == '1' }}
         run: |

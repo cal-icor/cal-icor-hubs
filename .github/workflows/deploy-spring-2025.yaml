@@ -91,9 +91,9 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v3
 
-      # Emit the cluster's layer key when it is RUNNING, else nothing, so the
+      # Emit the cluster's layer key when it's RUNNING, else nothing, so the
       # gate skips layers that would deploy into a cluster that isn't there.
-      # spring-2025 is REGIONAL, so this is --location, not dev's --zone.
+      # spring-2025 is regional, so this uses --location.
       - name: Probe cluster existence
         id: probe
         run: |
@@ -118,11 +118,8 @@ jobs:
             shared_branch: staging
             environment_output: hub_environment
             layers:
-              # shared_branch_only: the staging branch. cluster infra + staging
-              # hubs when true, hubs only when false.
-              #
-              # tofu cluster: apply or skip on push; destroy only via a merged PR
-              # carrying tofu-destroy-spring-2025 (no dispatch/push destroy path).
+              # cluster infra: apply or skip on push; destroy only via a merged
+              # PR labelled tofu-destroy-spring-2025 (no dispatch/push destroy).
               - output: cluster_command
                 label: tofu-spring-2025
                 destroy_label: tofu-destroy-spring-2025

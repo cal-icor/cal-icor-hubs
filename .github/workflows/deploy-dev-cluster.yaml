@@ -69,7 +69,7 @@ jobs:
           tg_command: run --all apply
           tg_add_approve: "0"
 
-      # Unguarded, which is fine for a throwaway cluster. Prod would need a gate.
+      # Unguarded, which is fine for a throwaway cluster.
       - name: terragrunt run --all destroy
         if: ${{ inputs.command == 'destroy' }}
         uses: gruntwork-io/terragrunt-action@v3
@@ -84,7 +84,7 @@ jobs:
       # cannot grant itself admin.
       - name: Get dev cluster credentials
         if: ${{ inputs.command == 'apply' }}
-        uses: google-github-actions/get-gke-credentials@v2
+        uses: google-github-actions/get-gke-credentials@v3
         with:
           cluster_name: ${{ vars.DEV_CLUSTER }}
           location: ${{ vars.DEV_ZONE }}

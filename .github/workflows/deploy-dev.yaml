@@ -105,8 +105,8 @@ jobs:
             echo "backends=" >> "$GITHUB_OUTPUT"
           fi
 
-      # The dev spec decide-layers.py reads; prod passes its own. Field
-      # definitions are in the script's docstring.
+      # The dev spec decide-layers.py reads. Field definitions are in the
+      # script's docstring.
       - name: Decide which layers to run
         id: decide
         env:
