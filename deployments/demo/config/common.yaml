@@ -54,7 +54,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-python-image
-      tag: bb44f7564d11
+      tag: 77544a41cd51
       # name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/java-user-image
       # tag: 109b5f8ca22b
     extraFiles:
