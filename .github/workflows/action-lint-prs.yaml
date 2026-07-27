@@ -1,0 +1,9 @@
+name: "Lint files on pull requests"
+on:
+  - pull_request  # yamllint disable-line rule:truthy
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    uses: cal-icor/shared-workflows/.github/workflows/action-lint-prs.yaml@0.5.0

@@ -30,7 +30,7 @@ inputs = {
 
   node_locations = ["us-central1-b"]
 
-  machine_type = "n2-standard-8"
+  machine_type = "n2-standard-4"
   min_nodes    = 1
   max_nodes    = 3
   disk_size_gb = 100

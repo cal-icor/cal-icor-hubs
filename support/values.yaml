@@ -82,17 +82,19 @@ prometheus:
       - pods=[app,component,hub.jupyter.org/username,app.kubernetes.io/component]
       - nodes=[*]
       - services=[app,component]
+    metricAnnotationsAllowList:
+      - pods=[hub.jupyter.org/username]
+
   server:
     nodeSelector:
       hub.jupyter.org/pool-name: prometheus-pool-2026-06-29
     resources:
       # Without this, prometheus can easily starve users
       requests:
-        cpu: 6
-        memory: 24Gi
+        cpu: 500m
+        memory: 4Gi
       limits:
-        cpu: 7
-        memory: 48Gi
+        memory: 10Gi
     podLabels:
       # For HTTP access to the hub, to scrape metrics
       hub.jupyter.org/network-access-hub: 'true'
@@ -101,6 +103,12 @@ prometheus:
       storageClass: ssd
       existingClaim: prometheus-data-2025-04-10
     retention: 180d
+    # guardrail for large dataset queries: big queries (6m) can really spike memory usage and OOMs.
+    # so, we'll cap the query, and we can run on a smaller node
+    extraArgs:
+      query.max-samples: 20000000
+      query.timeout: 2m
+      query.max-concurrency: 8
     strategy:
       # Can't really do rolling update, we have a persistent disk attached
       type: Recreate
