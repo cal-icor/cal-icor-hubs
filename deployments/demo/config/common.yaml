@@ -53,8 +53,10 @@ jupyterhub:
           - sean.smorris
   singleuser:
     image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/java-user-image
-      tag: 109b5f8ca22b
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-python-image
+      tag: bb44f7564d11
+      # name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/java-user-image
+      # tag: 109b5f8ca22b
     extraFiles:
       # DH-216
       remove-exporters:

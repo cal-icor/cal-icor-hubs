@@ -12,10 +12,6 @@ jupyterhub:
           name: Folsom Lake College
           logo_url: https://flc.losrios.edu/flc/shared/img/admin/logos-icons/flc-desktop-logo.svg
           url: https://www.flc.losrios.edu/
-  singleuser:
-    image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: 6d61d3c15d47
   ingress:
     enabled: true
     hosts:

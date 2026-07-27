@@ -12,10 +12,6 @@ jupyterhub:
           name: Diablo Valley College
           logo_url: https://www.dvcinquirer.com/wp-content/uploads/2022/03/dvc-logo-sidebar.png
           url: https://www.dvc.edu/
-  singleuser:
-    image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: 6d61d3c15d47
   ingress:
     enabled: true
     hosts:
