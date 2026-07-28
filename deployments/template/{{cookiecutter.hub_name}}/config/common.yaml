@@ -26,7 +26,7 @@ jupyterhub:
       tag: {{cookiecutter.image_tag}}
       {%- else %}
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
-      tag: be91a6cddfb6
+      tag: bde8b3293fd2
       {%- endif %}
     {% if cookiecutter.hub_type == "rstudio-base" %}
     defaultUrl: "/rstudio"
