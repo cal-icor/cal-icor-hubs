@@ -1,0 +1,59 @@
+nfsPVC:
+  nfs:
+    shareName: cpp/prod
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Cal Poly Pomona
+          logo_url: https://www.cpp.edu/common/green-and-gold/assets/logos/cpp_horizontal_2c_green_rgb.png
+          url: https://www.cpp.edu/
+  ingress:
+    enabled: true
+    hosts:
+      - cpp.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - cpp.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+      JupyterHub:
+        authenticator_class: dummy # TEMPORARY: switch back to cilogon once CILogon client is registered
+      CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        allowed_idps:
+          https://idp.cpp.edu/idp/shibboleth:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allow_all: true
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
+        oauth_callback_url: https://cpp.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - jungjinchoi@cpp.edu
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

@@ -7,6 +7,7 @@ git@github.com:cal-icor/cloudbank-umd-image.git
 git@github.com:cal-icor/csumb-user-image.git
 #git@github.com:cal-icor/gpu-demo.git
 git@github.com:cal-icor/java-user-image.git
+git@github.com:cal-icor/jupytutor-user-image.git
 #git@github.com:cal-icor/sagemath-user-image.git
 git@github.com:cal-icor/workshop-cpu-image.git
 git@github.com:cal-icor/workshop-gpu-image.git

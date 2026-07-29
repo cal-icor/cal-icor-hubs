@@ -1,8 +1,8 @@
 # tofu/cluster: reusable GKE cluster
 
 Creates a GKE cluster shell. The default pool is removed; node pools are separate
-units (`modules/nodepools`), where node VM size is set. Dev and prod share this
-module.
+units sourcing [`modules/nodepools`](../nodepools), where node VM size is set.
+Dev and prod share this module.
 
 Manages the cluster's subnet: `node_cidr_block` for node IPs and a secondary
 range (`pod_cidr_block`) for pods. Services stay GKE-managed. Node privacy is

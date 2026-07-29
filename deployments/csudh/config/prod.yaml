@@ -1,0 +1,59 @@
+nfsPVC:
+  nfs:
+    shareName: csudh/prod
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, Dominguez Hills
+          logo_url: https://www.csudh.edu/Assets/csudh-sites/brand/images/2018-06-18-csudh-logo-horizontal-color-on-white.png
+          url: https://www.csudh.edu/
+  ingress:
+    enabled: true
+    hosts:
+      - csudh.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csudh.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+      JupyterHub:
+        authenticator_class: dummy # TEMPORARY: switch back to cilogon once CILogon client is registered
+      CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        allowed_idps:
+          https://idp.csudh.edu/idp/shibboleth:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allow_all: true
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
+        oauth_callback_url: https://csudh.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - rmalladi@csudh.edu
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

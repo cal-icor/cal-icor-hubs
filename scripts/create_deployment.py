@@ -12,6 +12,99 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.scalarstring import SingleQuotedScalarString
 
+# these are the keys populate_deployment_config() reads out of the config
+REQUIRED_KEYS = (
+    "admin_emails",
+    "allow_all",
+    "allowed_organizations",
+    "authenticator_class",
+    "authenticator_class_instance",
+    "hub_name",
+    "hub_nfs_server_ip",
+    "idp_allowed_domains",
+    "idp_url",
+    "institution",
+    "institution_logo_url",
+    "institution_url",
+    "landing_page_branch",
+    "prod",
+)
+
+# these keys are required. The rest can be empty or missing depending on the
+# authenticator: idp_url and idp_allowed_domains are cilogon
+# allowed_organizations is github only
+# allow_all is shibboleth/incommon only
+REQUIRED_NON_EMPTY = (
+    "admin_emails",
+    "authenticator_class",
+    "authenticator_class_instance",
+    "hub_name",
+    "hub_nfs_server_ip",
+    "institution",
+    "institution_logo_url",
+    "institution_url",
+    "landing_page_branch",
+)
+
+# joined into comma-separated strings for the cookiecutter context
+JOINED_KEYS = ("admin_emails", "allowed_organizations", "idp_allowed_domains")
+
+VALID_HUB_TYPES = ("python-base", "rstudio-base")
+
+
+def validate_config(config: dict, config_path: Path):
+    """
+    Check the deployment config before anything with side effects runs.
+
+    create_deployment() cuts the feature branch and creates the hub's directories
+    on the NFS server before it renders the cookiecutter template, so an unfilled
+    config used to fail partway through with a bare KeyError or TypeError and
+    leave both behind. Report everything wrong with the config up front instead.
+
+    Args:
+        config (dict): The parsed deployment configuration.
+        config_path (Path): Path to the config file, used in the error output.
+
+    Raises:
+        SystemExit: If the config is missing keys or has unfilled values.
+    """
+    errors = []
+
+    # we now call "hub_type" instead of "deployment_type"
+    if "deployment_type" in config:
+        errors.append("'deployment_type' has been renamed to 'hub_type'")
+
+    hub_type = config.get("hub_type") or VALID_HUB_TYPES[0]
+    if hub_type not in VALID_HUB_TYPES:
+        errors.append(f"'hub_type' must be one of {', '.join(VALID_HUB_TYPES)}")
+
+    for key in REQUIRED_KEYS:
+        if key not in config:
+            errors.append(f"'{key}' is missing")
+        elif key in REQUIRED_NON_EMPTY and not config[key]:
+            errors.append(f"'{key}' is empty")
+
+    # A bare '-' under a list key parses to [None], which fails the join in
+    # populate_deployment_config() with an unhelpful TypeError.
+    for key in JOINED_KEYS:
+        value = config.get(key)
+        if isinstance(value, list) and not all(value):
+            errors.append(f"'{key}' has a blank list entry")
+
+    prod = config.get("prod")
+    if prod is not None and not isinstance(prod, dict):
+        errors.append("'prod' must hold 'client' and 'secret'")
+    elif isinstance(prod, dict):
+        for key in ("client", "secret"):
+            if not prod.get(key):
+                errors.append(f"'prod.{key}' is empty")
+
+    if errors:
+        print(f"Error: {config_path} is not ready to deploy:")
+        for error in errors:
+            print(f"  - {error}")
+        exit(1)
+
 
 def delete_file(filepath: Path):
     """
@@ -526,6 +619,7 @@ def create_deployment(
     deploy: bool = False,
     manual_config: bool = False,
     dry_run: bool = False,
+    no_pr: bool = False,
 ):
     """
     Create a new deployment for an institution using the provided configuration.
@@ -536,6 +630,7 @@ def create_deployment(
         deploy (bool): If True, the script will deploy the hub to staging after creating the pull request.
         manual_config (bool): If True, the script will ask for confirmation for each step.
         dry_run (bool): If True, the script will go through all the steps but not actually make any changes.
+        no_pr (bool): If True, the script will not open a pull request.
     """
     # Resolve hub_nfs_mount_path: defaults to hub_name when not set, allowing two or
     # more hubs to share the same NFS staging/prod directories by pointing at the same path.
@@ -610,7 +705,7 @@ def create_deployment(
     # Create a pull request for the new hub
     if dry_run:
         print(f"Dry run enabled. Not creating pull request for {config['hub_name']}.")
-    elif args.no_pr:
+    elif no_pr:
         print(
             f"Skipping pull request creation for {config['hub_name']} as per --no-pr flag."
         )
@@ -664,6 +759,8 @@ def main(args):
         print(f"Error loading config for {args.institution_name}.")
         exit(1)
 
+    validate_config(config, deployment_config)
+
     if args.dry_run:
         print(
             "Performing a dry-run, only the config changes in your repo will be performed, but no remote actions taken.\n"
@@ -676,6 +773,7 @@ def main(args):
         args.deploy,
         args.manual_config,
         args.dry_run,
+        args.no_pr,
     )
 
     print(

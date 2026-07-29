@@ -6,13 +6,15 @@ blocks so the whole thing stands up in order.
 
 The units:
 
-- `cluster/` sources `modules/cluster`: the VPC (optional), the subnet, and the
-  GKE cluster (default pool removed).
-- `network/` sources `modules/network`: Cloud Router, Cloud NAT, egress IP, and
-  the IAP-SSH firewall. Depends on `cluster/`.
-- `prometheus-pool/`, `core-pool/`, `support-pool/`, `user-pool/` source
-  `modules/nodepools`: one private pool each. Depend on `cluster/` for the name
-  and on `network/` for ordering (NAT before private nodes).
+- [`cluster/`](cluster) sources [`modules/cluster`](../../modules/cluster): the VPC
+  (optional), the subnet, and the GKE cluster (default pool removed).
+- [`network/`](network) sources [`modules/network`](../../modules/network): Cloud Router,
+  Cloud NAT, egress IP, and the IAP-SSH firewall. Depends on `cluster/`.
+- [`prometheus-pool/`](prometheus-pool), [`core-pool/`](core-pool),
+  [`support-pool/`](support-pool) and [`user-pool/`](user-pool) source
+  [`modules/nodepools`](../../modules/nodepools): one private pool each. Depend on
+  `cluster/` for the name and on `network/` for ordering (NAT before private
+  nodes).
 
 ## Standing one up
 
@@ -23,17 +25,18 @@ cp -r tofu/clusters/cluster-template tofu/clusters/<cluster-name>
 #   ONE of the two case blocks (dev or redeploy) described below
 # edit the pool units: date-stamp pool_name, adjust machine_type for dev
 cd tofu/clusters/<cluster-name>
-terragrunt run-all plan      # cluster, then network, then the pools
-terragrunt run-all apply     # mutates real infra; review the plan first
+terragrunt run --all plan    # cluster, then network, then the pools
+terragrunt run --all apply   # mutates real infra; review the plan first
 ```
 
-`run-all` walks the `dependency` graph: `cluster/` first, then `network/`, then
+`run --all` walks the `dependency` graph: `cluster/` first, then `network/`, then
 the pools. To drive a single unit instead, `cd` into it and run `terragrunt
 plan`/`apply` there.
 
 ## The two cases
 
-The same config serves two cases, selected in `cluster/terragrunt.hcl`:
+The same config serves two cases, selected in
+[`cluster/terragrunt.hcl`](cluster/terragrunt.hcl):
 
 - Dev cluster: `create_network = true` (its own VPC), fresh non-colliding ranges,
   smaller node VMs (set per pool), `deletion_protection = false` so CI can tear

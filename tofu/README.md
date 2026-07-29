@@ -33,11 +33,15 @@ tofu/
       workshop-pool/terragrunt.hcl    # -> clusters/spring-2025/workshop-pool
 ```
 
-Each leaf `terragrunt.hcl` is a *unit*: it `include`s `root.hcl` and points at a
-module via `terraform { source = "../../../modules/<name>" }`. The unit's path under
-`tofu/` becomes its GCS state prefix (e.g. `clusters/spring-2025/network`), so backends
-are never hand-written. The key follows the unit's directory, so moving a unit means
-relocating its state object in the bucket to the matching prefix.
+Each leaf `terragrunt.hcl` is a *unit*: it `include`s [`root.hcl`](root.hcl) and
+points at a module via `terraform { source = "../../../modules/<name>" }`. One
+unit, one state file.
+
+The unit's path under `tofu/` becomes its GCS state prefix (e.g.
+[`clusters/spring-2025/network`](clusters/spring-2025/network)), so nobody
+hand-writes a backend. The key
+follows the directory, so moving a unit means relocating its state object in the
+bucket to the matching prefix.
 
 ## Running a unit
 
@@ -55,28 +59,31 @@ terragrunt apply        # mutates real infra; review the plan first
 
 ## CI
 
-There is no dedicated tofu CI workflow. The tofu hooks (`tofu_fmt`,
-`terragrunt_fmt`, `terragrunt_hcl_validate`, `terraform-docs-go`) run locally via
-`pre-commit install`; they sit under `ci.skip` in `.pre-commit-config.yaml`, so
-pre-commit.ci does not run them on PRs. pre-commit.ci runs the remaining hooks.
+There is no dedicated tofu CI workflow.
 
-`plan`, `apply`, and `destroy` run through
-`.github/workflows/deploy-spring-2025-cluster.yaml` (`workflow_dispatch` or
-`workflow_call`), which drives `terragrunt run --all` over the
-`clusters/spring-2025` units. It authenticates as `prod-infra@` via keyless
-Workload Identity Federation; the WIF stack and one-time GCP setup are documented
-in the repo-root `CLAUDE.md` deploy-auth section.
+The tofu hooks (`tofu_fmt`, `terragrunt_fmt`, `terragrunt_hcl_validate`,
+`terraform-docs-go`) run locally via `pre-commit install`. They sit under
+`ci.skip` in [`.pre-commit-config.yaml`](../.pre-commit-config.yaml), so
+pre-commit.ci runs the remaining hooks but not these.
+
+`plan`, `apply` and `destroy` run through
+[`.github/workflows/deploy-spring-2025-cluster.yaml`](../.github/workflows/deploy-spring-2025-cluster.yaml)
+(`workflow_dispatch` or `workflow_call`), which drives `terragrunt run --all`
+over the [`clusters/spring-2025`](clusters/spring-2025) units. It authenticates
+as `prod-infra@` via keyless Workload Identity Federation. The WIF stack and the
+one-time GCP setup are in the repo-root [`CLAUDE.md`](../CLAUDE.md) deploy-auth
+section.
 
 ## Cluster spec
 
 `spring-2025` runs on the `default` VPC. All node pools are private (internal IPs
 only); outbound internet egress goes through the Cloud NAT below. Each pool is a
-Terragrunt unit sourcing `modules/nodepools`, and the network plumbing is one
-`modules/network` unit.
+Terragrunt unit sourcing [`modules/nodepools`](modules/nodepools), and the
+network plumbing is one [`modules/network`](modules/network) unit.
 
 ### Network
 
-`clusters/spring-2025/network` (`modules/network`): Cloud Router
+[`clusters/spring-2025/network`](clusters/spring-2025/network): Cloud Router
 `spring-2025-nat-router`, Cloud NAT `spring-2025-nat`, reserved egress IP
 `spring-2025-nat-egress` (`35.254.232.174`), and the `spring-2025-allow-iap-ssh`
 firewall (IAP range `35.235.240.0/20`, tcp:22, target tag `hub-cluster`).
@@ -97,15 +104,19 @@ All pinned to `us-central1-b`, disk 100 GB unless noted.
 
 ## State bucket
 
-`bootstrap/tfstate-bucket` manages the GCS bucket that holds every unit's state,
-including its own. The bucket was created by hand before the tofu conversion, so
-the unit adopts it with `terragrunt import` rather than creating it, and a clean
-`plan` afterward is the sign the config matches. `prevent_destroy` and
-`force_destroy = false` in `modules/tfstate-bucket` keep a stray `destroy` from
-deleting the bucket that all the other state lives in. It also pins the settings
-that were only clicked once at creation: uniform bucket-level access, public
-access prevention set to `enforced`, object versioning, a 7-day soft-delete
-window, and the `hub = networking` billing label.
+[`bootstrap/tfstate-bucket`](bootstrap/tfstate-bucket) manages the GCS bucket
+that holds every unit's state, including its own.
+
+The bucket was created by hand before the tofu conversion, so the unit adopts it
+with `terragrunt import` rather than creating it. A clean `plan` afterward is the
+sign the config matches.
+
+`prevent_destroy` and `force_destroy = false` in
+[`modules/tfstate-bucket`](modules/tfstate-bucket) keep a stray `destroy` from
+deleting the bucket all the other state lives in. The module
+also pins the settings that were only clicked once at creation: uniform
+bucket-level access, public access prevention set to `enforced`, object
+versioning, a 7-day soft-delete window, and the `hub = networking` billing label.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements

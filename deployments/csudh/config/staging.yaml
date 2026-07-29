@@ -1,0 +1,46 @@
+nfsPVC:
+  nfs:
+    shareName: csudh/staging
+  dirsizeReporter:
+    enabled: false
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, Dominguez Hills
+          logo_url: https://www.csudh.edu/Assets/csudh-sites/brand/images/2018-06-18-csudh-logo-horizontal-color-on-white.png
+          url: https://www.csudh.edu/
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - csudh-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csudh-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - rmalladi@csudh.edu

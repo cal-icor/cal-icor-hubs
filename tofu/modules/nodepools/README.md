@@ -6,8 +6,9 @@ Cloud NAT from [`modules/network`](../network).
 
 ## Per-pool inputs
 
-Each pool is a unit under `tofu/clusters/spring-2025/<role>-pool/` that calls
-this module. Shared config lives in the module defaults; a unit sets only its
+Each pool is a unit under
+[`tofu/clusters/spring-2025/`](../../clusters/spring-2025) that calls this
+module. Shared config lives in the module defaults; a unit sets only its
 pool-specific values (machine type, sizing, taints, labels) plus:
 
 - `enable_private_nodes = true`
@@ -26,7 +27,7 @@ their disks after moving pools.
 ## Provider and versions
 
 This module ships no `provider.tf` or `versions.tf`; Terragrunt generates them
-from `tofu/root.hcl`. Run it through a unit, not directly.
+from [`tofu/root.hcl`](../../root.hcl). Run it through a unit, not directly.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements

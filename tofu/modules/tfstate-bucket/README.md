@@ -3,12 +3,32 @@
 Manages the single GCS bucket that holds every unit's OpenTofu state, including
 its own.
 
-This bucket **must** be created before anything is deployed via terragrunt.
+The bucket has to exist before any unit can `terragrunt init` against it, so no
+module can create it from scratch. It is created by hand once per project, then
+adopted here with `terragrunt import`. A clean `plan` afterward is the sign the
+config matches what is really there.
+
+## First-time bootstrap (run once per project, requires approval)
+
+Already done for `cal-icor-hubs`. This is here for standing up a new project:
+
+```sh
+gcloud storage buckets create gs://cal-icor-hubs-tofu-state \
+  --project=cal-icor-hubs --location=us-central1 \
+  --uniform-bucket-level-access \
+  --labels=hub=networking
+gcloud storage buckets update gs://cal-icor-hubs-tofu-state --versioning
+```
+
+The `hub=networking` label keeps the state bucket in the same billing rollup as
+the network plumbing. Everything else (public access prevention, the soft-delete
+window) is managed here once the bucket is imported.
 
 ## Why it is safe to manage its own backend
 
-This unit's state lives at `bootstrap/tfstate-bucket/` inside the bucket it
-manages. That is only a problem on destroy, which would delete the bucket out
+This unit's state lives at
+[`bootstrap/tfstate-bucket/`](../../bootstrap/tfstate-bucket) inside the bucket
+it manages. That is only a problem on destroy, which would delete the bucket out
 from under every other unit's state. Two settings block that:
 
 - `prevent_destroy = true` stops `tofu destroy` from touching the bucket.

@@ -58,19 +58,32 @@ sops --output deployments/<hub>/secrets/prod.yaml --encrypt deployments/<hub>/se
 - All development work goes through feature branches → PR to `staging`
 
 ### How deployments are triggered (GitHub Actions)
-Merging to `staging` or `prod` triggers `.github/workflows/deploy-hubs.yaml`. Which hubs deploy is controlled by **PR labels**:
+Merging to `staging` or `prod` triggers `.github/workflows/deploy-spring-2025.yaml`, the single entry point for the prod cluster. It is a stack of four layers run in order — cluster (tofu) → support → nfs → hub — each a reusable workflow in `.github/workflows/deploy-spring-2025-<layer>.yaml`. A layer runs only if every layer before it succeeded or was skipped.
+
+The `gate` job decides which layers run, via `.github/scripts/decide-layers.py` against a layer spec written inline in the workflow. On push the decision comes from the merged PR's labels plus the branch; on `workflow_dispatch` the inputs pass straight through. Two gate rules to know:
+- **`requires`**: support, nfs and hub are forced off unless the cluster already exists (a read-only `gcloud container clusters describe` probe) or is being created in the same run. A layer suppressed this way is reported as a `::notice::` annotation; the change stays committed and deploys on the next stack stand-up.
+- **`always_on`**: the hub layer has no gate label of its own — it is on for every push, and the hub leaf resolves *which* hubs from the labels. No hub labels means an empty matrix and a skipped deploy job.
+
+Which layers deploy is controlled by **PR labels**, applied by the labeler on path:
+- Label `tofu-spring-2025` → `terragrunt run --all apply` over `tofu/clusters/spring-2025`
+- Label `support-deployment` → deploys the support chart
+- Label `jupyterhub-home-nfs-deployment` → deploys the `jupyterhub-home-nfs` chart
 - Label `hub-images` or `jupyterhub-deployment` → redeploy **all** hubs
 - Label `hub: <name>` (e.g. `hub: jupyter`) → deploy only that hub
-- Label `support-deployment` → deploys the support chart when merged to `staging` (there is no separate staging environment for support; this is the only CI-triggered support deploy)
 
-The script `.github/scripts/determine-hub-deployments.py` reads `GITHUB_PR_LABEL_HUB_*` env vars set by the labeler to determine which hubs to deploy.
+The cluster, support and nfs layers are `shared_branch_only`, so they deploy from `staging` only (there is no separate staging environment for either chart); a merge to `prod` runs the hub layer alone. The script `.github/scripts/determine-hub-deployments.py` reads `GITHUB_PR_LABEL_HUB_*` env vars set by the labeler to determine which hubs to deploy.
+
+Destroying the cluster is label-only: merge a PR labelled `tofu-destroy-spring-2025` to `staging`. No dispatch menu offers a destroy, and a destroy forces every other layer off in that run.
+
+**Labels are applied by path, not by intent** — a comment-only edit under `tofu/clusters/spring-2025/` still gets `tofu-spring-2025` and will run a real apply on merge. Strip deploy-driving labels before merging a docs-only PR.
 
 ### Deploy authentication (keyless WIF)
 
 CI authenticates to GKE with keyless Workload Identity Federation — there are **no service-account keys in the repo**. The GitHub OIDC token is exchanged for short-lived credentials that impersonate `prod-deploy@cal-icor-hubs.iam.gserviceaccount.com` (repo vars `PROD_WIF_PROVIDER` / `PROD_DEPLOY_SA`; cluster coords in `PROD_CLUSTER` / `PROD_ZONE` / `PROD_PROJECT`).
 
-- `deploy-hubs.yaml` uses `google-github-actions/auth@v3` to write ADC; hubploy is keyless by default and mints its own GKE kubeconfig from ADC (no gcloud, no key file).
-- `deploy-support.yaml` and `deploy-jupyterhub-home-nfs.yaml` use the `.github/actions/gke-auth` composite (`auth@v3` + `get-gke-credentials@v2`) for raw `helm`; support also does a keyless `oauth2accesstoken` login to the GAR helm registry.
+- `deploy-spring-2025-hub.yaml` uses the `.github/actions/gke-auth` composite to write ADC (plus a kubeconfig for the rollout check); hubploy is keyless by default and mints its own GKE kubeconfig from ADC (no gcloud, no key file).
+- `deploy-spring-2025-support.yaml` and `deploy-spring-2025-nfs.yaml` use the same `.github/actions/gke-auth` composite (`auth@v3` + `get-gke-credentials@v2`) for raw `helm`; support also does a keyless `oauth2accesstoken` login to the GAR helm registry.
+- The `gate` job in `deploy-spring-2025.yaml` authenticates with a bare `auth@v3` (not the composite, whose `get-gke-credentials` is the call that fails on a missing cluster) so its cluster-existence probe works when the cluster is gone. `PROD_DEPLOY_SA` holds `container.clusterViewer` for it.
 - Write access is fenced to the `spring-2025` cluster by a `cluster-admin` RBAC ClusterRoleBinding on `prod-deploy@` — project IAM grants only `container.clusterViewer`, since `container.*` roles cannot be IAM-scoped to a single cluster.
 - SOPS is still used to decrypt secrets at deploy time; `prod-deploy@` holds `cloudkms.cryptoKeyDecrypter` on the `jupyterhubs/sops` KMS key.
 - The tofu cluster deploy (`deploy-spring-2025-cluster.yaml`) authenticates as a separate identity, `prod-infra@cal-icor-hubs.iam.gserviceaccount.com` (repo var `PROD_INFRA_SA`; project roles mirror `dev-infra@`). WIF grants impersonation to the whole repo; access is fenced to `staging` by the `prod-infra` GitHub environment, not by the WIF subject.
@@ -172,7 +185,7 @@ This directory is a wrapper Helm chart around the upstream `2i2c-org/jupyterhub-
 | `nfsServer.enableClientAllowlist` / `allowedClients` | Restrict which IPs can mount. **Important:** NFS mounts originate from the node's primary IP (e.g. `10.7.199.*`), not the pod CIDR — despite upstream docs suggesting pod CIDR `.1` addresses. Always include the node subnet (check with `kubectl get nodes -o wide`) in addition to pod CIDR ranges. |
 | `nodeSelector` / `affinity` | Pin the pod to the zone where the GKE disk lives |
 
-Deployed via `.github/workflows/deploy-jupyterhub-home-nfs.yaml`, triggered by the `jupyterhub-home-nfs-deployment` PR label on merge to `staging`.
+Deployed as the `nfs` layer of `deploy-spring-2025.yaml` (leaf: `.github/workflows/deploy-spring-2025-nfs.yaml`), triggered by the `jupyterhub-home-nfs-deployment` PR label on merge to `staging`.
 
 ### Hub-side config
 
@@ -229,4 +242,4 @@ Requires local Application Default Credentials (`gcloud auth application-default
 
 ## Ignored hubs in CI
 
-`deploy-hubs.yaml` passes `--ignore gpu-demo rstudio dev` to `determine-hub-deployments.py`, which also ignores `template` by default. So `gpu-demo`, `rstudio`, `dev`, and `template` are excluded from automatic CI deploys; every other directory under `deployments/` (including `demo` and `sage`) deploys on an all-hubs trigger.
+`deploy-spring-2025-hub.yaml` passes `--ignore gpu-demo rstudio dev` to `determine-hub-deployments.py`, which also ignores `template` by default. So `gpu-demo`, `rstudio`, `dev`, and `template` are excluded from automatic CI deploys; every other directory under `deployments/` (including `demo` and `sage`) deploys on an all-hubs trigger.

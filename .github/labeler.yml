@@ -156,47 +156,53 @@ tofu-user-pool:
   - 'tofu/clusters/dev/user-pool/**'
 
 # add hub-specific labels for deployment changes
-'hub: dvc':
-  - 'deployments/dvc/**'
-'hub: jupyter':
-  - 'deployments/jupyter/**'
-'hub: csuf':
-  - 'deployments/csuf/**'
-'hub: csum':
-  - 'deployments/csum/**'
-'hub: csulb':
-  - 'deployments/csulb/**'
-'hub: csueb':
-  - 'deployments/csueb/**'
-'hub: csus':
-  - 'deployments/csus/**'
-'hub: csumb':
-  - 'deployments/csumb/**'
-'hub: csula':
-  - 'deployments/csula/**'
-'hub: csusj':
-  - 'deployments/csusj/**'
-'hub: folsomlake':
-  - 'deployments/folsomlake/**'
-'hub: fresno':
-  - 'deployments/fresno/**'
-'hub: csub':
-  - 'deployments/csub/**'
-'hub: ucsc':
-  - 'deployments/ucsc/**'
-'hub: usc':
-  - 'deployments/usc/**'
-'hub: csufresno':
-  - 'deployments/csufresno/**'
-'hub: csun':
-  - 'deployments/csun/**'
 'hub: chicostate':
   - 'deployments/chicostate/**'
+'hub: cpp':
+  - 'deployments/cpp/**'
+'hub: csub':
+  - 'deployments/csub/**'
+'hub: csudh':
+  - 'deployments/csudh/**'
+'hub: csueb':
+  - 'deployments/csueb/**'
+'hub: csuf':
+  - 'deployments/csuf/**'
+'hub: csufresno':
+  - 'deployments/csufresno/**'
+'hub: csula':
+  - 'deployments/csula/**'
+'hub: csulb':
+  - 'deployments/csulb/**'
+'hub: csum':
+  - 'deployments/csum/**'
+'hub: csumb':
+  - 'deployments/csumb/**'
+'hub: csun':
+  - 'deployments/csun/**'
+'hub: csus':
+  - 'deployments/csus/**'
+'hub: csusb':
+  - 'deployments/csusb/**'
+'hub: csusj':
+  - 'deployments/csusj/**'
 'hub: csusonoma':
   - 'deployments/csusonoma/**'
 'hub: demo':
   - 'deployments/demo/**'
+'hub: dvc':
+  - 'deployments/dvc/**'
+'hub: folsomlake':
+  - 'deployments/folsomlake/**'
+'hub: fresno':
+  - 'deployments/fresno/**'
+'hub: jupyter':
+  - 'deployments/jupyter/**'
 'hub: sage':
   - 'deployments/sage/**'
+'hub: ucsc':
+  - 'deployments/ucsc/**'
+'hub: usc':
+  - 'deployments/usc/**'
 # 'hub: gpu-demo':
 #   - 'deployments/gpu-demo/**'

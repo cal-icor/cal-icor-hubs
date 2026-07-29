@@ -3,7 +3,7 @@
 # _deploy_configs directory.
 image_name: # remove or leave blank for base user image. full image path e.g. us-central1-docker.pkg.dev/cal-icor-hubs/user-images/base-user-image
 image_tag: # remove or leave blank for base user image.  this is the short image tag created by repo2docker, e.g. 7509a8e7435f
-deployment_type: python-base # if not included, defaults to python-base.  other options are rstudio-base
+hub_type: python-base # if not included, defaults to python-base.  other options are rstudio-base
 hub_name: dns-valid-hub-name
 hub_nfs_mount_path: # leave blank to use hub_name as the NFS mount path; set to share an existing mount with another hub (e.g. csumb)
 hub_nfs_server_ip: 34.118.238.48
