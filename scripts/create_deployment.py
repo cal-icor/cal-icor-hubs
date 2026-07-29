@@ -413,6 +413,11 @@ def populate_deployment_config(
     # Run the cookiecutter to generate the deployment files
     print(f"Generating {config['hub_name']} cookiecutter template.")
 
+    print(f"Generating openssl key for {config['hub_name']}.")
+    api_token = subprocess.run(
+        ["openssl", "rand", "-hex", "32"], capture_output=True, text=True, check=True
+    ).stdout.strip()
+
     # Check for overridden image_name and image_tag in the config, if not found, don't set them.
     cookiecutter(
         template=f"{root_path}/deployments/template",
@@ -445,6 +450,7 @@ def populate_deployment_config(
             "authenticator_class_instance": config["authenticator_class_instance"],
             "client_id_prod": config["prod"]["client"],
             "client_secret_prod": config["prod"]["secret"],
+            "cloudbank_api_token_prod": api_token,
             "idp_url": config["idp_url"],
             "idp_allowed_domains": ", ".join(
                 domain for domain in config["idp_allowed_domains"]
@@ -781,6 +787,11 @@ def main(args):
         + "\nDo not forget to create the alerts for the new hub after merging "
         + "the PR to prod. The instructions for that are found here: \n"
         + "https://docs.cal-icor.org/new-hub/#create-the-alerts-for-the-new-hub"
+        + "\n\n"
+        + "You also need to update the openssl token in the "
+        + "cloudbank-pilot-hub-users service in the enc-pilots.json file for "
+        + "the new hub. The instructions for that are found here: \n"
+        + "https://github.com/cal-icor/cal-icor-hubs#keeping-it-in-sync-with-cloudbank-pilot-hub-users"
     )
 
 

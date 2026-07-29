@@ -266,20 +266,31 @@ jupyterhub:
 
 ### Generating and setting a token
 
-Generate a new random token per hub:
+This is automatically generated when deploying a new hub with
+`create_deployment.sh`. If you need to generate one manually, please run the
+following command and update that deployment's `secrets/prod.yaml`.
 
 ``` bash
 openssl rand -hex 32
 ```
 
-Then set it in the hub's encrypted secret using the standard SOPS workflow.
-
 ### Keeping it in sync with cloudbank-pilot-hub-users
 
 The dashboard authenticates using these same tokens, so whenever a hub's token
 is created here, the **same value** must also be updated in the
-`cloudbank-pilot-hub-users` repo's `enc-pilots.json`, in the `token` field of
-the pilot entry matching this hub (matched by `url`, where `where: icor`).
+[`cloudbank-pilot-hub-users`](https://github.com/sean-morris/cloudbank-pilot-hub-users)
+repo's `enc-pilots.json`, in the `token` field of the pilot entry matching this
+hub (matched by `url`, where `where: icor`).
+
+You can get the generated token to put in `enc-pilots.json` by running:
+
+``` bash
+sops -d --extract '["jupyterhub"]["hub"]["services"]["cloudbank-pilot-hub-users"]["apiToken"]' \
+  deployments/<hub>/secrets/prod.yaml
+```
+
+`sops` prints the token without a trailing newline, so zsh appends a `%` to the
+line. It is not part of the token.
 
 If the two repos' tokens drift, the dashboard will get a `403` /
 `Missing or invalid credentials` error querying that hub until they're

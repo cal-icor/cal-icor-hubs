@@ -18,6 +18,7 @@
     "admin_emails": "",
     "client_id_prod": "valid-client-id-production",
     "client_secret_prod": "valid-client-secret-production",
+    "cloudbank_api_token_prod": "",
     "idp_allowed_domains": "",
     "allow_all": "",
     "allowed_organizations": "",
