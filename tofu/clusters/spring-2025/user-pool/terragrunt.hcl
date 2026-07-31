@@ -43,7 +43,7 @@ inputs = {
 
   machine_type    = "n2-highmem-8"
   min_nodes       = 0
-  max_nodes       = 3
+  max_nodes       = 5
   location_policy = "ANY"
   disk_size_gb    = 200
 

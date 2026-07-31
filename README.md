@@ -97,6 +97,17 @@ our Github Actions CI/CD pipeline.
 
 ## Installing other software packages required to deploy infrastructure
 
+We also need the following non-python based tools to perform operations on our
+deployments:
+
+- [gcloud](https://cloud.google.com/sdk/docs/install)
+- [gh](https://cli.github.com/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [sops](https://github.com/getsops/sops/releases)
+
+For these, please follow the links and install appropriately based on your
+platform.
+
 Our GKE infrastructure is managed with [OpenTofu](https://opentofu.org/) and
 orchestrated by [Terragrunt](https://terragrunt.gruntwork.io/).
 
@@ -144,6 +155,11 @@ When developing for this deployment, always work in a fork of this repo.
 You should also make sure that your repo is up-to-date with this one prior
 to making changes. This is because other contributors may have pushed changes
 after you last synced with this repo but before you upstreamed your changes.
+
+### Authenticating to the cloud infrastructure
+
+Please see the [Authenticating with `gcloud`, `kubectl` and `gh`](https://docs.cal-icor.org/admin-auth)
+found in our [admin docs](https://docs.cal-icor.org/index-2/)
 
 ### Syncing your repo
 
