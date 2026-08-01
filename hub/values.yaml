@@ -498,7 +498,7 @@ jupyterhub:
             return (await super().start())
 
           slow_spawn_message = Unicode(
-              "Server launch is taking longer than expected. Please be patient! Current time spent waiting: {seconds} seconds. Timeout is currently {timeout} seconds.",
+              "Server launch is taking longer than expected. Please be patient, the VM is still starting! Current time spent waiting: {seconds} seconds. Timeout is currently {timeout} seconds.",
               config=True,
               help="""
               The injected timing message to display to the user. The variable `{seconds}`
