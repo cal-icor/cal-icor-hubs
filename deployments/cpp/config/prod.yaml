@@ -5,7 +5,7 @@ nfsPVC:
 jupyterhub:
   custom:
     homepage:
-      gitRepoBranch: "username-and-password-homepage"
+      gitRepoBranch: "main"
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
@@ -27,7 +27,7 @@ jupyterhub:
         storage: 4Gi
     config:
       JupyterHub:
-        authenticator_class: dummy # TEMPORARY: switch back to cilogon once CILogon client is registered
+        authenticator_class: cilogon
       CILogonOAuthenticator:
         # temporarily disable token refresh to fix admin access to singleuser servers
         refresh_pre_spawn: false
