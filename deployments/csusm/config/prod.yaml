@@ -1,0 +1,59 @@
+nfsPVC:
+  nfs:
+    shareName: csusm/prod
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, San Marcos
+          logo_url: https://www.csusm.edu/_resources/images/logos/csusm-textlogo-sp.png
+          url: https://www.csusm.edu/
+  ingress:
+    enabled: true
+    hosts:
+      - csusm.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csusm.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+      JupyterHub:
+        authenticator_class: cilogon
+      CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        allowed_idps:
+          https://idp.csusm.edu/idp/shibboleth:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allow_all: true
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
+        oauth_callback_url: https://csusm.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - ouyang@csusm.edu
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

@@ -1,0 +1,6 @@
+cluster:
+  provider: gcloud
+  gcloud:
+    project: cal-icor-hubs
+    cluster: spring-2025
+    zone: us-central1

@@ -1,0 +1,46 @@
+nfsPVC:
+  nfs:
+    shareName: csusm/staging
+  dirsizeReporter:
+    enabled: false
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, San Marcos
+          logo_url: https://www.csusm.edu/_resources/images/logos/csusm-textlogo-sp.png
+          url: https://www.csusm.edu/
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - csusm-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csusm-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - ouyang@csusm.edu

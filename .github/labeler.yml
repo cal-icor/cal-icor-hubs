@@ -186,8 +186,12 @@ tofu-user-pool:
   - 'deployments/csusb/**'
 'hub: csusj':
   - 'deployments/csusj/**'
+'hub: csusm':
+  - 'deployments/csusm/**'
 'hub: csusonoma':
   - 'deployments/csusonoma/**'
+'hub: csustan':
+  - 'deployments/csustan/**'
 'hub: demo':
   - 'deployments/demo/**'
 'hub: dvc':

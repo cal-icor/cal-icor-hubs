@@ -1,0 +1,46 @@
+nfsPVC:
+  nfs:
+    shareName: csustan/staging
+  dirsizeReporter:
+    enabled: false
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California State University, Stanislaus
+          logo_url: https://www.csustan.edu/themes/custom/csustan/logo.svg
+          url: https://www.csustan.edu/
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - csustan-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - csustan-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - jguerrero42@csustan.edu
