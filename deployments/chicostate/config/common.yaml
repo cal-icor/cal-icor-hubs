@@ -19,7 +19,7 @@ jupyterhub:
   singleuser:
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
-      tag: 90914e23165a
+      tag: 7c8bb4efa969
     extraFiles:
       # DH-216
       remove-exporters:

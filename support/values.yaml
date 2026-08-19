@@ -204,6 +204,8 @@ node-placeholder-scaler:
   nodeSelector:
     hub.jupyter.org/pool-name: support-pool-2026-07-07
 
+  recentlyFreedGracePeriod: 300 # time in seconds
+
   # cpuThreshold: 0.25 # ignore this as our workloads are memory-bound, not cpu
   memoryThreshold: 0.40 # set this pretty high to avoid overloading nodes and get new ones spun up earlier
   scalingStrategy: "mem" # Options: cpu, mem, balanced (default)
