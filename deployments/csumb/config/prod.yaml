@@ -74,6 +74,8 @@ jupyterhub:
           - kegutierrez@csumb.edu
           - obeaudoin@csumb.edu
           - sgoel@csumb.edu
+          # https://github.com/cal-icor/cal-icor-hubs/issues/1059
+          - rtghiasvand-taraki@csumb.edu
     loadRoles:
       cloudbank-pilot-hub-users:
         services:
