@@ -9,7 +9,7 @@ jupyterhub:
   cull:
     # Cull after 45min of inactivity
     every: 300 # 5m
-    timeout: 2700 # 45m (was 30m, see https://github.com/cal-icor/cal-icor-hubs/issues/1064)
+    timeout: 3600 # 60m (was 45m, was 30m, see https://github.com/cal-icor/cal-icor-hubs/issues/1064)
     # No pods over 12h long
     maxAge: 43200
   prePuller:
