@@ -103,7 +103,7 @@ def validate_config(config: dict, config_path: Path):
         print(f"Error: {config_path} is not ready to deploy:")
         for error in errors:
             print(f"  - {error}")
-        exit(1)
+        sys.exit(1)
 
 
 def delete_file(filepath: Path):
@@ -125,7 +125,7 @@ def delete_file(filepath: Path):
         print(f"File not found: {filepath}")
     except PermissionError:
         print(f"No permission to delete: {filepath}")
-    except Exception as e:
+    except OSError as e:
         print(f"Error deleting file: {e}")
 
 
@@ -279,20 +279,20 @@ def create_label(hub_name: str, root_path: str) -> str:
         print(f"Created GitHub label for {hub_name}.")
     except subprocess.CalledProcessError as e:
         print(f"Unable to get branch from {root_path}: {e}.")
-        exit(1)
+        sys.exit(1)
 
     return github_label
 
 
 def stage_and_push(
-    hub_name: str, root_path: Path, branch_name: str, extra_files: list = None
+    hub_name: str, root_path: Path, branch_name: str, extra_files: list | None = None
 ):
     """
     Stage the new deployment files for the hub.
 
     Args:
         hub_name (str): The name of the hub.
-        root_path (str): The path to the root directory of the repository.
+        root_path (Path): The path to the root directory of the repository.
         branch_name (str): The name of the branch to push the changes to.
         extra_files (list): Additional files to stage alongside the deployment files.
     """
@@ -303,12 +303,12 @@ def stage_and_push(
     if extra_files:
         files_to_add.extend(extra_files)
     for file in files_to_add:
-        print(f"Adding {str(file)} to staging.")
+        print(f"Adding {file!s} to staging.")
         try:
             subprocess.check_call(["git", "add", str(file)], cwd=str(root_path))
         except subprocess.CalledProcessError as e:
-            print(f"Error adding {str(file)} to commit: {e}")
-            exit(1)
+            print(f"Error adding {file!s} to commit: {e}")
+            sys.exit(1)
 
     commit_message = f"Add {hub_name} deployment."
     print(f"Committing changes for {hub_name} with message {commit_message}.")
@@ -318,7 +318,7 @@ def stage_and_push(
         )
     except subprocess.CalledProcessError as e:
         print(f"Error committing {hub_name}: {e}")
-        exit(1)
+        sys.exit(1)
 
     remote = "origin"
     print(f"Pushing {branch_name} to {remote}")
@@ -326,7 +326,7 @@ def stage_and_push(
         subprocess.check_call(["git", "push", remote, branch_name], cwd=str(root_path))
     except subprocess.CalledProcessError as e:
         print(f"Error pushing {branch_name} to {remote}: {e}")
-        exit(1)
+        sys.exit(1)
 
 
 def create_pr(github_user: str, hub_name: str, branch_name: str, github_label: str):
@@ -358,10 +358,10 @@ def create_pr(github_user: str, hub_name: str, branch_name: str, github_label: s
         if body is not None:
             command.append(f"-b {body}")
         print(command)
-        subprocess.run(command)
+        subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Unable to create pull request for {hub_name}: {e}")
-        exit(1)
+        sys.exit(1)
 
 
 def create_branch(branch_name: str, root_path: Path):
@@ -378,25 +378,26 @@ def create_branch(branch_name: str, root_path: Path):
                 ["git", "branch", "--show-current"],
                 cwd=str(root_path),
                 capture_output=True,
+                check=True,
             )
             .stdout.decode("utf-8")
             .strip()
         )
     except subprocess.CalledProcessError as e:
         print(f"Unable to get branch from {root_path}: {e}.")
-        exit(1)
+        sys.exit(1)
 
     if branch != "staging":
         print(
             f"Currently not on branch 'staging' in {root_path}. Not "
             + "creating a feature branch and exiting."
         )
-        exit(1)
+        sys.exit(1)
     try:
         subprocess.check_call(["git", "switch", "-c", branch_name], cwd=str(root_path))
     except subprocess.CalledProcessError as e:
         print(f"Error creating branch {branch_name}: {e}")
-        exit(1)
+        sys.exit(1)
 
 
 def populate_deployment_config(
@@ -424,20 +425,10 @@ def populate_deployment_config(
         output_dir=f"{root_path}/deployments",
         no_input=manual_config,
         extra_context={
-            "image_name": (
-                config["image_name"]
-                if "image_name" in config and config["image_name"]
-                else None
-            ),
-            "image_tag": (
-                config["image_tag"]
-                if "image_tag" in config and config["image_tag"]
-                else None
-            ),
+            "image_name": (config["image_name"] if config.get("image_name") else None),
+            "image_tag": (config["image_tag"] if config.get("image_tag") else None),
             "hub_type": (
-                config["hub_type"]
-                if "hub_type" in config and config["hub_type"]
-                else "python-base"
+                config["hub_type"] if config.get("hub_type") else "python-base"
             ),
             "hub_name": config["hub_name"],
             "hub_nfs_mount_path": config["hub_nfs_mount_path"],
@@ -590,11 +581,11 @@ def create_remote_dirs(config: dict):
         )
     except subprocess.CalledProcessError as e:
         print(f"Error getting NFS server pod: {e}")
-        exit(1)
+        sys.exit(1)
 
     if not pod_name:
         print("Error: No NFS server pod found in jupyterhub-home-nfs namespace.")
-        exit(1)
+        sys.exit(1)
 
     print(f"Creating directories on NFS server pod {pod_name}.")
     mkdir_cmd = "mkdir -p " + " ".join(dirs)
@@ -615,7 +606,7 @@ def create_remote_dirs(config: dict):
         )
     except subprocess.CalledProcessError as e:
         print(f"Error creating directories for {hub_name}: {e}")
-        exit(1)
+        sys.exit(1)
 
 
 def create_deployment(
@@ -738,12 +729,12 @@ def main(args):
     # Check if the script is run from the correct directory
     if Path.cwd() != Path(__file__).resolve().parents[1]:
         print("Error: This script must be run from the root cal-icor-hubs directory.")
-        exit(1)
+        sys.exit(1)
 
     # Check if the _deploy_configs directory exists
     if not Path(__file__).resolve().parents[1].joinpath("_deploy_configs").exists():
         print("Error: The _deploy_configs directory does not exist. Please create it.")
-        exit(1)
+        sys.exit(1)
 
     # Check if the config file exists
     if (
@@ -754,7 +745,7 @@ def main(args):
         .exists()
     ):
         print(f"Error: The config file {args.institution_name}.yaml does not exist.")
-        exit(1)
+        sys.exit(1)
 
     root_path = Path(__file__).resolve().parents[1]
     deployment_config = (
@@ -763,7 +754,7 @@ def main(args):
     config = YAML(typ="safe").load(deployment_config)
     if not config:
         print(f"Error loading config for {args.institution_name}.")
-        exit(1)
+        sys.exit(1)
 
     validate_config(config, deployment_config)
 

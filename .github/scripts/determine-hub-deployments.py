@@ -21,8 +21,8 @@ def main(args):
 
     # Deploy all hubs by getting deployment names from the dirs in deployments/
     if (
-        "GITHUB_PR_LABEL_JUPYTERHUB_DEPLOYMENT" in os.environ.keys()
-        or "GITHUB_PR_LABEL_HUB_IMAGES" in os.environ.keys()
+        "GITHUB_PR_LABEL_JUPYTERHUB_DEPLOYMENT" in os.environ
+        or "GITHUB_PR_LABEL_HUB_IMAGES" in os.environ
     ):
         for deployment in next(os.walk(args.deployments))[1]:
             if deployment not in args.ignore:
@@ -32,7 +32,7 @@ def main(args):
     else:
         hub_labels = [
             k.replace("GITHUB_PR_LABEL_HUB_", "").replace("_", "-").lower()
-            for k in os.environ.keys()
+            for k in os.environ
             if k.startswith("GITHUB_PR_LABEL_HUB_")
         ]
         hubs = [x for x in hub_labels if x not in args.ignore]

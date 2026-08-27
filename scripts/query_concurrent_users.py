@@ -231,7 +231,7 @@ def format_text(report):
     for w in report["weeks"]:
         bar = "#" * (w["peak"] // 5)
         lines.append(
-            f"  {w['week']:<12} {w['peak']:>5}  {str(w['active']):>6}  "
+            f"  {w['week']:<12} {w['peak']:>5}  {w['active']!s:>6}  "
             f"{w['hrs_t']:>6.1f}h  {w['hrs_t2']:>7.1f}h  {bar}"
         )
     if report.get("active_note"):
@@ -474,7 +474,7 @@ def write_report(report, fmt, script_dir):
         end_slug = report["end"].replace(" ", "T").replace(":", "")
         filename = f"concurrent-users-{start_slug}-to-{end_slug}.{ext}"
     else:
-        date_str = datetime.now().strftime("%Y-%m-%d")
+        date_str = datetime.now().astimezone().strftime("%Y-%m-%d")
         filename = f"concurrent-users-{date_str}.{ext}"
     path = script_dir / "reports" / filename
 
@@ -707,7 +707,7 @@ def main(args):
         hrs_t2 = sum(1 for v in s if v > T2) * sample_hours
         bar = "#" * (wpeak // 5)
         print(
-            f"  {week:<12} {wpeak:>5}  {str(active):>6}  "
+            f"  {week:<12} {wpeak:>5}  {active!s:>6}  "
             f"{hrs_t:>6.1f}h  {hrs_t2:>7.1f}h  {bar}"
         )
         report["weeks"].append(

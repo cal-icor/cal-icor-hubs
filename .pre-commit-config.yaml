@@ -45,7 +45,7 @@ repos:
   # Autoformat: Python code
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.15.22
+    rev: v0.16.1
     hooks:
       # Run the linter.
       - id: ruff
@@ -65,12 +65,12 @@ repos:
 
   # Autoformat: Python code
   - repo: https://github.com/pycqa/isort
-    rev: "8.0.1"
+    rev: "9.0.0"
     hooks:
       - id: isort
 
   # Autoformat: Python code
-  - repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black-pre-commit-mirror
     rev: "26.5.1"
     hooks:
       - id: black

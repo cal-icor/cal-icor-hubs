@@ -1,11 +1,12 @@
 # hubploy, chartpress
 docs/_build
-hub/charts
+**/charts
 **/*.lock
 **/*.tgz
 
 # decrypted secrets (pre-commit checks will catch this but this is jsut extra safe
 **/*.dec.*
+**/.decrypted*
 
 # vi
 **/*.swp

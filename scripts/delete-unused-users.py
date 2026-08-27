@@ -95,10 +95,9 @@ def should_delete(user, inactive_since):
                 datetime.now().astimezone() - last_activity < inactive_since
             )
         else:
-            logger.error(
-                f"For user {user['name']}, expected datetime.datetime class for last_activity but got {type(last_activity)} instead."
-            )
-            raise
+            msg = f"For user {user['name']}, expected datetime.datetime class for last_activity but got {type(last_activity)} instead."
+            logger.error(msg)
+            raise TypeError(msg)
 
         logger.debug(f"User: {user['name']}")
         logger.debug(f"Last login: {last_activity}")
@@ -156,10 +155,9 @@ def main(args):
     and if so, delete them!
     """
     if args.credentials and args.hub_url:
-        logger.error(
-            "Please use only one of --hub_url or --credentials options when executing the script."
-        )
-        raise
+        msg = "Please use only one of --hub_url or --credentials options when executing the script."
+        logger.error(msg)
+        raise ValueError(msg)
 
     if args.hub_url:
         logger.info(
@@ -168,29 +166,31 @@ def main(args):
         token = os.environ["JUPYTERHUB_API_TOKEN"]
 
         if not token:
-            logger.error("Environment variable JUPYTERHUB_API_TOKEN is not set.")
-            raise
+            msg = "Environment variable JUPYTERHUB_API_TOKEN is not set."
+            logger.error(msg)
+            raise ValueError(msg)
 
         delete_users_from_hub(args.hub_url, token, args.inactive_since, args.dry_run)
 
     elif args.credentials:
         logger.debug(f"Attempting to load credentials file: {args.credentials}")
-        creds = json.loads(open(args.credentials).read())
+        with open(args.credentials) as f:
+            creds = json.load(f)
         if not creds:
-            logger.error(f"The credentials file is empty: {args.credentials}")
-            raise
+            msg = f"The credentials file is empty: {args.credentials}"
+            logger.error(msg)
+            raise ValueError(msg)
 
-        for hub in creds.keys():
+        for hub in creds:
             logger.info(f"Checking for and deleting ORM users on hub: {hub}")
             token = creds[hub]
             delete_users_from_hub(hub, token, args.inactive_since, args.dry_run)
             print()
 
     else:
-        logger.error(
-            "You must specify a single hub with the --hub_url argument, or a json file containing hubs and api keys with the --credentials argument."
-        )
-        raise
+        msg = "You must specify a single hub with the --hub_url argument, or a json file containing hubs and api keys with the --credentials argument."
+        logger.error(msg)
+        raise ValueError(msg)
 
 
 if __name__ == "__main__":

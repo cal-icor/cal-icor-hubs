@@ -175,8 +175,7 @@ def main(args: argparse.Namespace) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
     if output_path:
         with open(output_path, "a") as fh:
-            for key, value in results.items():
-                fh.write(f"{key}={value}\n")
+            fh.writelines(f"{key}={value}\n" for key, value in results.items())
 
     print("  ".join(f"{key}: {value}" for key, value in results.items()))
 
