@@ -35,6 +35,7 @@ jupyterhub:
       CILogonOAuthenticator:
         # temporarily disable token refresh to fix admin access to singleuser servers
         refresh_pre_spawn: false
+        auth_refresh_age: 0
         allowed_idps:
           https://sso.csumb.edu/idp/shibboleth:
             default: true
