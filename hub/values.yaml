@@ -1,5 +1,6 @@
 etcGitConfig:
   enabled: false
+
 nfsPVC:
   enabled: true
   dirsizeReporter:
@@ -7,9 +8,8 @@ nfsPVC:
 
 jupyterhub:
   cull:
-    # Cull after 45min of inactivity
-    every: 300 # 5m
-    timeout: 3600 # 60m (was 45m, was 30m, see https://github.com/cal-icor/cal-icor-hubs/issues/1064)
+    # Cull after 60min of inactivity (this is actually the default, but we set it here to be explicit)
+    timeout: 3600 # see https://github.com/cal-icor/cal-icor-hubs/issues/1064
     # No pods over 12h long
     maxAge: 43200
   prePuller:
@@ -37,6 +37,7 @@ jupyterhub:
           memory: 128Mi
         limits:
           memory: 1G
+
   proxy:
     service:
       type: ClusterIP
@@ -66,6 +67,7 @@ jupyterhub:
       enabled: true
       letsencrypt:
         contactEmail: calicor-letsencrypt@berkeley.edu
+
   singleuser:
     cmd:
       # Explicitly define this, as it's no longer set by z2jh
@@ -95,13 +97,24 @@ jupyterhub:
           # https://github.com/jupyterlab/jupyterlab/issues/11304#issuecomment-945466766
           ContentsManager:
             allow_hidden: true
+          # Allow deletion of directories with files in them, after a confirmation dialog
+          # https://github.com/NASA-IMPACT/veda-jupyterhub/issues/96
+          FileContentsManager:
+            always_delete_dir: true
+          # don't store RTC state on NFS...  sqlite/databases + nfs == sadness
+          # we don't yet have RTC enabled, but after seeing this config in the
+          # 2i2c config, it seems like a good idea to set this now
+          # https://github.com/2i2c-org/infrastructure/issues/2245
+          SQLiteYStore:
+            db_path: /tmp/jupyterlab_ystore.db
       culling-config:
         mountPath: /etc/jupyter/jupyter_notebook_config.json
         data:
-          NotebookApp:
-            # shutdown the server after no 60 mins of no activity
-            shutdown_no_activity_timeout: 3600
-
+          # commenting this out as it's mildly redundant, and will re-set the cull timeout
+          # for the singleuser server back to 60m.
+          # NotebookApp:
+          #   # shutdown the server after no 30 mins of no activity
+          #   shutdown_no_activity_timeout: 1800
           # if a user leaves a notebook with a running kernel,
           # the effective idle timeout will typically be CULL_TIMEOUT + CULL_KERNEL_TIMEOUT
           # as culling the kernel will register activity,
@@ -109,8 +122,6 @@ jupyterhub:
           MappingKernelManager:
             # shutdown kernels after 60 mins of no activity
             cull_idle_timeout: 3600
-            # check for idle kernels this often
-            cull_interval: 60
             # a kernel with open connections but no activity still counts as idle
             # this is what allows us to shutdown servers
             # when people leave a notebook open and wander off
@@ -129,7 +140,7 @@ jupyterhub:
       # Set RUNTIME_DIR to live under /tmp, as these need not persist across container restarts
       # This doesn't cause a *lot* of NFS traffic, but does cause *some*
       JUPYTER_RUNTIME_DIR: /tmp/jupyter-runtime
-    startTimeout: 600 # 10 mins, because sometimes we have too many new nodes coming up together
+    startTimeout: 600 # 10 mins, because node startup + image pulls take a while
     networkPolicy:
       enabled: true
       # We enable all outgoing access to the broader internet, but not to private IP ranges
@@ -166,7 +177,6 @@ jupyterhub:
           mountPath: /home/jovyan/shared
           subPath: _shared
           readOnly: true
-
 
   custom:
     homepage:
@@ -299,8 +309,6 @@ jupyterhub:
       - mountPath: /usr/local/share/jupyterhub/static/extra-assets
         name: custom-templates
         subPath: repo/extra-assets
-
-
     # The default of 64 is way too low for us
     concurrentSpawnLimit: 200
     loadRoles:
@@ -313,7 +321,6 @@ jupyterhub:
         # use the main hub for auth
           - access:services
           - self
-
     config:
       Pagination:
         # Disable pagination completely, since there's no search functionality yet
@@ -498,7 +505,7 @@ jupyterhub:
             return (await super().start())
 
           slow_spawn_message = Unicode(
-              "Server launch is taking longer than expected. Please be patient, the VM is still starting! Current time spent waiting: {seconds} seconds. Timeout is currently {timeout} seconds.",
+              "Server launch is taking longer than expected. Please be patient! Current time spent waiting: {seconds} seconds. Timeout is currently {timeout} seconds.",
               config=True,
               help="""
               The injected timing message to display to the user. The variable `{seconds}`
