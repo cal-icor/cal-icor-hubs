@@ -14,10 +14,10 @@ jupyterhub:
           name: California State University, Monterey Bay
           logo_url: https://csumb.edu/media/csumb/site-assets-2024/images/logo.svg
           url: https://www.csumb.edu/
-  singleuser:
-    image:
-      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
-      tag: f72d201b0dcf
+  # singleuser:
+  #   image:
+  #     name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
+  #     tag: f72d201b0dcf
   scheduling:
     userScheduler:
       replicas: 1
