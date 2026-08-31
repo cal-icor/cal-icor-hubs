@@ -5,12 +5,12 @@ nfsPVC:
 jupyterhub:
   custom:
     homepage:
-      gitRepoBranch: "username-and-password-homepage"
+      gitRepoBranch: "main"
       gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
       templateVars:
         org:
           name: California State University, San Bernardino
-          logo_url: https://www.csusb.edu/sites/default/files/upload/image/csusb_seal_424x337_0_0.png
+          logo_url: https://upload.wikimedia.org/wikipedia/commons/2/2d/CSU_sanbernardino_univ_logo.svg
           url: https://www.csusb.edu/
   ingress:
     enabled: true
@@ -27,7 +27,7 @@ jupyterhub:
         storage: 4Gi
     config:
       JupyterHub:
-        authenticator_class: dummy # TEMPORARY: switch back to cilogon once CILogon client is registered
+        authenticator_class: cilogon
       CILogonOAuthenticator:
         # temporarily disable token refresh to fix admin access to singleuser servers
         refresh_pre_spawn: false
