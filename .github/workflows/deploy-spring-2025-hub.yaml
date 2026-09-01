@@ -75,7 +75,7 @@ jobs:
             # reads the GITHUB_PR_LABEL_HUB_* env vars set from the merge commit's
             # labels; both the all-hubs labels and a per-hub label land on prod.
             hubs=$(python .github/scripts/determine-hub-deployments.py \
-                     --ignore gpu-demo rstudio dev sage csum \
+                     --ignore gpu-demo rstudio dev sage \
                    | jq -R -s -c 'split("\n") | map(select(length > 0))')
             echo "hubs=${hubs}" >> "$GITHUB_OUTPUT"
           fi
