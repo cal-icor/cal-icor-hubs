@@ -458,6 +458,35 @@ jupyterhub:
               self.user.admin = override['admin']
 
           async def start(self):
+
+            # use secret key for users in group 'jh-group' to set an environment variable
+            #
+            # a user must be in the jupyterhub-defined group 'jh-group' AND the
+            # helm-defined group 'helm-defined-group' to get the key/value set
+            # in their environment.
+            # the secret key/value is defined in <deployment>/secrets/prod|staging.yaml
+            #
+            # groups can be named differently across deployments, so best-practice would
+            # be to have the helm config group name include the institution and/or class
+            # name, so that we can have multiple groups across all deployments w/o and
+            # name collisions.  For example, 'cal-icor-workshop-2026' or 'ucsb-cs188-fa26'.
+            #
+            # the reason we need to do this is that the primary checks for groups happen
+            # in the spawner, which is shared across all hubs.
+            #
+            # this works for regular environment vars, but not rstudio.  for that we will
+            # need to put the env var in .Renviron if necessary, as well as explicitly
+            # delete it if the user is not in the group.
+            groups = z2jh.get_config("custom.groups", {})
+            testgroup = groups.get("helm-defined-group", {})
+
+            # the user may be in more than one group, so check 'em all
+            for g in self.user.groups:
+              # self.log.info(f'self.user.groups.{x}: {x}')
+              if g.name == 'jh-group':
+                self.log.info('adding keys to self.environment')
+                self.environment.update({testgroup.get("key"): testgroup.get("value")})
+
             # give admins read/write access to the shared folder
             if self.user.admin:
               for name, v in list(self.volume_mounts.items()):
