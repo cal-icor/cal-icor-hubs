@@ -8,8 +8,9 @@ nfsPVC:
 
 jupyterhub:
   cull:
-    # Cull after 60min of inactivity (this is actually the default, but we set it here to be explicit)
+    # cull after 60min of inactivity (this is actually the default, but we set it here to be explicit)
     timeout: 3600 # see https://github.com/cal-icor/cal-icor-hubs/issues/1064
+    every: 300
     # No pods over 12h long
     maxAge: 43200
   prePuller:
@@ -101,31 +102,26 @@ jupyterhub:
           # https://github.com/NASA-IMPACT/veda-jupyterhub/issues/96
           FileContentsManager:
             always_delete_dir: true
+          MappingKernelManager: &mapping_kernel_manager_server_config
+            # cull idle kernels after 1h of inactivity, check every 5min, and cull even if connected
+            cull_idle_timeout: 3600
+            cull_interval: 300
+            cull_connected: true
+          ServerApp: &server_app_config
+            # cull idle servers after 1h of inactivity, check every 5min
+            shutdown_no_activity_timeout: 3600
           # don't store RTC state on NFS...  sqlite/databases + nfs == sadness
           # we don't yet have RTC enabled, but after seeing this config in the
           # 2i2c config, it seems like a good idea to set this now
           # https://github.com/2i2c-org/infrastructure/issues/2245
           SQLiteYStore:
             db_path: /tmp/jupyterlab_ystore.db
-      culling-config:
+      jupyter_notebook_config.json:
         mountPath: /etc/jupyter/jupyter_notebook_config.json
         data:
-          # commenting this out as it's mildly redundant, and will re-set the cull timeout
-          # for the singleuser server back to 60m.
-          # NotebookApp:
-          #   # shutdown the server after no 30 mins of no activity
-          #   shutdown_no_activity_timeout: 1800
-          # if a user leaves a notebook with a running kernel,
-          # the effective idle timeout will typically be CULL_TIMEOUT + CULL_KERNEL_TIMEOUT
-          # as culling the kernel will register activity,
-          # resetting the no_activity timer for the server as a whole
-          MappingKernelManager:
-            # shutdown kernels after 60 mins of no activity
-            cull_idle_timeout: 3600
-            # a kernel with open connections but no activity still counts as idle
-            # this is what allows us to shutdown servers
-            # when people leave a notebook open and wander off
-            cull_connected: true
+          # use the same config as jupyter_server_config.json for the notebook server
+          NotebookApp: *server_app_config
+          MappingKernelManager: *mapping_kernel_manager_server_config
           NotebookNotary:
             # Use memory for notebook notary file to workaround corrupted files on nfs
             # https://www.sqlite.org/inmemorydb.html
@@ -210,6 +206,7 @@ jupyterhub:
             </div>
 
   hub:
+    shutdownOnLogout: true
     initContainers:
       - name: templates-clone
         image: alpine/git:2.40.1
