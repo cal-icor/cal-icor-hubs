@@ -402,7 +402,7 @@ jupyterhub:
         # https://discourse.jupyter.org/t/content-security-policy-iframe-embeding-not-working-in-new-version/20194/5
         # https://z2jh.jupyter.org/en/stable/administrator/advanced.html#hub-extraconfig
         c.JupyterHub.tornado_settings = {'headers': {'Content-Security-Policy': "frame-ancestors *;"}}
-        c.Spawner.args = ['--NotebookApp.tornado_settings={"headers":{"Content-Security-Policy": "frame-ancestors *;"}}']
+        c.Spawner.args = ['--ServerApp.tornado_settings={"headers":{"Content-Security-Policy": "frame-ancestors *;"}}']
 
       02-custom-attr-spawner: |
         import asyncio
