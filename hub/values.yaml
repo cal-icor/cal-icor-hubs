@@ -107,9 +107,8 @@ jupyterhub:
             cull_idle_timeout: 3600
             cull_interval: 300
             cull_connected: true
-          ServerApp: &server_app_config
-            # cull idle servers after 1h of inactivity, check every 5min
             shutdown_no_activity_timeout: 3600
+          ServerApp: &server_app_config
           # don't store RTC state on NFS...  sqlite/databases + nfs == sadness
           # we don't yet have RTC enabled, but after seeing this config in the
           # 2i2c config, it seems like a good idea to set this now
