@@ -235,6 +235,56 @@ this time with the `base` set to prod and the `head` set to staging. This
 PR will trigger a similar Travis process. Test your change on production
 for good measure.
 
+## CILogon clients
+
+Cal-ICOR's CILogon OIDC clients are managed from the command line with
+`scripts/cilogon_clients.py`, rather than through the web registration form.
+
+**Production only.** Staging hubs authenticate with `DummyAuthenticator`
+(`authenticator_class: dummy`), so they need no CILogon client. Each hub has a
+single client, named `cal-icor-<hub>`, with the callback
+`https://<hub>.jupyter.cal-icor.org/hub/oauth_callback`.
+
+```bash
+./scripts/cilogon_clients.py list                          # every client we administer
+./scripts/cilogon_clients.py add    <hub> --write          # create + store credentials
+./scripts/cilogon_clients.py get    <hub>                  # full record
+./scripts/cilogon_clients.py update <hub> [--callback URL] # change callback/name/scope
+./scripts/cilogon_clients.py remove <hub>
+```
+
+`--write` patches `client_id` and `client_secret` into
+`deployments/<hub>/secrets/prod.yaml` and re-encrypts it with SOPS. Without
+`--write` the credentials are printed instead — **CILogon shows the secret once
+and never stores it**, so capture it or you will have to recreate the client.
+Add `--dry-run` to any create/update to see the payload without sending it.
+
+### Admin credentials
+
+The script authenticates with Cal-ICOR's CILogon *admin* client, read from
+`scripts/secrets/enc-cilogon.yaml` (SOPS-encrypted):
+
+```yaml
+cilogon_admin:
+  client_id: cilogon:/adminClient/<hash>/<timestamp>
+  client_secret: <secret>
+```
+
+`$CILOGON_ADMIN_ID` and `$CILOGON_ADMIN_SECRET` override the file if set.
+
+The admin client is **not** created in `registry.cilogon.org` — register it at
+<https://cilogon.org/oauth2/admin-register>, then email `help@cilogon.org` to
+have it approved before it will work.
+
+### It only sees what it created
+
+The admin client can only list, read, update or delete clients that were
+created *through it*. Clients registered via the web form at
+`cilogon.org/oauth2/register` or through the registry UI return
+`this admin client does not administer the client with ID ...`, and never
+appear in `list`. Hubs still using such a client need a new one created here
+and their secrets repointed before the CLI can manage them.
+
 ## Service Accounts: cloudbank-pilot-hub-users
 
 The [`cloudbank-pilot-hub-users`](https://github.com/cal-icor/cloudbank-pilot-hub-users)
