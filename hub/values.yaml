@@ -11,8 +11,8 @@ jupyterhub:
     # cull after 60min of inactivity (this is actually the default, but we set it here to be explicit)
     timeout: 3600 # see https://github.com/cal-icor/cal-icor-hubs/issues/1064
     every: 300
-    # No pods over 12h long
-    maxAge: 43200
+    # No pods over 8h long
+    maxAge: 28800
   prePuller:
     hook:
       pullOnlyOnChanges: true
