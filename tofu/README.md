@@ -35,13 +35,12 @@ tofu/
 
 Each leaf `terragrunt.hcl` is a *unit*: it `include`s [`root.hcl`](root.hcl) and
 points at a module via `terraform { source = "../../../modules/<name>" }`. One
-unit, one state file.
+state file per unit.
 
 The unit's path under `tofu/` becomes its GCS state prefix (e.g.
 [`clusters/spring-2025/network`](clusters/spring-2025/network)), so nobody
-hand-writes a backend. The key
-follows the directory, so moving a unit means relocating its state object in the
-bucket to the matching prefix.
+hand-writes a backend. The key follows the directory, so moving a unit means
+relocating its state object in the bucket to the matching prefix.
 
 ## Running a unit
 
@@ -90,15 +89,17 @@ firewall (IAP range `35.235.240.0/20`, tcp:22, target tag `hub-cluster`).
 
 ### Node pools
 
-All pinned to `us-central1-b`, disk 100 GB unless noted.
+The stateful pools run in `us-central1-b`. The user and workshop pools span
+`us-central1-a`, `b`, `c` and `f`, and their max counts cover the whole pool.
+Disk is 100 GB unless noted.
 
 | Pool | Machine | Nodes min/max | Runs | Notes |
 |------|---------|---------------|------|-------|
 | `prometheus-pool-2026-06-29` | `n2-standard-8` | 1 / 3 | `prometheus-server` | 1000Gi `prometheus-data` PD |
 | `core-pool-2026-06-30` | `n2-standard-8` | 1 / 3 | every hub's hub + proxy pods, ingress-nginx | `max_pods_per_node=200`, `cpu_manager_policy=static`, TCP sysctls |
 | `support-pool-2026-07-07` | `n2-standard-4` | 1 / 3 | cert-manager, kube-state-metrics, grafana, statsd, placeholder-scaler, dirsize reporters, in-cluster NFS server | grafana + `home-nfs` carry zonal PDs |
-| `user-pool-2026-07-07` | `n2-highmem-8` | 0 / 3 | student singleuser servers + placeholders | disk 200 GB, `location_policy=ANY`, taint `hub.jupyter.org_dedicated=user:NoSchedule` |
-| `workshop-pool-2026-07-07` | `n2d-highmem-16` | 0 / 2 | workshop singleuser servers | disk 200 GB, same `user` taint, normally scaled to zero |
+| `user-pool-2026-07-07` | `n2-highmem-8` | 0 / 8 | student singleuser servers + placeholders | zones a,b,c,f, disk 200 GB, `location_policy=ANY`, taint `hub.jupyter.org_dedicated=user:NoSchedule` |
+| `workshop-pool-2026-07-07` | `n2d-highmem-16` | 0 / 2 | workshop singleuser servers | zones a,b,c,f, disk 200 GB, same `user` taint, normally scaled to zero |
 
 `gpu-pool` is idle (scaled to zero) and not tofu-managed.
 

@@ -11,18 +11,21 @@ resource "google_container_node_pool" "pool" {
   # spring-2025 regional pools, which pass no location, are unchanged.
   location = coalesce(var.location, var.region)
 
-  # Pin the actual node zone(s). Single zone for spring-2025 so stateful pods can
-  # reattach their zonal PDs.
+  # Zones the nodes run in. Pools with zonal PDs stay in the PD's zone; the user
+  # and workshop pools span several.
   node_locations = var.node_locations
 
   # Matches how the existing pools were created (1 node per zone); the autoscaler
   # takes over from there.
   initial_node_count = var.initial_node_count
 
+  # GKE rejects per-zone and total limits together, so the unused pair is null.
   autoscaling {
-    min_node_count  = var.min_nodes
-    max_node_count  = var.max_nodes
-    location_policy = var.location_policy
+    min_node_count       = var.total_node_limits ? null : var.min_nodes
+    max_node_count       = var.total_node_limits ? null : var.max_nodes
+    total_min_node_count = var.total_node_limits ? var.min_nodes : null
+    total_max_node_count = var.total_node_limits ? var.max_nodes : null
+    location_policy      = var.location_policy
   }
 
   max_pods_per_node = var.max_pods_per_node
