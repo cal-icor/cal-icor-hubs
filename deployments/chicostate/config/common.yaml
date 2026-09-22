@@ -39,5 +39,5 @@ jupyterhub:
         pvcName: home-nfs
         subPath: "{username}"
     memory:
-      guarantee: 2G
+      guarantee: 1G
       limit: 2G
