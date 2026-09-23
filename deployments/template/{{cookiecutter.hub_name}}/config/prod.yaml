@@ -46,9 +46,11 @@ jupyterhub:
               - {{ domain.strip() }}
               {%- endfor %}
             {%- endif %}
+          {%- if cookiecutter.idp_url != "http://google.com/accounts/o8/id" %}
           http://google.com/accounts/o8/id:
             username_derivation:
               username_claim: "email"
+          {%- endif %}
         {%- elif cookiecutter.authenticator_class == "github" %}
         allowed_organizations:
           {%- for org in cookiecutter.allowed_organizations.split(',') %}
