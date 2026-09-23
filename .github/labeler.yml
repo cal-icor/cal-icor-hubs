@@ -202,6 +202,8 @@ tofu-user-pool:
   - 'deployments/fresno/**'
 'hub: jupyter':
   - 'deployments/jupyter/**'
+'hub: mpc':
+  - 'deployments/mpc/**'
 'hub: sage':
   - 'deployments/sage/**'
 'hub: ucsc':

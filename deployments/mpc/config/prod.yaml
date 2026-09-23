@@ -1,0 +1,58 @@
+nfsPVC:
+  nfs:
+    shareName: mpc/prod
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: Monterey Peninsula College
+          logo_url: https://www.mpc.edu/_resources/assets/icons/logo.png
+          url: https://www.mpc.edu
+  ingress:
+    enabled: true
+    hosts:
+      - mpc.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - mpc.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+      JupyterHub:
+        authenticator_class: cilogon
+      CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        auth_refresh_age: 0
+        allowed_idps:
+          http://google.com/accounts/o8/id:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allowed_domains:
+              - mpc.edu
+        oauth_callback_url: https://mpc.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - lspence@mpc.edu
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

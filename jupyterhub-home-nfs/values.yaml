@@ -42,6 +42,7 @@ jupyterhub-home-nfs:
           "/export/fresno/staging", "/export/fresno/prod",
           "/export/gpu-demo/staging", "/export/gpu-demo/prod",
           "/export/jupyter/staging", "/export/jupyter/prod",
+          "/export/mpc/staging", "/export/mpc/prod",
           "/export/sage/staging", "/export/sage/prod",
           "/export/ucsc/staging", "/export/ucsc/prod",
           "/export/usc/staging", "/export/usc/prod"
