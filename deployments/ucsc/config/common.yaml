@@ -39,7 +39,5 @@ jupyterhub:
         pvcName: home-nfs
         subPath: "{username}"
     memory:
-      # Computational linguistics course loads GPT-2 via transformers.
-      # PyTorch's runtime is ~1G before any weights, so the 1G limit is too low.
       guarantee: 1G
       limit: 4G
