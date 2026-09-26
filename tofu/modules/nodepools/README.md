@@ -20,9 +20,13 @@ exact `key=value` to set in the paired helm change.
 
 ## Zone pinning
 
-`node_locations` must be the single zone where the pool's stateful PD lives
+A pool with a stateful PD must set `node_locations` to that PD's zone
 (`us-central1-b` for both prometheus-data and the NFS disk) so pods can reattach
 their disks after moving pools.
+
+The user and workshop pools have no PDs and list several zones. Set
+`total_node_limits = true` on a pool like that. Otherwise `min_nodes` and
+`max_nodes` apply per zone, and each zone you add raises the ceiling.
 
 ## Provider and versions
 
@@ -67,10 +71,10 @@ No modules.
 | <a name="input_location"></a> [location](#input\_location) | Pool location: the cluster's own location, a region for a regional cluster or a zone for a zonal one. A node pool's location must equal its cluster's, so wire this to the cluster module's location output. Defaults (null) to var.region, so the existing spring-2025 regional pools, which pass nothing, keep their region. | `string` | `null` | no |
 | <a name="input_location_policy"></a> [location\_policy](#input\_location\_policy) | Autoscaler location policy. BALANCED matches the existing pools. | `string` | `"BALANCED"` | no |
 | <a name="input_machine_type"></a> [machine\_type](#input\_machine\_type) | Compute machine type for the pool's nodes (e.g. n2-standard-8). | `string` | n/a | yes |
-| <a name="input_max_nodes"></a> [max\_nodes](#input\_max\_nodes) | Autoscaler maximum node count. | `number` | n/a | yes |
+| <a name="input_max_nodes"></a> [max\_nodes](#input\_max\_nodes) | Autoscaler maximum node count, per zone. With total\_node\_limits = true it covers the whole pool instead. | `number` | n/a | yes |
 | <a name="input_max_pods_per_node"></a> [max\_pods\_per\_node](#input\_max\_pods\_per\_node) | Maximum pods schedulable per node. | `number` | `110` | no |
-| <a name="input_min_nodes"></a> [min\_nodes](#input\_min\_nodes) | Autoscaler minimum node count. | `number` | n/a | yes |
-| <a name="input_node_locations"></a> [node\_locations](#input\_node\_locations) | Zones the pool places nodes in. Must be a single zone matching any attached zonal PD (prometheus-data and the NFS disk are both in us-central1-b) so stateful pods can reattach. | `list(string)` | <pre>[<br/>  "us-central1-b"<br/>]</pre> | no |
+| <a name="input_min_nodes"></a> [min\_nodes](#input\_min\_nodes) | Autoscaler minimum node count, per zone. With total\_node\_limits = true it covers the whole pool instead. | `number` | n/a | yes |
+| <a name="input_node_locations"></a> [node\_locations](#input\_node\_locations) | Zones the pool places nodes in. A pool whose pods use zonal PDs (prometheus-data, grafana, the NFS disk) must list only that PD's zone, us-central1-b. The user and workshop pools list several zones. | `list(string)` | <pre>[<br/>  "us-central1-b"<br/>]</pre> | no |
 | <a name="input_node_service_account"></a> [node\_service\_account](#input\_node\_service\_account) | Service account for the nodes. The existing pools use the default compute SA. | `string` | `"default"` | no |
 | <a name="input_node_tags"></a> [node\_tags](#input\_node\_tags) | Network tags on the nodes. hub-cluster is the custom cluster-wide tag the firewall rules (including the IAP-SSH rule) target. | `list(string)` | <pre>[<br/>  "hub-cluster"<br/>]</pre> | no |
 | <a name="input_node_taints"></a> [node\_taints](#input\_node\_taints) | Kubernetes node taints. Empty for nodeSelector-scheduled pools (prometheus/core/support); the user pool sets hub.jupyter.org\_dedicated=user:NO\_SCHEDULE. | <pre>list(object({<br/>    key    = string<br/>    value  = string<br/>    effect = string<br/>  }))</pre> | `[]` | no |
@@ -78,6 +82,7 @@ No modules.
 | <a name="input_pool_name"></a> [pool\_name](#input\_pool\_name) | Node pool name. House style is <role>-pool-YYYY-MM-DD, stamped with the day the pool is created. Also used as the value of the hub.jupyter.org/pool-name node label that helm nodeSelectors pin. | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | Region of the regional cluster. Fallback for the pool's location when var.location is null (the spring-2025 regional pools). Value comes from root.hcl inputs. | `string` | `"us-central1"` | no |
 | <a name="input_resource_labels"></a> [resource\_labels](#input\_resource\_labels) | GCE instance labels applied to the nodes (billing/rollup dimension). The repo keys billing on hub; e.g. { hub = "prometheus", nodepool-deployment = "prometheus" }. | `map(string)` | n/a | yes |
+| <a name="input_total_node_limits"></a> [total\_node\_limits](#input\_total\_node\_limits) | When true, min\_nodes and max\_nodes limit the whole pool (total\_*\_node\_count). When false they apply per zone, so each zone you add raises the pool's ceiling. Set true on multi-zone pools. | `bool` | `false` | no |
 
 ## Outputs
 
