@@ -39,5 +39,10 @@ jupyterhub:
         pvcName: home-nfs
         subPath: "{username}"
     memory:
-      guarantee: 512M
-      limit: 1G
+      # Computational linguistics course loads GPT-2 via transformers to
+      # inspect layers/params and run short generations. PyTorch's runtime is
+      # ~1G on its own before any weights, so the old 1G limit OOM'd on import.
+      # Only `guarantee` is reserved at scheduling time -- raising `limit`
+      # gives headroom for the burst without changing how many nodes we pay for.
+      guarantee: 1G
+      limit: 4G
