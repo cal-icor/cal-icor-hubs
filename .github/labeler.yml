@@ -170,12 +170,8 @@ tofu-user-pool:
   - 'deployments/csuf/**'
 'hub: csufresno':
   - 'deployments/csufresno/**'
-'hub: csula':
-  - 'deployments/csula/**'
 'hub: csulb':
   - 'deployments/csulb/**'
-'hub: csum':
-  - 'deployments/csum/**'
 'hub: csumb':
   - 'deployments/csumb/**'
 'hub: csun':
@@ -208,7 +204,5 @@ tofu-user-pool:
   - 'deployments/sage/**'
 'hub: ucsc':
   - 'deployments/ucsc/**'
-'hub: usc':
-  - 'deployments/usc/**'
 # 'hub: gpu-demo':
 #   - 'deployments/gpu-demo/**'

@@ -55,12 +55,15 @@ inputs = {
   pool_name            = "workshop-pool-2026-07-07"
   enable_private_nodes = true
 
-  node_locations = ["us-central1-b"]
+  # These nodes use no zonal PDs, so they can run in any zone. If one zone is
+  # out of machines, the autoscaler tries another.
+  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"]
 
   machine_type       = "n2d-highmem-16"
   initial_node_count = 0
   min_nodes          = 0
   max_nodes          = 2
+  total_node_limits  = true # max_nodes caps the whole pool
   location_policy    = "ANY"
   disk_size_gb       = 200
 

@@ -23,7 +23,7 @@ variable "pool_name" {
 variable "node_locations" {
   type        = list(string)
   default     = ["us-central1-b"]
-  description = "Zones the pool places nodes in. Must be a single zone matching any attached zonal PD (prometheus-data and the NFS disk are both in us-central1-b) so stateful pods can reattach."
+  description = "Zones the pool places nodes in. A pool whose pods use zonal PDs (prometheus-data, grafana, the NFS disk) must list only that PD's zone, us-central1-b. The user and workshop pools list several zones."
 }
 
 variable "enable_private_nodes" {
@@ -45,12 +45,18 @@ variable "initial_node_count" {
 
 variable "min_nodes" {
   type        = number
-  description = "Autoscaler minimum node count."
+  description = "Autoscaler minimum node count, per zone. With total_node_limits = true it covers the whole pool instead."
 }
 
 variable "max_nodes" {
   type        = number
-  description = "Autoscaler maximum node count."
+  description = "Autoscaler maximum node count, per zone. With total_node_limits = true it covers the whole pool instead."
+}
+
+variable "total_node_limits" {
+  type        = bool
+  default     = false
+  description = "When true, min_nodes and max_nodes limit the whole pool (total_*_node_count). When false they apply per zone, so each zone you add raises the pool's ceiling. Set true on multi-zone pools."
 }
 
 variable "location_policy" {

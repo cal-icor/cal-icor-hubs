@@ -32,13 +32,16 @@ inputs = {
   pool_name            = "user-pool" # house style: <role>-pool-YYYY-MM-DD
   enable_private_nodes = true
 
-  node_locations = ["us-central1-b"]
+  # These nodes use no zonal PDs, so they can run in any zone. If one zone is
+  # out of machines, the autoscaler tries another.
+  node_locations = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"]
 
-  machine_type    = "n2-highmem-8" # dev: "n2-standard-4"
-  min_nodes       = 0              # scales to zero; placeholder-scaler keeps one warm
-  max_nodes       = 3
-  location_policy = "ANY"
-  disk_size_gb    = 200
+  machine_type      = "n2-highmem-8" # dev: "n2-standard-4"
+  min_nodes         = 0              # scales to zero; placeholder-scaler keeps one warm
+  max_nodes         = 3
+  total_node_limits = true # max_nodes caps the whole pool
+  location_policy   = "ANY"
+  disk_size_gb      = 200
 
   resource_labels = {
     hub                   = "base"
