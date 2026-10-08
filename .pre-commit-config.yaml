@@ -45,7 +45,7 @@ repos:
   # Autoformat: Python code
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.16.6
+    rev: v0.16.10
     hooks:
       # Run the linter.
       - id: ruff
@@ -65,20 +65,20 @@ repos:
 
   # Autoformat: Python code
   - repo: https://github.com/pycqa/isort
-    rev: "9.0.1"
+    rev: "9.0.2"
     hooks:
       - id: isort
 
   # Autoformat: Python code
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: "26.5.1"
+    rev: "26.10.0"
     hooks:
       - id: black
         # This is a `.py` file but is encrypted with sops
 
   # Lint: Python code
   - repo: https://github.com/pycqa/flake8
-    rev: "7.3.0"
+    rev: "7.4.1"
     hooks:
       - id: flake8
         # In case a `.py` file but is encrypted with sops

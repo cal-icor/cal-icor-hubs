@@ -13,7 +13,13 @@ dockerfile:
 
 # add labels for non-singleuser image config changes
 configuration:
+  - '.flake8'
+  - '.gitignore'
+  - '.pre-commit-config.yaml'
+  - '.sops.yaml'
+  - '.yamllint.yaml'
   - 'configs/**'
+  - 'pyproject.toml'
   - '**/requirements.in'
   - '**/dev-requirements.txt'
   - '**/requirements.txt'
@@ -44,7 +50,6 @@ documentation:
 # add build-infra label to any .github or circleci changes
 build-infra:
   - any: ['.github/**', '!.github/ISSUE_TEMPLATE/**']
-  - '.gitignore'
 
 issue-templates:
   - '.github/ISSUE_TEMPLATE/**'
