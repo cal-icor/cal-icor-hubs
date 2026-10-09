@@ -17,3 +17,9 @@ create_alerts.py --enable_alerts --namespaces dev-staging
 ``` bash
 create_alerts.py --disable_alerts --namespaces dev-staging
 ```
+
+## Delete the alert policy and uptime check for a namespace.
+
+``` bash
+create_alerts.py --delete_alerts --namespaces dev-prod
+```

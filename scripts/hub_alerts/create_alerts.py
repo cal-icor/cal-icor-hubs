@@ -148,6 +148,88 @@ def enable_alert_for_policy(namespace):
         print(f"Error running gcloud command: {e}")
 
 
+def extract_uptime_check_id(host):
+    try:
+        result = subprocess.run(
+            [
+                "gcloud",
+                "monitoring",
+                "uptime",
+                "list-configs",
+                "--format=value(name,displayName)",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error running gcloud command: {e}")
+        return None
+
+    for line in result.stdout.splitlines():
+        name, _, display_name = line.partition("\t")
+        if display_name == host:
+            logger.info(f"Found uptime check for {host}: {name}")
+            return name
+    return None
+
+
+def delete_alert_for_policy(namespace, domain):
+    """
+    Delete the alert policy and the uptime check that create_alerts() made for
+    a namespace. Returns False if a gcloud delete failed.
+    """
+    ok = True
+    policy_name = extract_policy_id(namespace)
+    if not policy_name:
+        print(f"Could not find an alert policy for {namespace}. ")
+    else:
+        try:
+            subprocess.run(
+                [
+                    "gcloud",
+                    "alpha",
+                    "monitoring",
+                    "policies",
+                    "delete",
+                    policy_name,
+                    "--quiet",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            print(f"Successfully deleted alert policy for {namespace}. ")
+        except subprocess.CalledProcessError as e:
+            print(f"Error running gcloud command: {e}")
+            ok = False
+
+    host = find_host(namespace, domain)
+    uptime_check = extract_uptime_check_id(host)
+    if not uptime_check:
+        print(f"Could not find an uptime check for {host}. ")
+    else:
+        try:
+            subprocess.run(
+                [
+                    "gcloud",
+                    "monitoring",
+                    "uptime",
+                    "delete",
+                    uptime_check,
+                    "--quiet",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            print(f"Successfully deleted uptime check for {host}. ")
+        except subprocess.CalledProcessError as e:
+            print(f"Error running gcloud command: {e}")
+            ok = False
+    return ok
+
+
 def create_uptime_check(host, project_id):
     """
     Function to create the uptime check and capture the uptime_check_id
@@ -290,6 +372,8 @@ def main():
         create_alerts.py --enable_alerts --namespaces jupyter-prod
     3. Disable an alert policy for a namespace.
         create_alerts.py --disable_alerts --namespaces jupyter-prod
+    4. Delete the alert policy and uptime check for a namespace.
+        create_alerts.py --delete_alerts --namespaces jupyter-prod
     """
     parser = argparse.ArgumentParser(
         description="Create alerts with specified parameters."
@@ -309,6 +393,11 @@ def main():
     )
     parser.add_argument(
         "--disable_alerts", action="store_true", help="Disable alert policy."
+    )
+    parser.add_argument(
+        "--delete_alerts",
+        action="store_true",
+        help="Delete the alert policy and uptime check.",
     )
     parser.add_argument(
         "--create", action="store_true", help="Create an alert policy.", default=False
@@ -334,6 +423,16 @@ def main():
         logger.info("Disabling alerts...")
         for namespace in namespaces:
             disable_alert_for_policy(namespace)
+
+    if args.delete_alerts:
+        logger.info("Deleting alerts...")
+        failed = [
+            namespace
+            for namespace in namespaces
+            if not delete_alert_for_policy(namespace, args.domain)
+        ]
+        if failed:
+            sys.exit(1)
 
     if args.create:
         logger.info("Creating alerts...")
