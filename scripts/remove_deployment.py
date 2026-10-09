@@ -23,6 +23,10 @@ POLL_INTERVAL = 15
 CHECKS_START_TIMEOUT = 120
 NFS_ROLLOUT_TIMEOUT = 1800
 
+# feature branches created in phase 1 (gha) and phase 2 (deployment)
+GHA_BRANCH = "remove-{}-gha"
+DEPLOYMENT_BRANCH = "remove-{}-deployment"
+
 ISSUE_TEMPLATES = (
     "additional_storage_request.yaml",
     "admin_request.yaml",
@@ -74,6 +78,54 @@ def hostname(hub_name: str) -> str:
     if hub_name == "jupyter":
         return "jupyter.cal-icor.org"
     return f"{hub_name}.jupyter.cal-icor.org"
+
+
+def check_branches(root_path: Path, hub_name: str, finish: bool):
+    """
+    Make sure the feature branches this run will create don't already exist,
+    locally or on origin. A stale branch would abort the run partway through,
+    after the alerts, CILogon client and helm releases are already gone.
+
+    Args:
+        root_path (Path): The path to the root directory of the repository.
+        hub_name (str): The name of the hub to remove.
+        finish (bool): If True, only check the deployment branch (the gha
+            branch is expected to exist from phase 1).
+
+    Raises:
+        SystemExit: If any branch exists or git can't be read.
+    """
+    templates = (DEPLOYMENT_BRANCH,) if finish else (GHA_BRANCH, DEPLOYMENT_BRANCH)
+    branches = [template.format(hub_name) for template in templates]
+
+    local, remote = [], []
+    for branch in branches:
+        try:
+            if read_output(["git", "branch", "--list", branch], cwd=str(root_path)):
+                local.append(branch)
+            if read_output(
+                ["git", "ls-remote", "--heads", "origin", branch],
+                cwd=str(root_path),
+            ):
+                remote.append(branch)
+        except subprocess.CalledProcessError as e:
+            print(f"Unable to check for existing branch {branch}: {e}.")
+            sys.exit(1)
+
+    if not (local or remote):
+        return
+
+    print(f"Error: branches from a previous removal of {hub_name} already exist:")
+    for branch in local:
+        print(f"  - local: {branch}")
+    for branch in remote:
+        print(f"  - origin: {branch}")
+    print("Delete them before rerunning:")
+    for branch in local:
+        print(f"  git branch -D {branch}")
+    for branch in remote:
+        print(f"  git push origin --delete {branch}")
+    sys.exit(1)
 
 
 def check_environment(root_path: Path, hub_name: str, finish: bool):
@@ -758,6 +810,28 @@ def sync_staging(root_path: Path):
             sys.exit(1)
 
 
+def delete_branch(branch_name: str, root_path: Path):
+    """
+    Delete a merged feature branch locally and on origin, so a later removal
+    of the same hub doesn't trip check_branches. Failures only warn: the PR
+    is already merged.
+    """
+    try:
+        run(["git", "branch", "-d", branch_name], cwd=str(root_path))
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: unable to delete local branch {branch_name}: {e}")
+
+    try:
+        on_origin = read_output(
+            ["git", "ls-remote", "--heads", "origin", branch_name],
+            cwd=str(root_path),
+        )
+        if on_origin:
+            run(["git", "push", "origin", "--delete", branch_name], cwd=str(root_path))
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: unable to delete origin branch {branch_name}: {e}")
+
+
 def remove_infrastructure(
     root_path: Path,
     github_user: str,
@@ -789,7 +863,7 @@ def remove_infrastructure(
     print(f"Uninstalling helm releases for {hub_name}.")
     uninstall_helm_releases(hub_name, dry_run)
 
-    branch_name = f"remove-{hub_name}-gha"
+    branch_name = GHA_BRANCH.format(hub_name)
     print(f"Creating feature branch {branch_name}.")
     create_branch(branch_name, root_path, dry_run)
 
@@ -831,11 +905,16 @@ def remove_infrastructure(
         dry_run,
     )
     if dry_run:
-        print("Dry run enabled. Would ask to merge the PR, then sync staging.")
+        print(
+            "Dry run enabled. Would ask to merge the PR, sync staging, "
+            + f"then delete {branch_name}."
+        )
         return
 
     merge_pr(pr_url, resume_hint)
     sync_staging(root_path)
+    print(f"Deleting merged branch {branch_name}.")
+    delete_branch(branch_name, root_path)
 
 
 def remove_deployment_dir(
@@ -866,7 +945,7 @@ def remove_deployment_dir(
         wait_for_nfs_config(mount_path, dry_run)
         remove_nfs_dirs(mount_path, skip_archive, dry_run)
 
-    branch_name = f"remove-{hub_name}-deployment"
+    branch_name = DEPLOYMENT_BRANCH.format(hub_name)
     print(f"Creating feature branch {branch_name}.")
     create_branch(branch_name, root_path, dry_run)
 
@@ -892,11 +971,16 @@ def remove_deployment_dir(
         dry_run,
     )
     if dry_run:
-        print("Dry run enabled. Would ask to merge the PR, then sync staging.")
+        print(
+            "Dry run enabled. Would ask to merge the PR, sync staging, "
+            + f"then delete {branch_name}."
+        )
         return
 
     merge_pr(pr_url, resume_hint)
     sync_staging(root_path)
+    print(f"Deleting merged branch {branch_name}.")
+    delete_branch(branch_name, root_path)
 
 
 def main(args):
@@ -910,6 +994,7 @@ def main(args):
         sys.exit(1)
 
     hub_name = args.hub_name
+    check_branches(root_path, hub_name, args.finish)
     check_environment(root_path, hub_name, args.finish)
 
     if args.dry_run:
