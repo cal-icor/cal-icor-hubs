@@ -1,0 +1,47 @@
+nfsPVC:
+  nfs:
+    shareName: cal/staging
+  dirsizeReporter:
+    enabled: false
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: UC Berkeley
+          logo_url: https://brand.berkeley.edu/wp-content/uploads/2024/08/logo-variations-thumbnail-gold-blue-1-1536x984.png
+          url: https://www.berkeley.edu/
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - cal-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - cal-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - sknapp@berkeley.edu
+          - jedwin321@berkeley.edu
