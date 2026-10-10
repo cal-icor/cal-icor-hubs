@@ -70,7 +70,7 @@ prometheus:
         value: user
     updateStrategy:
       type: RollingUpdate
-  pushgateway:
+  prometheus-pushgateway:
     enabled: false
   rbac:
     create: true
@@ -87,14 +87,18 @@ prometheus:
 
   server:
     nodeSelector:
-      hub.jupyter.org/pool-name: prometheus-pool-2026-06-29
+      hub.jupyter.org/pool-name: prometheus-pool-2026-10-09
     resources:
       # Without this, prometheus can easily starve users
       requests:
         cpu: 500m
-        memory: 4Gi
+        memory: 8Gi
       limits:
-        memory: 10Gi
+        memory: 20Gi
+    # merged with the chart's global defaults (scrape/eval intervals).
+    # no rotation: ~10MB/day at current query rates, on the data PVC.
+    global:
+      query_log_file: /data/queries.log
     podLabels:
       # For HTTP access to the hub, to scrape metrics
       hub.jupyter.org/network-access-hub: 'true'

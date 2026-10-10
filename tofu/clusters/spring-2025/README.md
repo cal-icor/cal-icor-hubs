@@ -13,7 +13,7 @@ takes out the pools and the network but never the cluster.
 The units:
 
 - [`network/`](network) sources [`modules/network`](../../modules/network): Cloud Router, Cloud NAT, reserved egress IP, and the IAP-SSH firewall.
-- [`prometheus-pool/`](prometheus-pool) sources [`modules/nodepools`](../../modules/nodepools): `prometheus-pool-2026-06-29` (`n2-standard-8`) for `prometheus-server`.
+- [`prometheus-pool/`](prometheus-pool) sources [`modules/nodepools`](../../modules/nodepools): `prometheus-pool-2026-10-09` (`n2-highmem-4`) for `prometheus-server`.
 - [`core-pool/`](core-pool) sources [`modules/nodepools`](../../modules/nodepools): `core-pool-2026-06-30` (`n2-standard-8`) for every hub's hub/proxy pods and the shared ingress-nginx controller.
 - [`support-pool/`](support-pool) sources [`modules/nodepools`](../../modules/nodepools): `support-pool-2026-07-07` (`n2-standard-4`) for the shared cluster services and the in-cluster NFS server.
 - [`user-pool/`](user-pool) sources [`modules/nodepools`](../../modules/nodepools): `user-pool-2026-07-07` (`n2-highmem-8`) for the student singleuser servers, tainted `hub.jupyter.org_dedicated=user:NoSchedule`.

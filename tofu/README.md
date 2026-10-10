@@ -95,7 +95,7 @@ Disk is 100 GB unless noted.
 
 | Pool | Machine | Nodes min/max | Runs | Notes |
 |------|---------|---------------|------|-------|
-| `prometheus-pool-2026-06-29` | `n2-standard-8` | 1 / 3 | `prometheus-server` | 1000Gi `prometheus-data` PD |
+| `prometheus-pool-2026-10-09` | `n2-highmem-4` | 1 / 3 | `prometheus-server` | 1000Gi `prometheus-data` PD |
 | `core-pool-2026-06-30` | `n2-standard-8` | 1 / 3 | every hub's hub + proxy pods, ingress-nginx | `max_pods_per_node=200`, `cpu_manager_policy=static`, TCP sysctls |
 | `support-pool-2026-07-07` | `n2-standard-4` | 1 / 3 | cert-manager, kube-state-metrics, grafana, statsd, placeholder-scaler, dirsize reporters, in-cluster NFS server | grafana + `home-nfs` carry zonal PDs |
 | `user-pool-2026-07-07` | `n2-highmem-8` | 0 / 8 | student singleuser servers + placeholders | zones a,b,c,f, disk 200 GB, `location_policy=ANY`, taint `hub.jupyter.org_dedicated=user:NoSchedule` |

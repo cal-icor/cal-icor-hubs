@@ -25,12 +25,12 @@ locals {
 inputs = {
   cluster = local.cluster.cluster_name
 
-  pool_name            = "prometheus-pool-2026-06-29"
+  pool_name            = "prometheus-pool-2026-10-09"
   enable_private_nodes = true
 
   node_locations = ["us-central1-b"]
 
-  machine_type = "n2-standard-4"
+  machine_type = "n2-highmem-4"
   min_nodes    = 1
   max_nodes    = 3
   disk_size_gb = 100

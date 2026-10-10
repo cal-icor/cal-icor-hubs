@@ -86,7 +86,7 @@ CI authenticates to GKE with keyless Workload Identity Federation — there are 
 - The `gate` job in `deploy-spring-2025.yaml` authenticates with a bare `auth@v3` (not the composite, whose `get-gke-credentials` is the call that fails on a missing cluster) so its cluster-existence probe works when the cluster is gone. `PROD_DEPLOY_SA` holds `container.clusterViewer` for it.
 - Write access is fenced to the `spring-2025` cluster by a `cluster-admin` RBAC ClusterRoleBinding on `prod-deploy@` — project IAM grants only `container.clusterViewer`, since `container.*` roles cannot be IAM-scoped to a single cluster.
 - SOPS is still used to decrypt secrets at deploy time; `prod-deploy@` holds `cloudkms.cryptoKeyDecrypter` on the `jupyterhubs/sops` KMS key.
-- The tofu cluster deploy (`deploy-spring-2025-cluster.yaml`) authenticates as a separate identity, `prod-infra@cal-icor-hubs.iam.gserviceaccount.com` (repo var `PROD_INFRA_SA`; project roles mirror `dev-infra@`). WIF grants impersonation to the whole repo; access is fenced to `staging` by the `prod-infra` GitHub environment, not by the WIF subject.
+- The tofu cluster deploy (`deploy-spring-2025-cluster.yaml`) authenticates as a separate identity, `prod-infra@cal-icor-hubs.iam.gserviceaccount.com` (repo var `PROD_INFRA_SA`; project roles mirror `dev-infra@`). It also needs `roles/iam.serviceAccountUser` on the default compute SA (`1045396016572-compute@`), which every node pool runs as; without it, node pool creates fail with "does not have access to service account". WIF grants impersonation to the whole repo; access is fenced to `staging` by the `prod-infra` GitHub environment, not by the WIF subject.
 
 #### One-time WIF setup (run once, needs an IAM admin)
 
@@ -116,6 +116,13 @@ gcloud iam service-accounts add-iam-policy-binding \
   --project=cal-icor-hubs \
   --role="roles/iam.workloadIdentityUser" \
   --member="principalSet://iam.googleapis.com/projects/1045396016572/locations/global/workloadIdentityPools/github/attribute.repository/cal-icor/cal-icor-hubs"
+
+# Node pools run as the default compute SA; creating one needs actAs on it.
+gcloud iam service-accounts add-iam-policy-binding \
+  1045396016572-compute@developer.gserviceaccount.com \
+  --project=cal-icor-hubs \
+  --role="roles/iam.serviceAccountUser" \
+  --member="serviceAccount:prod-infra@cal-icor-hubs.iam.gserviceaccount.com"
 ```
 
 ### Helm chart structure
