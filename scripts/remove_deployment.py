@@ -416,6 +416,31 @@ def check_leftover_pods(hub_name: str, dry_run: bool = False):
         sys.exit(1)
 
 
+def delete_namespaces(hub_name: str, dry_run: bool = False):
+    """
+    Delete the hub's prod and staging namespaces. helm uninstall leaves them
+    behind, along with the tls-cert secret cert-manager made for the ingress.
+    """
+    for env in ("prod", "staging"):
+        namespace = f"{hub_name}-{env}"
+        result = subprocess.run(
+            ["kubectl", "get", "namespace", namespace],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            print(f"Namespace {namespace} not found, skipping.")
+            continue
+        try:
+            run(["kubectl", "delete", "namespace", namespace], dry_run)
+            if not dry_run:
+                print(f"Deleted namespace {namespace}.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error deleting namespace {namespace}: {e}")
+            sys.exit(1)
+
+
 def get_nfs_pod() -> str:
     """
     Return the name of the nfs-server pod.
@@ -940,10 +965,14 @@ def remove_deployment_dir(
         sys.exit(1)
 
     mount_path = get_nfs_mount_path(root_path, hub_name)
+    # also guards the namespace delete for hubs on shared NFS
+    check_leftover_pods(hub_name, dry_run)
     if mount_path:
-        check_leftover_pods(hub_name, dry_run)
         wait_for_nfs_config(mount_path, dry_run)
         remove_nfs_dirs(mount_path, skip_archive, dry_run)
+
+    print(f"Deleting namespaces for {hub_name}.")
+    delete_namespaces(hub_name, dry_run)
 
     branch_name = DEPLOYMENT_BRANCH.format(hub_name)
     print(f"Creating feature branch {branch_name}.")
@@ -1005,12 +1034,14 @@ def main(args):
     nfs_action = "deletes" if args.skip_archive else "archives then deletes"
     if args.finish:
         warning = (
-            f"This {nfs_action} the NFS homedirs and removes deployments/{hub_name}."
+            f"This {nfs_action} the NFS homedirs, deletes the {hub_name}-prod and "
+            + f"{hub_name}-staging namespaces, and removes deployments/{hub_name}."
         )
     else:
         warning = (
             f"This uninstalls {hub_name}-prod and {hub_name}-staging, deletes "
-            + f"their alerts and CILogon client, and {nfs_action} the NFS homedirs."
+            + f"their alerts, CILogon client and namespaces, and {nfs_action} "
+            + "the NFS homedirs."
         )
     if args.dry_run:
         print(f"Dry run enabled. Would ask you to type '{hub_name}' to continue.")
@@ -1057,8 +1088,9 @@ if __name__ == "__main__":
         + "Follows https://docs.cal-icor.org/remove-hub/: deletes the alerts and "
         + "CILogon client, uninstalls the helm releases, opens a PR for the "
         + "labels/issue templates/quota paths, archives and deletes the NFS "
-        + "homedirs once that PR deploys, then opens a PR for the deployment "
-        + "folder. It waits for each PR's checks, then asks before merging.",
+        + "homedirs once that PR deploys, deletes the hub's namespaces, then "
+        + "opens a PR for the deployment folder. It waits for each PR's checks, "
+        + "then asks before merging.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -1084,8 +1116,9 @@ if __name__ == "__main__":
         "--finish",
         "-f",
         action="store_true",
-        help="If set, only archive and delete the NFS dirs and remove the "
-        + "deployment folder (second PR). Use this after merging the first PR "
+        help="If set, only archive and delete the NFS dirs, delete the "
+        + "namespaces and remove the deployment folder (second PR). Use this "
+        + "after merging the first PR "
         + "by hand.",
     )
     parser.add_argument(
@@ -1099,8 +1132,8 @@ if __name__ == "__main__":
         "-D",
         action="store_true",
         help="If set, the script will go through all the steps but not actually "
-        + "make any changes (eg: not deleting alerts, helm releases or NFS "
-        + "dirs, not editing files, creating branches or pushing to GitHub).",
+        + "make any changes (eg: not deleting alerts, helm releases, namespaces "
+        + "or NFS dirs, not editing files, creating branches or pushing to GitHub).",
     )
     args = parser.parse_args()
 

@@ -10,10 +10,10 @@ jupyterhub-home-nfs:
     enabled: true
     resources:
       requests:
-        cpu: 0.001
+        cpu: 0.05
         memory: 256M
       limits:
-        cpu: 0.2
+        cpu: 1
         memory: 1G
     config:
       QuotaManager:
@@ -58,18 +58,21 @@ jupyterhub-home-nfs:
   nfsServer:
     resources:
       requests:
-        cpu: 0.02
-        memory: 512M
+        cpu: 0.05
+        memory: 768M
       limits:
-        cpu: 0.1
+        cpu: 0.5
         memory: 1.5G
     enableClientAllowlist: true
     # note: these are private IP ranges that should cover all of our GKE nodes,
     # but will need to be updated if we create a new cluster or node pools with
     # different IP ranges.
     allowedClients:
-      - "10.7.196.*"   # node primary IPs (autoscaled nodes may land in this subnet)
-      - "10.7.199.*"   # node primary IPs (all pools share this subnet)
+      # node primary IPs: subnet gke-spring-2025-subnet-2899df57, 10.7.196.0/22
+      - "10.7.196.*"
+      - "10.7.197.*"
+      - "10.7.198.*"
+      - "10.7.199.*"
       - "10.92.*.1"    # pod CIDR kubelet addresses (10.92.0.0/14 covers 10.92-10.95)
       - "10.93.*.1"    # pod CIDR kubelet addresses (cont.)
       - "10.94.*.1"    # pod CIDR kubelet addresses (cont.)
