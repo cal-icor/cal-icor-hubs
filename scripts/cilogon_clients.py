@@ -115,6 +115,7 @@ def body(hub, callback=None):
         "app_type": "web",
         "redirect_uris": [callback or f"https://{hostname(hub)}/hub/oauth_callback"],
         "scope": SCOPE,
+        "grant_types": ["authorization_code", "refresh_token"],
     }
 
 
