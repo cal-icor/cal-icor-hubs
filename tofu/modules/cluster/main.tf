@@ -53,6 +53,13 @@ resource "google_container_cluster" "cluster" {
     channel = var.release_channel
   }
 
+  # enabled = node auto-provisioning (GKE-created pools), kept off; per-pool
+  # autoscaling lives in the nodepools module. The profile applies either way.
+  cluster_autoscaling {
+    enabled             = false
+    autoscaling_profile = var.autoscaling_profile
+  }
+
   enable_shielded_nodes = true
 
   addons_config {

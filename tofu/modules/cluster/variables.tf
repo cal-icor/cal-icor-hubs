@@ -66,6 +66,17 @@ variable "release_channel" {
   }
 }
 
+variable "autoscaling_profile" {
+  type        = string
+  default     = "OPTIMIZE_UTILIZATION"
+  description = "Cluster autoscaler profile. OPTIMIZE_UTILIZATION packs pods onto the busiest nodes and scales down faster."
+
+  validation {
+    condition     = contains(["BALANCED", "OPTIMIZE_UTILIZATION"], var.autoscaling_profile)
+    error_message = "Must be BALANCED or OPTIMIZE_UTILIZATION."
+  }
+}
+
 variable "resource_labels" {
   type        = map(string)
   default     = {}

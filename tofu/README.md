@@ -42,6 +42,11 @@ The unit's path under `tofu/` becomes its GCS state prefix (e.g.
 hand-writes a backend. The key follows the directory, so moving a unit means
 relocating its state object in the bucket to the matching prefix.
 
+`spring-2025` predates the `cluster/` module, so its GKE cluster resource is not
+in tofu. Cluster-level settings such as the autoscaling profile
+(`OPTIMIZE_UTILIZATION` since 2026-10-20) were set with `gcloud container
+clusters update` and must be changed the same way.
+
 ## Running a unit
 
 Terragrunt drives OpenTofu, so set it to use `tofu` rather than `terraform`:

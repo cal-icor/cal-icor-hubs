@@ -35,6 +35,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
+| <a name="input_autoscaling_profile"></a> [autoscaling\_profile](#input\_autoscaling\_profile) | Cluster autoscaler profile. OPTIMIZE\_UTILIZATION packs pods onto the busiest nodes and scales down faster. | `string` | `"OPTIMIZE_UTILIZATION"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | GKE cluster name. Also the unit directory under tofu/. | `string` | n/a | yes |
 | <a name="input_create_network"></a> [create\_network](#input\_create\_network) | Create a dedicated VPC named cluster\_name (own-VPC-per-cluster). False attaches the subnet to the existing var.network. | `bool` | `false` | no |
 | <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | Blocks tofu from deleting the cluster. Set false for clusters CI/CD tears down. | `bool` | `true` | no |
