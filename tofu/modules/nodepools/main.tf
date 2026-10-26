@@ -77,6 +77,9 @@ resource "google_container_node_pool" "pool" {
     }
 
     kubelet_config {
+      # expliticly set this to ensure CPU CFS quota is enabled for the kubelet
+      # and container runtime.
+      cpu_cfs_quota                          = true
       insecure_kubelet_readonly_port_enabled = var.insecure_kubelet_readonly_port_enabled
       # Omitted when null (prometheus); "static" on the core pool for parity.
       cpu_manager_policy = var.cpu_manager_policy
