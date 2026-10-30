@@ -31,6 +31,9 @@ ingress-nginx:
       loadBalancerIP: 136.65.235.102
 
 prometheus:
+  # no PagerDuty receiver in dev/secrets.yaml; rules still evaluate, nothing pages
+  alertmanager:
+    enabled: false
   kube-state-metrics:
     nodeSelector:
       hub.jupyter.org/pool-name: support-pool

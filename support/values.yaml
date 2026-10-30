@@ -60,8 +60,26 @@ prometheus:
   # Either way, I allowed TCP to port 9100 from 10.0.0.0/8 and it works fine.
   networkPolicy:
     enabled: true
+  # pages PagerDuty; the receiver (with routing key) is in secrets.yaml
   alertmanager:
-    enabled: false
+    enabled: true
+    nodeSelector:
+      hub.jupyter.org/pool-name: support-pool-2026-07-07
+    persistence:
+      size: 1Gi
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+    config:
+      route:
+        receiver: pagerduty
+        group_by: [alertname, namespace]
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
   nodeExporter:
     tolerations:
       - effect: NoSchedule
@@ -118,6 +136,125 @@ prometheus:
       type: Recreate
     service:
       type: ClusterIP
+
+  # severity must be a PagerDuty Events v2 value: critical, error, warning, info.
+  # thresholds backtested against 30-90d of this prometheus on 2026-10-30.
+  serverFiles:
+    alerting_rules.yml:
+      groups:
+        - name: hub-login
+          rules:
+            # 10-26 CILogon outage: fired 4m after onset; 0 false fires in 30d
+            - alert: HubLoginFailures
+              expr: |
+                (
+                  sum by (namespace) (increase(jupyterhub_request_duration_seconds_count{handler="oauthenticator.oauth2.OAuthCallbackHandler",code="400",namespace=~".*-prod"}[15m])) >= 5
+                )
+                /
+                sum by (namespace) (increase(jupyterhub_request_duration_seconds_count{handler="oauthenticator.oauth2.OAuthCallbackHandler",namespace=~".*-prod"}[15m]))
+                > 0.8
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Users cannot log in to {{ $labels.namespace }}: {{ $value | humanizePercentage }} of OAuth callbacks are failing with 400"
+        - name: server-startup
+          rules:
+            - alert: ServerStartupFailures
+              expr: |
+                changes(
+                  (max by (namespace) (jupyterhub_server_spawn_duration_seconds_count{status="failure",namespace=~".*-prod"}))[30m:1m]
+                ) >= 2
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: "At least two user servers failed to start in the last 30m on {{ $labels.namespace }}"
+        - name: pod-health
+          rules:
+            # 07-29 outage (csudh/cpp/csusb) is the only match in 120d; deploy restarts don't trip it
+            - alert: HubCrashLooping
+              expr: |
+                max by (namespace) (kube_pod_container_status_waiting_reason{container="hub",reason="CrashLoopBackOff",namespace=~".*-prod"}) == 1
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Hub in {{ $labels.namespace }} has been in CrashLoopBackOff for 5m"
+            - alert: ProxyRestarted
+              expr: |
+                (
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^proxy-.*",namespace=~".*-prod"})
+                  -
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^proxy-.*",namespace=~".*-prod"} offset 10m)
+                ) >= 1
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Proxy pod {{ $labels.pod }} in {{ $labels.namespace }} restarted; user sessions were dropped"
+            # in-place nfs-server container restarts only; sidecar restarts don't page
+            - alert: HomeNFSRestarted
+              expr: |
+                (
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^home-nfs-.*",container="nfs-server",namespace="jupyterhub-home-nfs"})
+                  -
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^home-nfs-.*",container="nfs-server",namespace="jupyterhub-home-nfs"} offset 10m)
+                ) >= 1
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: "home-nfs nfs-server container in {{ $labels.pod }} restarted; all hubs lost home directories"
+            # catches pod replacement/pending/node loss. deploys and node moves
+            # (upgrades) took <=60s at 0 available over 90d, so 2m doesn't fire on them.
+            - alert: HomeNFSUnavailable
+              expr: |
+                max(kube_deployment_status_replicas_available{namespace="jupyterhub-home-nfs",deployment="home-nfs"}) < 1
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: "home-nfs has had no available pod for 2m; all hubs have lost home directories"
+            - alert: PrometheusRestarted
+              expr: |
+                (
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^support-prometheus-server-.*",namespace="support"})
+                  -
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^support-prometheus-server-.*",namespace="support"} offset 10m)
+                ) >= 1
+              for: 5m
+              labels:
+                severity: error
+              annotations:
+                summary: "Prometheus pod {{ $labels.pod }} restarted; alerting was blind while it was down"
+            - alert: GrafanaRestarted
+              expr: |
+                (
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^support-grafana-.*",namespace="support"})
+                  -
+                  sum by (pod, namespace) (kube_pod_container_status_restarts_total{pod=~"^support-grafana-.*",namespace="support"} offset 10m)
+                ) >= 1
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Grafana pod {{ $labels.pod }} restarted"
+        - name: prometheus-disk
+          rules:
+            - alert: PrometheusDiskAlmostFull
+              expr: |
+                floor(
+                  min by (namespace) (kubelet_volume_stats_available_bytes{persistentvolumeclaim="prometheus-data-2025-04-10"})
+                  /
+                  min by (namespace) (kubelet_volume_stats_capacity_bytes{persistentvolumeclaim="prometheus-data-2025-04-10"})
+                  * 100
+                ) <= 10
+              for: 5m
+              labels:
+                severity: error
+              annotations:
+                summary: "Prometheus data disk has {{ $value }}% free; grow prometheus-data-2025-04-10"
 
 grafana:
   assertNoLeakedSecrets: false
