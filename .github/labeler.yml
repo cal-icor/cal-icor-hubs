@@ -167,6 +167,8 @@ tofu-user-pool:
   - 'deployments/cpp/**'
 'hub: csub':
   - 'deployments/csub/**'
+'hub: csuci':
+  - 'deployments/csuci/**'
 'hub: csudh':
   - 'deployments/csudh/**'
 'hub: csueb':
