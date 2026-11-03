@@ -21,6 +21,7 @@ jupyterhub-home-nfs:
           "/export/chicostate/staging", "/export/chicostate/prod",
           "/export/cpp/staging", "/export/cpp/prod",
           "/export/csub/staging", "/export/csub/prod",
+          "/export/csuci/staging", "/export/csuci/prod",
           "/export/csudh/staging", "/export/csudh/prod",
           "/export/csueb/staging", "/export/csueb/prod",
           "/export/csuf/staging", "/export/csuf/prod",
