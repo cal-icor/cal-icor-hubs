@@ -1,0 +1,60 @@
+nfsPVC:
+  nfs:
+    shareName: dns-valid-hub-name/prod
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "main"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: CSU Channel Islands
+          logo_url: https://www.csuci.edu/office-departments/marketing-communications/brand-guidelines/images/csucinewlogo.jpg
+          url: https://www.csuci.edu/
+  ingress:
+    enabled: true
+    hosts:
+      - dns-valid-hub-name.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - dns-valid-hub-name.jupyter.cal-icor.org
+  hub:
+    db:
+      pvc:
+        # This also holds logs
+        storage: 4Gi
+    config:
+      JupyterHub:
+        authenticator_class: cilogon
+      CILogonOAuthenticator:
+        # temporarily disable token refresh to fix admin access to singleuser servers
+        refresh_pre_spawn: false
+        auth_refresh_age: 0
+        allowed_idps:
+          https://mckinley.csuci.edu/idp/shibboleth:
+            default: true
+            username_derivation:
+              username_claim: "email"
+            allow_all: true
+          http://google.com/accounts/o8/id:
+            username_derivation:
+              username_claim: "email"
+        oauth_callback_url: https://dns-valid-hub-name.jupyter.cal-icor.org/hub/oauth_callback
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sknapp@berkeley.edu
+          - isaac.qs@csuci.edu
+    loadRoles:
+      cloudbank-pilot-hub-users:
+        services:
+          - cloudbank-pilot-hub-users
+        scopes:
+          - list:users
+          - read:users

@@ -195,6 +195,8 @@ tofu-user-pool:
   - 'deployments/csustan/**'
 'hub: demo':
   - 'deployments/demo/**'
+'hub: dns-valid-hub-name':
+  - 'deployments/dns-valid-hub-name/**'
 'hub: dvc':
   - 'deployments/dvc/**'
 'hub: folsomlake':
