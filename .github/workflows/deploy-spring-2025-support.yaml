@@ -47,7 +47,7 @@ jobs:
         run: |
           printf '%s' "$ACCESS_TOKEN" \
             | helm registry login -u oauth2accesstoken --password-stdin \
-              https://us-central1-docker.pkg.dev
+              us-central1-docker.pkg.dev
 
       - name: Deploy support helm chart
         run: |
