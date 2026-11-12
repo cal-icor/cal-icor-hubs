@@ -100,8 +100,11 @@ our Github Actions CI/CD pipeline.
 We also need the following non-python based tools to perform operations on our
 deployments:
 
+- [cookiecutter](https://pypi.org/project/cookiecutter/)
 - [gcloud](https://cloud.google.com/sdk/docs/install)
 - [gh](https://cli.github.com/)
+- [hubploy](https://github.com/berkeley-dsep-infra/hubploy)
+- [helm v4](https://helm.sh/docs/intro/install/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [sops](https://github.com/getsops/sops/releases)
 
