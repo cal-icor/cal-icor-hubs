@@ -51,6 +51,7 @@ jupyterhub:
           - sean.smorris@berkeley.edu
           - sknapp@berkeley.edu
           - fitzgerald@csus.edu
+          - kandel@csus.edu
           - norris@csus.edu
     loadRoles:
       cloudbank-pilot-hub-users:
