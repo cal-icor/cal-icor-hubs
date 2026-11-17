@@ -18,7 +18,7 @@ jupyterhub:
       hub.jupyter.org/pool-name: core-pool-2026-06-30
   singleuser:
     image:
-      name: csumb-user-image
+      name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
       tag: 9fd88501962f
     
     extraFiles:
