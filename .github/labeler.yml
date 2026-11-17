@@ -185,6 +185,8 @@ tofu-user-pool:
   - 'deployments/csun/**'
 'hub: csus':
   - 'deployments/csus/**'
+'hub: csus-exam-math64':
+  - 'deployments/csus-exam-math64/**'
 'hub: csusb':
   - 'deployments/csusb/**'
 'hub: csusj':
