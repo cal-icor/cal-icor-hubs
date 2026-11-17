@@ -19,7 +19,7 @@ jupyterhub:
   singleuser:
     image:
       name: csumb-user-image
-      tag: None
+      tag: 9fd88501962f
     
     extraFiles:
       # DH-216
