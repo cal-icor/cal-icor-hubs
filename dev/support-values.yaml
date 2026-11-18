@@ -16,10 +16,6 @@ cert-manager:
 
 ingress-nginx:
   controller:
-    config:
-      # disable http/2 due to NGINX: CVE-2026-123633 and CVE-2026-123007
-      # https://www.wiz.io/blog/nginx-http2-rce-vulnerabilities
-      use-http2: "false"
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool
     replicaCount: 1
