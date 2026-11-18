@@ -68,12 +68,35 @@ jobs:
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo update
           helm dep up support
-          helm upgrade \
-            --install --timeout 15m \
-            --create-namespace --namespace=support \
-            support support/ \
-            -f dev/support-values.yaml \
-            -f dev/secrets.yaml
+
+          deploy() {
+            helm upgrade \
+              --install --timeout 15m \
+              --create-namespace --namespace=support \
+              support support/ \
+              -f dev/support-values.yaml \
+              -f dev/secrets.yaml
+          }
+
+          # A fresh cluster's first install can race the cert-manager webhook
+          # (ClusterIssuer rejected), and that failure skips ingress-nginx's
+          # admission-patch hook, leaving its webhook caBundle empty. Repair
+          # both and retry once.
+          if ! deploy; then
+            echo "::warning::support install failed, repairing webhooks and retrying once"
+            kubectl -n support rollout status deploy/support-cert-manager-webhook --timeout=5m
+
+            vwc=support-ingress-nginx-admission
+            bundle=$(kubectl get validatingwebhookconfiguration "$vwc" --ignore-not-found \
+              -o jsonpath='{.webhooks[0].clientConfig.caBundle}')
+            ca=$(kubectl -n support get secret "$vwc" --ignore-not-found -o jsonpath='{.data.ca}')
+            if [[ -z "$bundle" && -n "$ca" ]]; then
+              kubectl patch validatingwebhookconfiguration "$vwc" --type=json \
+                -p "[{\"op\":\"add\",\"path\":\"/webhooks/0/clientConfig/caBundle\",\"value\":\"$ca\"}]"
+            fi
+
+            deploy
+          fi
 
       - name: Wait for the support workloads to actually roll out
         run: |
