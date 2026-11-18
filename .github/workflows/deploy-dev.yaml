@@ -52,6 +52,7 @@ on:
 jobs:
   gate:
     runs-on: ubuntu-latest
+    environment: dev-deploy
     outputs:
       cluster_command: ${{ steps.decide.outputs.cluster_command }}
       deploy_support: ${{ steps.decide.outputs.deploy_support }}
@@ -99,7 +100,7 @@ jobs:
         run: |
           if gcloud container clusters describe "${{ vars.DEV_CLUSTER }}" \
                --zone "${{ vars.DEV_ZONE }}" --project "${{ vars.DEV_PROJECT }}" \
-               --format='value(status)' 2>/dev/null | grep -qx RUNNING; then
+               --format='value(status)' | grep -qx RUNNING; then
             echo "backends=cluster_command" >> "$GITHUB_OUTPUT"
           else
             echo "backends=" >> "$GITHUB_OUTPUT"
