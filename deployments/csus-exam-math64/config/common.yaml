@@ -17,6 +17,17 @@ jupyterhub:
     nodeSelector:
       hub.jupyter.org/pool-name: core-pool-2026-06-30
   singleuser:
+    networkPolicy:
+      enabled: true
+      egress: []
+      egressAllowRules:
+        nonPrivateIPs: false
+        privateIPs: false
+        cloudMetadataServer: false
+        # this is so the user pods can resolve DNS in the kube-system namespace and connect to the hub
+        dnsPortsKubeSystemNamespace: true
+        dnsPortsPrivateIPs: false
+        dnsPortsCloudMetadataServer: false
     image:
       name: us-central1-docker.pkg.dev/cal-icor-hubs/user-images/csumb-user-image
       tag: 9fd88501962f
