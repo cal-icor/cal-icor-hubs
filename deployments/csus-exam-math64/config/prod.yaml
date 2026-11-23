@@ -37,7 +37,7 @@ jupyterhub:
             default: true
             username_derivation:
               username_claim: "email"
-            allow_all: true
+            # allow_all: true # uncomment this line to allow all users from this IdP to log in https://github.com/cal-icor/cal-icor-hubs/issues/1262
           http://google.com/accounts/o8/id:
             username_derivation:
               username_claim: "email"
