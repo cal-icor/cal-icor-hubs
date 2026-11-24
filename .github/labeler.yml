@@ -161,6 +161,8 @@ tofu-user-pool:
   - 'tofu/clusters/dev/user-pool/**'
 
 # add hub-specific labels for deployment changes
+'hub: calpoly':
+  - 'deployments/calpoly/**'
 'hub: chicostate':
   - 'deployments/chicostate/**'
 'hub: cpp':
