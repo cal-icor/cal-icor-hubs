@@ -1,0 +1,46 @@
+nfsPVC:
+  nfs:
+    shareName: calpoly/staging
+  dirsizeReporter:
+    enabled: false
+
+jupyterhub:
+  custom:
+    homepage:
+      gitRepoBranch: "username-and-password-homepage"
+      gitRepoUrl: "https://github.com/cal-icor/default-hub-homepage"
+      templateVars:
+        org:
+          name: California Polytechnic State University
+          logo_url: https://ucm.calpoly.edu/sites/default/files/inline-images/logo_page_graphics-05%20%281%29.png
+          url: https://www.calpoly.edu
+  scheduling:
+    userScheduler:
+      replicas: 1
+  prePuller:
+    continuous:
+      enabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - calpoly-staging.jupyter.cal-icor.org
+    tls:
+      - secretName: tls-cert
+        hosts:
+          - calpoly-staging.jupyter.cal-icor.org
+  hub:
+    config:
+      JupyterHub:
+        admin_access: true
+        authenticator_class: dummy
+      Authenticator:
+        manage_groups: false
+        admin_users:
+          # infrastructure
+          - jedwin321@berkeley.edu
+          - sknapp
+          - eric_vandusen@berkeley.edu
+          - ericvd@berkeley.edu
+          - sean.smorris@berkeley.edu
+          - sean.smorris
+          - emarzban@calpoly.edu
