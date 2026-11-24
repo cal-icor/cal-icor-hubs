@@ -363,7 +363,8 @@ jupyterhub:
         # Otherwise our prometheus server can't get to these
         authenticate_prometheus: false
       Authenticator:
-        enable_auth_state: true
+        # nothing reads auth_state; disabling it turns off token refresh (CILogon client has rt_lifetime=0)
+        enable_auth_state: false
         # manage_groups: true
       CILogonOAuthenticator:
         # CILogon rejects unregistered scopes; most clients lack "profile"
