@@ -3,16 +3,16 @@ dependencies:
     version: 0.0.1-0.dev.git.437.h1cc175b
     repository: oci://us-central1-docker.pkg.dev/cal-icor-hubs/helm-charts
   - name: prometheus-statsd-exporter
-    version: 0.12.0
+    version: 1.1.1
     repository: https://prometheus-community.github.io/helm-charts
   - name: prometheus
-    version: 29.33.0
+    version: 29.49.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: grafana
-    version: 10.7.0
-    repository: https://grafana.github.io/helm-charts
+    version: 14.6.0
+    repository: https://grafana-community.github.io/helm-charts
   - name: cert-manager
-    version: v1.21.2
+    version: v1.21.3
     repository: https://charts.jetstack.io
   - name: ingress-nginx
     version: 4.15.1
